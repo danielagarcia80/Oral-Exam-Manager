@@ -34,4 +34,10 @@ export class TestService {
             500
         );
     }
+
+    async getTests(limit: number = 10): Promise<Test[]> {
+        return this.prisma.test.findMany({
+            take: limit,
+        });
+    }
 }

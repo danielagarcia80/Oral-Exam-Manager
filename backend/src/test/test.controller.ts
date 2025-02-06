@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Param, Post } from '@nestjs/common';
 import { TestService } from './test.service';
 import { TestFunctionDto, TestFunctionRes } from './test.dto';
 
@@ -32,6 +32,21 @@ export class TestController {
             throw new HttpException('Internal Server Error', 500);
         }
 
+    }
+
+    @Get()
+    async getTests(
+        @Param('limit') limit: number = 10
+    ): Promise<TestFunctionRes[]> {
+        try {
+            return await this.testService.getTests(limit);
+            
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw new HttpException(error.message, error.getStatus());
+            }
+            throw new HttpException('Internal Server Error', 500);
+        }
     }
 
 }
