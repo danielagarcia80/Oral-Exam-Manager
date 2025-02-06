@@ -1,10 +1,8 @@
-FROM postgres:latest
+FROM mysql:latest
 
-ENV POSTGRES_USER=myuser
-ENV POSTGRES_PASSWORD=mypassword
-ENV POSTGRES_DB=mydatabase
+ENV MYSQL_ROOT_PASSWORD=my-secret-pw
+ENV MYSQL_DATABASE=mydb
+ENV MYSQL_USER=myuser
+ENV MYSQL_PASSWORD=mypassword
 
-EXPOSE 5432
-
-
-CMD ["postgres"]
+EXPOSE 3306
