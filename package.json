@@ -4,19 +4,20 @@
   "workspaces": [
     "frontend",
     "backend",
-    "database", 
+    "database",
     "common"
   ],
   "private": true,
-  "license": "All rights reserved",
+  "license": "ISC",
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
+    "dev": "concurrently \"yarn frontend:dev\" \"yarn backend:dev\"",
     "frontend:dev": "yarn workspace @oem/frontend dev",
+    "backend:dev": "yarn workspace @oem/backend start:dev",
     "frontend:build": "yarn workspace @oem/frontend build",
     "frontend:start": "yarn workspace @oem/frontend start",
-    "backend:dev": "yarn workspace @oem/backend dev",
     "backend:build": "yarn workspace @oem/backend build",
     "backend:start": "yarn workspace @oem/backend start",
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
@@ -32,10 +33,16 @@
   },
   "keywords": [],
   "author": "Sameer Dingore",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/RNAStructureAnalysisLab/OEM/issues"
   },
   "homepage": "https://github.com/RNAStructureAnalysisLab/OEM#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "prisma": "^6.3.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
 }
