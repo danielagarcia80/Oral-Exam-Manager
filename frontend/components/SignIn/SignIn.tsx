@@ -2,6 +2,7 @@ import {
   Anchor,
   Button,
   Checkbox,
+  Container,
   Divider,
   Group,
   Paper,
@@ -34,8 +35,18 @@ export default function SignIn(props: PaperProps) {
       password: (val: string | any[]) => (val.length <= 6 ? 'Password should include at least 6 characters' : null),
     },
   });
+
+  const demoProps = {
+    h: 'fit-content',
+    mt: 'md',
+  };
   return (
     <>
+      <Container px={0} size="30rem" {...demoProps}
+        h="100vh"
+        display="flex"
+        style={{ alignItems: 'center', justifyContent: 'center' }}
+        >
       <Paper radius="md" p="xl" withBorder {...props}>
         <Text size="lg" fw={500}>
           {upperFirst(type)} to OEM with
@@ -101,6 +112,7 @@ export default function SignIn(props: PaperProps) {
           </Group>
         </form>
       </Paper>
+      </Container>
     </>
   );
 }
