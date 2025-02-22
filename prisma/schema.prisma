@@ -14,8 +14,42 @@ datasource db {
 }
 
 model Test {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  name     String?
   password String?
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  provider           String
+  providerAccountId  String
+  type               String
+  refresh_token      String?   // Optional field
+  access_token       String?   // Optional field
+  expires_at         Int?      // Optional field
+  scope              String?   // Optional field
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

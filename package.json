@@ -25,7 +25,8 @@
     "prisma:seed": "infisical run --env=dev -- prisma db seed --schema=./prisma/schema.prisma",
     "prisma:prod-seed": "infisical run --env=dev -- prisma db seed --schema=./prisma/schema.prisma",
     "postinstall": "yarn prisma:generate",
-    "prisma:studio": "infisical run --env=dev -- prisma studio --schema=./prisma/schema.prisma"
+    "prisma:studio": "infisical run --env=dev -- prisma studio --schema=./prisma/schema.prisma",
+    "prisma:format": "prisma format --schema=./prisma/schema.prisma"
   },
   "repository": {
     "type": "git",
