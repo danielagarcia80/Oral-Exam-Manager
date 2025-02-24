@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Anchor, Button, Input, Space, Text, Title, Loader, List } from '@mantine/core';
+import { Button, Input, Space, Text, Title, Loader, List } from '@mantine/core';
 import classes from './Welcome.module.css';
 
 
@@ -24,7 +24,7 @@ export function Welcome() {
     setLoadingTests(true);
     try {
       const response = await fetch('http://localhost:4000/test');
-      if (!response.ok) throw new Error('Failed to fetch tests');
+      if (!response.ok) {throw new Error('Failed to fetch tests');}
       const data = await response.json();
       setTests(data);
     } catch (err) {
@@ -57,7 +57,7 @@ export function Welcome() {
         body: JSON.stringify({ email, name }),
       });
 
-      if (!response.ok) throw new Error('Failed to create test');
+      if (!response.ok) {throw new Error('Failed to create test');}
 
       setEmail('');
       setName('');
