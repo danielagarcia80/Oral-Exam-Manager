@@ -64,7 +64,6 @@ export const authOptions = {
         token.refresh_token = account.refresh_token;
         token.expires_at = account.expires_at;
         token.scope = account.scope;
-        // 🔴 Ensure token_type is NOT included
       }
       return token;
     }

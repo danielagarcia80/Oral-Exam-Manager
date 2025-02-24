@@ -92,7 +92,7 @@ export function Welcome() {
 
 
       <center>
-      <Button onClick={() => signOut()}>Sign Out</Button>
+        <Button onClick={() => signOut()}>Sign Out</Button>
         <Input.Wrapper w={250} label="Email">
           <Input type='email' placeholder="Enter email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </Input.Wrapper>
@@ -107,7 +107,7 @@ export function Welcome() {
           {loading ? <Loader size="sm" /> : 'Submit'}
         </Button>
 
-        {error && <Text color="red">{error}</Text>}
+        {error && <Text c="red">{error}</Text>}
 
         <Title order={3} mt={30}>Submitted Tests</Title>
         {laodindTests && <Loader size="sm" />}
