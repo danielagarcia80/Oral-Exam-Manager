@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Input, Space, Text, Title, Loader, List } from '@mantine/core';
 import classes from './Welcome.module.css';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 
@@ -16,7 +16,7 @@ interface Test {
 export function Welcome() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [tests, setTests] = useState <Test []>([]);
+  const [tests, setTests] = useState<Test[]>([]);
   const [loading, setLoading] = useState(false);
   const [laodindTests, setLoadingTests] = useState(true);
   const [error, setError] = useState('');
@@ -34,7 +34,7 @@ export function Welcome() {
     setLoadingTests(true);
     try {
       const response = await fetch('http://localhost:4000/test');
-      if (!response.ok) {throw new Error('Failed to fetch tests');}
+      if (!response.ok) { throw new Error('Failed to fetch tests'); }
       const data = await response.json();
       setTests(data);
     } catch (err) {
@@ -65,7 +65,7 @@ export function Welcome() {
         body: JSON.stringify({ email, name }),
       });
 
-      if (!response.ok) {throw new Error('Failed to create test');}
+      if (!response.ok) { throw new Error('Failed to create test'); }
 
       setEmail('');
       setName('');
@@ -86,7 +86,13 @@ export function Welcome() {
         </Text>
       </Title>
 
+      <Text ta="center" mt={10}>
+        Hello {session?.user?.name}, please submit your test
+      </Text>
+
+
       <center>
+      <Button onClick={() => signOut()}>Sign Out</Button>
         <Input.Wrapper w={250} label="Email">
           <Input type='email' placeholder="Enter email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </Input.Wrapper>
