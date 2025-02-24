@@ -16,8 +16,8 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { upperFirst, useToggle } from "@mantine/hooks";
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { GoogleButton } from "./GoogleButton";
 import { GithubButton } from "./GithubButton";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,15 @@ export default function SignIn(props: PaperProps) {
   const [type, toggle] = useToggle(["login", "register"]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
+  
 
+  useEffect(() => {
+    if (session) {
+      router.push("/");
+    }
+  }, [session]);
+  
   const router = useRouter();
 
   const form = useForm({
@@ -43,12 +51,10 @@ export default function SignIn(props: PaperProps) {
     },
   });
 
-  // **Handle Form Submission**
   const handleSubmit = async () => {
     setLoading(true);
 
     if (type === "register") {
-      // Register new user
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
