@@ -8,11 +8,13 @@ import {
 } from '@nestjs/common';
 import { TestService } from './test.service';
 import { TestFunctionDto, TestFunctionRes } from './test.dto';
+import { Public } from 'src/auth/jwt.guard';
 
 @Controller('test')
 export class TestController {
   constructor(private readonly testService: TestService) {}
 
+  @Public()
   @Post()
   async createTest(@Body() dto: TestFunctionDto): Promise<TestFunctionRes> {
     try {
@@ -35,6 +37,7 @@ export class TestController {
     }
   }
 
+  @Public()
   @Get()
   async getTests(
     @Param('limit') limit: number = 10,
