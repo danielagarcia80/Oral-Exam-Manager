@@ -3,6 +3,7 @@ import '@mantine/core/styles.css';
 import React from 'react';
 import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
 import { theme } from '../theme';
+import AuthProvider from '@/components/SessionProvider/SessionProvider';
 
 export const metadata = {
   title: 'OEM - RNA3DS LAB',
@@ -21,7 +22,10 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+          <MantineProvider theme={theme}>
+          <AuthProvider>{children}
+          </AuthProvider>
+          </MantineProvider>
       </body>
     </html>
   );
