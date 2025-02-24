@@ -27,6 +27,7 @@ export default function SignIn(props: PaperProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
+  const router = useRouter();
   
 
   useEffect(() => {
@@ -35,7 +36,6 @@ export default function SignIn(props: PaperProps) {
     }
   }, [session]);
   
-  const router = useRouter();
 
   const form = useForm({
     initialValues: {
