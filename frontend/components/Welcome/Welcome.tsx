@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button, Input, Space, Text, Title, Loader, List } from '@mantine/core';
-import classes from './Welcome.module.css';
-import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-
+import { signOut, useSession } from 'next-auth/react';
+import { Button, Input, List, Loader, Space, Text, Title } from '@mantine/core';
+import classes from './Welcome.module.css';
 
 interface Test {
   id: number;
@@ -23,7 +22,6 @@ export function Welcome() {
   const { data: session } = useSession();
   const router = useRouter();
 
-
   useEffect(() => {
     if (!session) {
       router.push('/auth/signin');
@@ -34,7 +32,9 @@ export function Welcome() {
     setLoadingTests(true);
     try {
       const response = await fetch('http://localhost:4000/test');
-      if (!response.ok) { throw new Error('Failed to fetch tests'); }
+      if (!response.ok) {
+        throw new Error('Failed to fetch tests');
+      }
       const data = await response.json();
       setTests(data);
     } catch (err) {
@@ -65,7 +65,9 @@ export function Welcome() {
         body: JSON.stringify({ email, name }),
       });
 
-      if (!response.ok) { throw new Error('Failed to create test'); }
+      if (!response.ok) {
+        throw new Error('Failed to create test');
+      }
 
       setEmail('');
       setName('');
@@ -90,31 +92,49 @@ export function Welcome() {
         Hello {session?.user?.name}, please submit your test
       </Text>
 
-
       <center>
         <Button onClick={() => signOut()}>Sign Out</Button>
         <Input.Wrapper w={250} label="Email">
-          <Input type='email' placeholder="Enter email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </Input.Wrapper>
 
         <Input.Wrapper w={250} label="Name">
-          <Input type='text' placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input
+            type="text"
+            placeholder="Enter name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </Input.Wrapper>
 
         <Space h={10} />
 
-        <Button variant="gradient" gradient={{ from: 'green', to: 'red' }} onClick={createTest} disabled={loading}>
+        <Button
+          variant="gradient"
+          gradient={{ from: 'green', to: 'red' }}
+          onClick={createTest}
+          disabled={loading}
+        >
           {loading ? <Loader size="sm" /> : 'Submit'}
         </Button>
 
         {error && <Text c="red">{error}</Text>}
 
-        <Title order={3} mt={30}>Submitted Tests</Title>
+        <Title order={3} mt={30}>
+          Submitted Tests
+        </Title>
         {laodindTests && <Loader size="sm" />}
 
         <List spacing="xs">
           {tests.map((test, index) => (
-            <List.Item key={index}>{test.name} ({test.email})</List.Item>
+            <List.Item key={index}>
+              {test.name} ({test.email})
+            </List.Item>
           ))}
         </List>
       </center>

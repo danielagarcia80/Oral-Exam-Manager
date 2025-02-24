@@ -1,19 +1,23 @@
-import { NextResponse } from "next/server";
-import prisma from "../../../../../common/lib/prisma";
-import bcrypt from "bcrypt";
+import { NextResponse } from 'next/server';
+import bcrypt from 'bcrypt';
+import prisma from '../../../../../common/lib/prisma';
 
-export async function POST(req: { json: () => PromiseLike<{ email: any; password: any; name: any; }> | { email: any; password: any; name: any; }; }) {
+export async function POST(req: {
+  json: () =>
+    | PromiseLike<{ email: any; password: any; name: any }>
+    | { email: any; password: any; name: any };
+}) {
   try {
     const { email, password, name } = await req.json();
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 });
+      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -24,6 +28,6 @@ export async function POST(req: { json: () => PromiseLike<{ email: any; password
 
     return NextResponse.json(user);
   } catch (error) {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
