@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Button, Input, Space, Text, Title, Loader, List } from '@mantine/core';
 import classes from './Welcome.module.css';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 
 interface Test {
@@ -18,8 +20,16 @@ export function Welcome() {
   const [loading, setLoading] = useState(false);
   const [laodindTests, setLoadingTests] = useState(true);
   const [error, setError] = useState('');
+  const { data: session } = useSession();
+  const router = useRouter();
 
-  // Function to fetch tests from the backend
+
+  useEffect(() => {
+    if (!session) {
+      router.push('/auth/signin');
+    }
+  }, [session]);
+
   const fetchTests = async () => {
     setLoadingTests(true);
     try {
@@ -34,12 +44,10 @@ export function Welcome() {
     }
   };
 
-  // Fetch tests when the component mounts
   useEffect(() => {
     fetchTests();
   }, []);
 
-  // Function to create a new test
   const createTest = async () => {
     if (!email || !name) {
       setError('Please fill in all fields');
