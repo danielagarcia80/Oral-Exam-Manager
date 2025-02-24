@@ -6,12 +6,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const allowedOrigins = [
-    'http://localhost:3000',  // CLIENT_URL
+    'http://localhost:3000', // CLIENT_URL
     process.env.CLIENT_URL, // Production
   ];
 
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -21,17 +24,24 @@ async function bootstrap() {
     },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'email', 'Accept', 'Origin', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'email',
+      'Accept',
+      'Origin',
+      'X-Requested-With',
+    ],
     exposedHeaders: ['Set-Cookie'],
     preflightContinue: false,
-    optionsSuccessStatus: 204
+    optionsSuccessStatus: 204,
   });
   await app.listen(4000, () => {
     Logger.log('Server is running on http://localhost:4000');
   });
 }
 
-bootstrap().catch(error => {
+bootstrap().catch((error) => {
   console.error('Failed to start server:', error);
   process.exit(1);
 });
