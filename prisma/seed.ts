@@ -1,10 +1,9 @@
-import { Role, RoleStatus, RoleType } from "@prisma/client";
-import { PrismaClient } from "@prisma/client/extension";
+import { PrismaClient, RoleStatus, RoleType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const roles: Role[] = [
+  const roles = [
     {
       uuid: "87ca7b7a-700e-459c-82f2-1381c6fe090c",
       name: RoleType.ADMIN,
@@ -32,7 +31,7 @@ async function main() {
   ];
 
   for (const role of roles) {
-    await prisma.Role.upsert({
+    await prisma.role.upsert({
       where: { uuid: role.uuid },
       update: role,
       create: role,
