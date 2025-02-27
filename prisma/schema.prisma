@@ -58,8 +58,15 @@ model User {
   emailVerified DateTime? @map("email_verified")
   password      String?
   image         String?
+  isDeleted     Boolean?  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  role_id       String    
+  roleType      String?   @map("role_type") @default("DEFAULT")
+  role          Role?     @relation(fields: [role_id], references: [uuid])
   accounts      Account[]
   sessions      Session[]
+  Token         Token[]
 
   @@map("users")
 }
@@ -71,4 +78,58 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+
+
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+  PENDING
+}
+
+model Role {
+  uuid          String      @id @unique @default(uuid())
+  name          String    @unique
+  status        RoleStatus
+  date_created  DateTime    @default(now())
+  date_modified DateTime?
+  tags          String?
+  privileges    Privilege[]
+  users         User[]
+  Token         Token[]
+}
+
+model Privilege {
+  uuid          String     @id @default(uuid())
+  action        String
+  resource      String // Renamed 'field' for clarity
+  status        RoleStatus
+  date_created  DateTime   @default(now())
+  date_modified DateTime?
+
+  role_uuid String
+  role      Role   @relation(fields: [role_uuid], references: [uuid])
+
+  @@index([role_uuid])
+}
+
+enum TokenStatus {
+  ACTIVE
+  EXPIRED
+  DELETED
+  PENDING
+}
+
+model Token {
+  uuid         String      @id @default(uuid())
+  date_created DateTime    @default(now())
+  status       TokenStatus
+  token        String
+  role_uuid    String?     @unique
+  user_id      String?     @unique
+
+  role Role? @relation(fields: [role_uuid], references: [uuid])
+  user User? @relation(fields: [user_id], references: [id])
 }
