@@ -57,36 +57,21 @@ export class PrivilegeService {
   ): Promise<boolean> {
     const loadPrivielge = await this.findWithRole(role);
     if (loadPrivielge) {
-      if (loadPrivielge.action[actions.indexOf(request)] === '1') {
-        if (
-          loadPrivielge.resource.split(',').indexOf(entity) >= 0 ||
-          loadPrivielge.resource === 'x'
-        ) {
-          //   if (
-          //     loadPrivielge.field
-          //       ?.split(',')
-          //       [
-          //         loadPrivielge.permission?.split(',')?.indexOf(entity)
-          //       ]?.split('#')
-          //       .indexOf(field) >= 0 ||
-          //     loadPrivielge.field
-          //       ?.split(',')
-          //       [
-          //         loadPrivielge.permission?.split(',')?.indexOf(entity)
-          //       ]?.split('#')[1] === 'x' ||
-          //     loadPrivielge.field === 'x' ||
-          //     loadPrivielge.field.split(',')[
-          //       loadPrivielge.permission?.split(',').indexOf(entity)
-          //     ] === 'x'
-          //   ) {
-          //     if (loadPrivielge.validation === RoleStatus.ACTIVE) {
-          //       return true;
-          //     }
-          //   }
-          // }
-          Logger.log('Not Enough Privilege');
-          return false;
-        }
+      console.log(entity);
+
+      console.log(
+        loadPrivielge.action.split(',')[
+          loadPrivielge.resource.indexOf(`#${entity}`)
+        ][actions.indexOf(request) + 1],
+      );
+
+      if (
+        loadPrivielge.action.split(',')[
+          loadPrivielge.resource.indexOf(`#${entity}`)
+        ][actions.indexOf(request) + 1] === '1'
+      ) {
+        Logger.log('ACCESSED VIA ROLE');
+        return true;
       }
       Logger.log('Not Enough Privilege');
       return false;

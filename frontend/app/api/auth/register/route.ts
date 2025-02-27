@@ -20,14 +20,23 @@ export async function POST(req: {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
+    const role = await prisma.role.findUniqueOrThrow({
+      where:{ name: 'DEFAULT'}
+    })
+    if (!role) {
+      return NextResponse.json({ error: 'Something went wrong' }, { status: 400 });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name },
+      data: { email, password: hashedPassword, name, role_id: role?.uuid },
     });
 
     return NextResponse.json(user);
   } catch (error) {
+    console.log(error);
+    
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

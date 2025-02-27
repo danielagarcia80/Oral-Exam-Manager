@@ -58,9 +58,13 @@ model User {
   emailVerified DateTime? @map("email_verified")
   password      String?
   image         String?
+  isDeleted     Boolean?  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  role_id       String    
+  role          Role?     @relation(fields: [role_id], references: [uuid])
   accounts      Account[]
   sessions      Session[]
-  Role          Role[]
   Token         Token[]
 
   @@map("users")
@@ -75,11 +79,7 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-enum RoleType {
-  ADMIN
-  STUDENT
-  TEACHER
-}
+
 
 enum RoleStatus {
   ACTIVE
@@ -89,8 +89,8 @@ enum RoleStatus {
 }
 
 model Role {
-  uuid          String      @id @default(uuid())
-  name          RoleType    @unique
+  uuid          String      @id @unique @default(uuid())
+  name          String    @unique
   status        RoleStatus
   date_created  DateTime    @default(now())
   date_modified DateTime?
