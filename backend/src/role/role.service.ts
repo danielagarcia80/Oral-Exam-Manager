@@ -1,12 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
-import { Role, RoleStatus, RoleType } from '@prisma/client';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Role, RoleStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Uuid } from 'src/utils/uuid';
+import { RoleBody } from './role';
+import { PrivilegeService } from 'src/privilege/privilege.service';
 @Injectable()
 export class RoleService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => PrivilegeService))
+    private privilegeService: PrivilegeService,
+  ) {}
 
   async findOne(uuid?: string): Promise<Role> {
     const role = await this.prisma.role.findUniqueOrThrow({ where: { uuid } });
@@ -16,21 +22,39 @@ export class RoleService {
     return null;
   }
 
-  async create(name: RoleType, status: string, tags: string[]): Promise<Role> {
-    const newRole: Role = {
-      uuid: new Uuid().generateUUID(),
-      name: RoleType[name],
-      status: RoleStatus[status],
-      date_created: new Date(),
-      date_modified: new Date(),
-      tags: tags.toString(),
-    };
-    return await this.prisma.role.create({ data: newRole });
+  async findAll(): Promise<Role[]> {
+    return await this.prisma.role.findMany();
+  }
+
+  async create(dto: RoleBody): Promise<Role> {
+    const newRole = await this.prisma.role.create({
+      data: {
+        uuid: new Uuid().generateUUID(),
+        name: dto.name.toUpperCase(),
+        status: RoleStatus[dto.status],
+        date_created: new Date(),
+        date_modified: new Date(),
+        tags: dto.tags.toString(),
+      },
+    });
+
+    if (newRole) {
+      const privilege = await this.privilegeService.create(
+        dto.privilegs.actions,
+        dto.privilegs.name,
+        'ACTIVE',
+        newRole.uuid,
+      );
+      if (privilege) {
+        return newRole;
+      }
+      return null;
+    }
   }
 
   async update(
     uuid: string,
-    name?: RoleType,
+    name?: string,
     status?: string,
     token?: string,
     tags?: string[],
@@ -40,7 +64,7 @@ export class RoleService {
       return await this.prisma.role.update({
         where: { uuid: role.uuid },
         data: {
-          name: RoleType[name] || role.name,
+          name: name || role.name,
           status: RoleStatus[status || role.status],
           date_modified: new Date(),
           tags: tags.toString() || role.tags,
@@ -49,7 +73,7 @@ export class RoleService {
     }
   }
 
-  async findWithName(name: RoleType): Promise<Role> {
+  async findWithName(name: string): Promise<Role> {
     return await this.prisma.role.findFirst({ where: { name } });
   }
 }
