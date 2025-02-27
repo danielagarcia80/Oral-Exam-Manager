@@ -52,6 +52,12 @@ async function main() {
     
 
   ]
+
+  const users = [
+    {
+      uuid: ""
+    }
+  ]
   
 
   for (const role of roles) {
