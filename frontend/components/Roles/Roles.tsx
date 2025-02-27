@@ -2,19 +2,20 @@ import { useEffect, useState } from 'react';
 import { Role } from '@prisma/client';
 import { IconUser } from '@tabler/icons-react';
 import axios from 'axios';
-import cx from 'clsx';
 import { useSession } from 'next-auth/react';
 import { Avatar, Button, Group, ScrollArea, Table, Text } from '@mantine/core';
 import NewRole from './NewRole';
-import classes from './Roles.module.css';
+import RoleManage from './RoleManage';
+
+
 
 export default function Roles() {
-  const [selection, setSelection] = useState(['1']);
   const [rolesData, setRolesData] = useState<Role[]>([]);
   const [rolesDataLoading, setRolesDataLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
   const [isNewRoleOpen, setIsNewRoleOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
 
   const fetchRoles = async () => {
     setRolesDataLoading(true);
@@ -46,12 +47,23 @@ export default function Roles() {
   }, []);
 
   const rows = rolesData.map((role) => {
-    const selected = selection.includes(role.uuid);
     return (
-      <Table.Tr key={role.uuid} className={cx({ [classes.rowSelected]: selected })}>
-        {/* <Table.Td>
-          <Checkbox checked={selection.includes(item.id)} onChange={() => toggleRow(item.id)} />
-        </Table.Td> */}
+      <Table.Tr
+        key={role.uuid}
+        style={{
+          transition: 'background-color 0.2s ease',
+          cursor: 'pointer',
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.backgroundColor = '#f1f3f5';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.backgroundColor = '';
+        }}
+        onClick={() => {
+          setSelectedRole(role);
+        }}
+      >
         <Table.Td>
           <Group gap="sm">
             <Avatar size={26} radius={26}>
@@ -79,7 +91,7 @@ export default function Roles() {
               setIsNewRoleOpen(!isNewRoleOpen);
             }}
           >
-            New Role
+            {isNewRoleOpen ? 'Close': 'New Role'}
           </Button>
           {isNewRoleOpen && (
             <>
@@ -91,17 +103,22 @@ export default function Roles() {
             </>
           )}
           {error && <Text c="red">{error}</Text>}
+          {selectedRole ? (
+            <>
+            <Button
+              onClick={() => {
+                setSelectedRole(null);
+              }}
+            >
+              Back
+            </Button>
+            <RoleManage role={selectedRole} />
+            </>
+          ): (
           <ScrollArea>
             <Table miw={800} verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  {/* <Table.Th w={40}>
-              onChange={toggleAll}
-              <Checkbox
-              checked={selection.length === data.length}
-              indeterminate={selection.length > 0 && selection.length !== data.length}
-              />
-              </Table.Th> */}
                   <Table.Th>Name</Table.Th>
                   <Table.Th>Status</Table.Th>
                   <Table.Th>Tags</Table.Th>
@@ -110,6 +127,7 @@ export default function Roles() {
               <Table.Tbody>{rows}</Table.Tbody>
             </Table>
           </ScrollArea>
+        )}
         </>
       )}
     </>

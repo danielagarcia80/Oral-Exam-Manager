@@ -15,7 +15,10 @@ export class RoleService {
   ) {}
 
   async findOne(uuid?: string): Promise<Role> {
-    const role = await this.prisma.role.findUniqueOrThrow({ where: { uuid } });
+    const role = await this.prisma.role.findUniqueOrThrow({
+      where: { uuid },
+      include: { privileges: true },
+    });
     if (role) {
       return role;
     }
