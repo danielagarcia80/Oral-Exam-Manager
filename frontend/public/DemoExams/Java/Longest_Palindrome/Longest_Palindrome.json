@@ -1,0 +1,143 @@
+{
+  "exam_id": 102,
+  "exam_title": "Java Banking System with OOP",
+  "exam_instructions": "Answer all questions below. Provide clear and concise explanations where needed, and ensure your code is properly formatted.",
+  "language": "English",
+  "available_from": "2025-03-01T00:00:00Z",
+  "available_to": "2025-03-15T23:59:59Z",
+  "access_code": "BANKOOP2025",
+  "questions": [
+    {
+      "question_id": 1,
+      "question_title": "Explain OOP concepts in Java.",
+      "question_type": "short-answer",
+      "question_content": "In the context of Java, explain the four main Object-Oriented Programming (OOP) principles: Encapsulation, Inheritance, Polymorphism, and Abstraction.",
+      "keywords": [
+        {
+          "keyword": "OOP",
+          "type": "concept"
+        },
+        {
+          "keyword": "encapsulation",
+          "type": "concept"
+        },
+        {
+          "keyword": "inheritance",
+          "type": "concept"
+        },
+        {
+          "keyword": "polymorphism",
+          "type": "concept"
+        },
+        {
+          "keyword": "abstraction",
+          "type": "concept"
+        }
+      ],
+      "context_keywords": [
+        {
+          "keyword": "Java",
+          "type": "language"
+        },
+        {
+          "keyword": "class",
+          "type": "concept"
+        }
+      ],
+      "general_keywords": [
+        {
+          "keyword": "programming",
+          "type": "field"
+        },
+        {
+          "keyword": "object-oriented",
+          "type": "field"
+        }
+      ]
+    },
+    {
+      "question_id": 2,
+      "question_title": "Implement a Bank Account class in Java.",
+      "question_type": "coding",
+      "question_content": "Write a simple Java class to represent a Bank Account with the following features:\n- Account holder's name\n- Account balance\n- Methods to deposit, withdraw, and check the balance\nEnsure that the balance cannot go below zero.",
+      "keywords": [
+        {
+          "keyword": "Java",
+          "type": "language"
+        },
+        {
+          "keyword": "class",
+          "type": "concept"
+        },
+        {
+          "keyword": "encapsulation",
+          "type": "concept"
+        }
+      ],
+      "context_keywords": [
+        {
+          "keyword": "bank account",
+          "type": "application"
+        },
+        {
+          "keyword": "methods",
+          "type": "concept"
+        }
+      ],
+      "general_keywords": [
+        {
+          "keyword": "programming",
+          "type": "field"
+        },
+        {
+          "keyword": "OOP",
+          "type": "field"
+        }
+      ]
+    },
+    {
+      "question_id": 3,
+      "question_title": "Inheritance and Polymorphism in Banking System",
+      "question_type": "coding",
+      "question_content": "In the context of the Banking System, write a Java code example demonstrating inheritance and polymorphism. Create a base class `BankAccount` and a derived class `SavingsAccount` that adds an interest rate. Include methods for calculating interest and printing account details.",
+      "keywords": [
+        {
+          "keyword": "inheritance",
+          "type": "concept"
+        },
+        {
+          "keyword": "polymorphism",
+          "type": "concept"
+        },
+        {
+          "keyword": "Java",
+          "type": "language"
+        },
+        {
+          "keyword": "class",
+          "type": "concept"
+        }
+      ],
+      "context_keywords": [
+        {
+          "keyword": "savings account",
+          "type": "application"
+        },
+        {
+          "keyword": "interest rate",
+          "type": "concept"
+        }
+      ],
+      "general_keywords": [
+        {
+          "keyword": "programming",
+          "type": "field"
+        },
+        {
+          "keyword": "OOP",
+          "type": "field"
+        }
+      ]
+    }
+  ]
+}

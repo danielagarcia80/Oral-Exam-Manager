@@ -1,0 +1,199 @@
+{
+    "exam_id": 103,
+    "exam_title": "Binary Search Tree Operations in Java",
+    "exam_instructions": "Answer all questions below. Provide clear and concise explanations where needed, and ensure your code is properly formatted.",
+    "language": "English",
+    "available_from": "2025-03-01T00:00:00Z",
+    "available_to": "2025-03-15T23:59:59Z",
+    "access_code": "BSTJAVA2025",
+    "questions": [
+        {
+            "question_id": 1,
+            "question_title": "Explain the Binary Search Tree Data Structure.",
+            "question_type": "short-answer",
+            "question_content": "In the context of Java, explain the concept of a Binary Search Tree (BST) and how it maintains its property where the left child node is smaller and the right child node is larger than the parent node.",
+            "keywords": [
+                {
+                    "keyword": "binary search tree",
+                    "type": "concept"
+                },
+                {
+                    "keyword": "BST",
+                    "type": "concept"
+                },
+                {
+                    "keyword": "left child",
+                    "type": "concept"
+                },
+                {
+                    "keyword": "right child",
+                    "type": "concept"
+                }
+            ],
+            "context_keywords": [
+                {
+                    "keyword": "Java",
+                    "type": "language"
+                },
+                {
+                    "keyword": "data structure",
+                    "type": "concept"
+                }
+            ],
+            "general_keywords": [
+                {
+                    "keyword": "programming",
+                    "type": "field"
+                },
+                {
+                    "keyword": "data structures",
+                    "type": "field"
+                }
+            ]
+        },
+        {
+            "question_id": 2,
+            "question_title": "Implement Insert Method in Binary Search Tree.",
+            "question_type": "coding",
+            "question_content": "Write the `insert` method for a Binary Search Tree in Java. The method should insert a value into the tree and maintain the BST property. Ensure that the method handles insertion recursively.",
+            "keywords": [
+                {
+                    "keyword": "insert",
+                    "type": "method"
+                },
+                {
+                    "keyword": "binary search tree",
+                    "type": "concept"
+                },
+                {
+                    "keyword": "recursion",
+                    "type": "concept"
+                },
+                {
+                    "keyword": "Java",
+                    "type": "language"
+                }
+            ],
+            "context_keywords": [
+                {
+                    "keyword": "binary search tree",
+                    "type": "data structure"
+                }
+            ],
+            "general_keywords": [
+                {
+                    "keyword": "programming",
+                    "type": "field"
+                },
+                {
+                    "keyword": "recursion",
+                    "type": "field"
+                }
+            ]
+        },
+        {
+            "question_id": 3,
+            "question_title": "Delete a Node from the Binary Search Tree.",
+            "question_type": "coding",
+            "question_content": "Write the `delete` method for a Binary Search Tree in Java. The method should remove a node with a specific value from the tree while maintaining the BST property. Handle all three cases: node has no children, one child, and two children.",
+            "keywords": [
+                {
+                    "keyword": "delete",
+                    "type": "method"
+                },
+                {
+                    "keyword": "binary search tree",
+                    "type": "concept"
+                },
+                {
+                    "keyword": "BST property",
+                    "type": "concept"
+                }
+            ],
+            "context_keywords": [
+                {
+                    "keyword": "binary search tree",
+                    "type": "data structure"
+                }
+            ],
+            "general_keywords": [
+                {
+                    "keyword": "programming",
+                    "type": "field"
+                },
+                {
+                    "keyword": "data structures",
+                    "type": "field"
+                }
+            ]
+        },
+        {
+            "question_id": 4,
+            "question_title": "Inorder Traversal of Binary Search Tree.",
+            "question_type": "coding",
+            "question_content": "Write a method to perform an inorder traversal of a Binary Search Tree in Java. The method should print the nodes in ascending order (left subtree, root, right subtree).",
+            "keywords": [
+                {
+                    "keyword": "inorder traversal",
+                    "type": "method"
+                },
+                {
+                    "keyword": "binary search tree",
+                    "type": "concept"
+                },
+                {
+                    "keyword": "ascending order",
+                    "type": "concept"
+                }
+            ],
+            "context_keywords": [
+                {
+                    "keyword": "binary search tree",
+                    "type": "data structure"
+                }
+            ],
+            "general_keywords": [
+                {
+                    "keyword": "programming",
+                    "type": "field"
+                },
+                {
+                    "keyword": "algorithms",
+                    "type": "field"
+                }
+            ]
+        },
+        {
+            "question_id": 5,
+            "question_title": "Search for a Value in Binary Search Tree.",
+            "question_type": "coding",
+            "question_content": "Write a method to search for a specific value in a Binary Search Tree in Java. The method should return `true` if the value is found and `false` otherwise.",
+            "keywords": [
+                {
+                    "keyword": "search",
+                    "type": "method"
+                },
+                {
+                    "keyword": "binary search tree",
+                    "type": "concept"
+                }
+            ],
+            "context_keywords": [
+                {
+                    "keyword": "binary search tree",
+                    "type": "data structure"
+                }
+            ],
+            "general_keywords": [
+                {
+                    "keyword": "programming",
+                    "type": "field"
+                },
+                {
+                    "keyword": "algorithms",
+                    "type": "field"
+                }
+            ]
+        }
+    ]
+}
