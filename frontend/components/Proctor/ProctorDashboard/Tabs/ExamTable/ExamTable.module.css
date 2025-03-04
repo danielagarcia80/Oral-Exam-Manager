@@ -1,0 +1,61 @@
+.table {
+  padding: 1%;
+}
+
+.th {
+  background-color: #f5f5f5; /* Light grey */
+  color: #333; /* Darker text for contrast */
+  font-weight: 600;
+}
+
+.th, .td {
+  border: 1px solid #ddd; /* Adds vertical and horizontal lines */
+  padding: 8px;
+}
+      
+.control {
+  width: 100%;
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+
+  @mixin hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  }
+}
+
+.icon {
+  width: rem(21px);
+  height: rem(21px);
+  border-radius: rem(21px);
+}
+
+.inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--mantine-spacing-xs);
+  padding-left: 2%;
+
+  @media (max-width: mantine-breakpoint-xs) {
+    flex-direction: column;
+  }
+}
+
+.links {
+  margin-right: 20px;
+  @media (max-width: mantine-breakpoint-md) {
+    margin-top: var(--mantine-spacing-md);
+  }
+}
+
+.centeredDiv {
+  display: flex;
+  justify-content: center;
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover {
+  background-color: #add8e6; /* Light blue for hover effect */
+}

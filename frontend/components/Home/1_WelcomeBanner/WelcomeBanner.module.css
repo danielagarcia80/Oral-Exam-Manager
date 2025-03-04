@@ -1,0 +1,24 @@
+.title {
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+  font-size: rem(100px);
+  font-weight: 900;
+  letter-spacing: rem(-2px);
+  padding-top: 0%;
+
+  @media (max-width: mantine-breakpoint-md) {
+    font-size: rem(50px);
+  }
+}
+
+.instructions {
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+  font-size: rem(40px);
+  font-weight: 300;
+  letter-spacing: rem(-2px);
+  padding-top: 75px;
+}
+
+.Button {
+  margin-left: 50px;
+  margin-right: 50px;
+}
