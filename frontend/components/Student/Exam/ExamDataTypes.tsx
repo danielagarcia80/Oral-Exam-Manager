@@ -10,7 +10,7 @@ export interface ExamContextType {
   setExamDetails: (exam: ExamData) => void;
   questions: QuestionData[];
   setQuestions: (questions: QuestionData[]) => void;
-  setDemoExamDetails: (language: String, selectedDemoExam: String) => void; 
+  setDemoExamDetails: ( examUrl: string) => void; 
 }
 
 export interface ExamData {

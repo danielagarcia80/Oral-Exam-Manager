@@ -40,35 +40,37 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
     // Function to set demo exam details from a local JSON file
-    const setDemoExamDetails = async (selectedLanguage: String, selectedDemoExam: String) => {
+    const setDemoExamDetails = async (examUrl: string) => {
       try {
-        const directory = '/DemoExams/' + selectedLanguage + "/" + selectedDemoExam + "/" + selectedDemoExam + ".json"
-        console.log(directory)
-        const response = await fetch(directory);
-
+        console.log("Fetching demo exam from:", examUrl);
+    
+        const response = await fetch(examUrl);
+    
         if (!response.ok) {
-          throw new Error('Failed to fetch demo exam details');
+          throw new Error(`Failed to fetch demo exam details from ${examUrl}`);
         }
+    
         const data: ExamData = await response.json();
-
+    
         const processedQuestions = data.questions.map((question) => ({
           ...question,
           general_keywords: question.keywords.filter((k) => k.type === 'general'),
           context_keywords: question.keywords.filter((k) => k.type === 'context'),
         }));
-  
+    
         // Sorting questions by type
         const sortedQuestions = processedQuestions.sort((a, b) => {
           const order: Record<string, number> = { Generalized: 1, Keyword: 2, Context: 3 };
           return (order[a.question_type] || 4) - (order[b.question_type] || 4);
         });
-  
+    
         // Setting the exam details and questions
         setExamDetails({ ...data, questions: sortedQuestions });
       } catch (error) {
-        console.error('Error setting demo exam details:', error);
+        console.error("Error setting demo exam details:", error);
       }
     };
+    
 
   return (
     <ExamContext.Provider value={{

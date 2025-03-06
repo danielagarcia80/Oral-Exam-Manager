@@ -82,31 +82,54 @@ export default function DemoExamSetup() {
   };
   
   const handleExamSelection = (value: string | null) => {
-    console.log(value)
+    console.log(value);
     if (value === null) {
       setExamId(0);
+      setSelectedExam(null);
     } else {
+      setSelectedExam(value); // Set the selected exam value correctly
+  
       const selectedExamLabel = examOptionsPerLanguage[examLanguage as keyof ExamOptions].find(
         (exam) => exam.value === value
       )?.label;
+  
       if (selectedExamLabel) {
-        setSelectedExam(selectedExamLabel)
-        setExamId(parseInt(value)); 
-        fetchExamFile(selectedExamLabel); 
+        setExamId(parseInt(value));
+        fetchExamFile(selectedExamLabel, examLanguage);
       }
     }
   };
   
-  const fetchExamFile = (examName: string) => {
-    if (examLanguage) {
-      const languageFiles = examFiles[examLanguage as keyof ExamFiles]; 
+  const getExamJsonPath = (examName: string, language: string): string | null => {
+    if (!examFiles[language as keyof ExamFiles]) {
+      console.error(`Language ${language} not found in examFiles.`);
+      return null;
+    }
+  
+    const filePath = examFiles[language as keyof ExamFiles][examName];
+  
+    if (!filePath) {
+      console.error(`Exam ${examName} not found in examFiles.`);
+      return null;
+    }
+  
+    // Replace the file extension with `.json`
+    return filePath.replace(/\.\w+$/, ".json");
+  };
+  
+  const fetchExamFile = (examName: string, language: string) => {
+    console.log("Fetching exam file for:", examName, "Language:", language);
+  
+    if (language) {
+      const languageFiles = examFiles[language as keyof ExamFiles]; 
       const filePath = languageFiles[examName];
+  
       if (filePath) {
         fetch(filePath)
           .then((response) => response.text())
           .then((code) => {
-            setFileString(code); 
-            console.log(code)
+            setFileString(code);
+            console.log("Fetched file content:", code);
           })
           .catch((error) => {
             console.error("Error fetching exam file:", error);
@@ -115,18 +138,41 @@ export default function DemoExamSetup() {
       } else {
         alert("Exam file not found.");
       }
+    } else {
+      alert("Exam language is not set.");
     }
   };
+  
   
   const handleStartExam = (e: React.FormEvent) => {
     e.preventDefault();
   
-    if (selectedExam) {
-      setDemoExamDetails(examLanguage, selectedExam.replace(/ /g, '_'));  
+    if (selectedExam && examLanguage) {
+      // Convert `selectedExam` (value) to label for lookup
+      const selectedExamLabel = examOptionsPerLanguage[examLanguage as keyof ExamOptions].find(
+        (exam) => exam.value === selectedExam
+      )?.label;
+  
+      if (!selectedExamLabel) {
+        alert("Invalid exam selection.");
+        return;
+      }
+  
+      // Get the correct JSON path from `examFiles`
+      const examJsonPath = getExamJsonPath(selectedExamLabel, examLanguage);
+  
+      if (!examJsonPath) {
+        alert("Exam JSON file path not found.");
+        return;
+      }
+  
+      console.log("Passing URL to setDemoExamDetails:", examJsonPath);
+      setDemoExamDetails(examJsonPath);
+  
       if (fileString) {
         const examDetails = {
           exam_id: 1,
-          exam_title: selectedExam,
+          exam_title: selectedExamLabel,
           exam_instructions: "Please answer the following questions...",
           language: examLanguage,
           available_from: new Date().toISOString(),
@@ -136,7 +182,6 @@ export default function DemoExamSetup() {
         };
   
         setExamDetails(examDetails);
-  
         router.push("taking-exam");
       } else {
         alert("Please upload your exam file before starting.");
@@ -145,6 +190,8 @@ export default function DemoExamSetup() {
       alert("Please select an exam.");
     }
   };
+  
+  
   
   
 
