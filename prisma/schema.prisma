@@ -62,6 +62,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
   role_id       String    
+  roleType      String?   @map("role_type") @default("DEFAULT")
   role          Role?     @relation(fields: [role_id], references: [uuid])
   accounts      Account[]
   sessions      Session[]
