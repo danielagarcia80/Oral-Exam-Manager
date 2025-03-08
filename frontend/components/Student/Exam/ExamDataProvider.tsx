@@ -43,7 +43,6 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const setDemoExamDetails = async (selectedLanguage: String, selectedDemoExam: String) => {
       try {
         const directory = '/DemoExams/' + selectedLanguage + "/" + selectedDemoExam + "/" + selectedDemoExam + ".json"
-        console.log(directory)
         const response = await fetch(directory);
 
         if (!response.ok) {
