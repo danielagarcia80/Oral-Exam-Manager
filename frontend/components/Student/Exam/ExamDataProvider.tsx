@@ -13,6 +13,7 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [examId, setExamId] = useState<number>(0);
   const [examDetails, setExamDetails] = useState<ExamData | null>(null);
   const [questions, setQuestions] = useState<QuestionData[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<QuestionData>();
 
   const fetchExamDetails = async () => {
     try {
@@ -21,6 +22,7 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         throw new Error('Failed to fetch exam details');
       }
       const data: { data: ExamData } = await response.json();
+      console.log(data);
 
       const processedQuestions = data.data.questions.map(question => ({
         ...question,
@@ -82,6 +84,8 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setExamDetails,
       questions,
       setQuestions,
+      currentQuestion,
+      setCurrentQuestion,
       setDemoExamDetails
     }}>
       {children}

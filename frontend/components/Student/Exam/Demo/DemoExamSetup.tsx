@@ -162,11 +162,14 @@ export default function DemoExamSetup() {
             Select Preferred Language:
           </Text>
           <LanguageSelector onLanguageSelect={handleLanguageSelection} />
+          <Text size="md" style={{ marginTop: "4%", textAlign: "left", fontSize: "17px", fontWeight: "600" }}>
+            Choose Exam:
+          </Text>
           <Select
             size="md"
             w="100%"
             mt="md"
-            label="Select Exam:"
+            // label="Select Exam:"
             placeholder="Choose an exam"
             data={examOptions}
             value={selectedExam} // Ensure `selectedExam` is the `value`
