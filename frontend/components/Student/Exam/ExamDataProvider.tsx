@@ -14,6 +14,7 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [examDetails, setExamDetails] = useState<ExamData | null>(null);
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<QuestionData>();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
 
   const fetchExamDetails = async () => {
     try {
@@ -86,7 +87,9 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setQuestions,
       currentQuestion,
       setCurrentQuestion,
-      setDemoExamDetails
+      setDemoExamDetails,
+      currentQuestionIndex,
+      setCurrentQuestionIndex,
     }}>
       {children}
     </ExamContext.Provider>

@@ -13,6 +13,9 @@ export interface ExamContextType {
   currentQuestion: QuestionData | undefined;
   setCurrentQuestion: (question: QuestionData) => void;
   setDemoExamDetails: (language: String, selectedDemoExam: String) => void; 
+  currentQuestionIndex: number;
+  setCurrentQuestionIndex: (id: number) => void;
+
 }
 
 export interface ExamData {
