@@ -4,8 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Loading from '@/components/Loading/Loading';
-import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
-import { Welcome } from '../components/Welcome/Welcome';
+import Dashboard from '@/components/Dashboard/Dashboard';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -25,8 +24,7 @@ export default function HomePage() {
     <>
       {session?.user?.email ? (
         <>
-          <Welcome />
-          <ColorSchemeToggle />
+          <Dashboard />
         </>
       ) : (
         <Loading />
