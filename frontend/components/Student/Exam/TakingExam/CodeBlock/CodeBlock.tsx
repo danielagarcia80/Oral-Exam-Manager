@@ -4,14 +4,13 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useExam } from "../../ExamDataProvider";
 
-export default function CodeBlock () {
+export default function CodeBlock() {
     const viewportRef = useRef<HTMLDivElement>(null);
-    const [highlightedLines, setHighlightedLines] = useState<number[]>([]);
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const [highlightedContext, setHighlightedContext] = useState<number[]>([]);
     const fileString = useExam().fileString || ""; // Ensure it's not undefined
     const currentQuestion = useExam().currentQuestion;
-    const currentQuestionIndex = useExam().currentQuestionIndex
+    const currentQuestionIndex = useExam().currentQuestionIndex;
     const language = useExam().examLanguage || "plaintext"; // Default language
 
     useEffect(() => {
@@ -20,35 +19,33 @@ export default function CodeBlock () {
 
     const scrollToHighlightedLine = (index: number) => {
         if (viewportRef.current) {
-            const lineHeight = 20; 
+            const lineHeight = 20;
             const position = lineHeight * (index - 2);
-            viewportRef.current.scrollTo({ top: position, behavior: 'smooth' });
+            viewportRef.current.scrollTo({ top: position, behavior: "smooth" });
         }
     };
 
     const handleQuestionChange = () => {
         if (!currentQuestion) return; // Ensure currentQuestion is loaded before running
         setHighlightedIndex(null);
-        setHighlightedLines([]);
         setHighlightedContext([]);
 
         if (currentQuestion.question_type === "general") {
             setHighlightedIndex(null);
-            setHighlightedLines([]);
             setHighlightedContext([]);
         }
-    
+
         if (currentQuestion.question_type === "keyword") {
-            const keyword = currentQuestion.keywords[0].keyword;
+            const keyword = currentQuestion.keywords[0]?.keyword;
             const results = findLinesWithKeyword(fileString, keyword);
-            const lineIndices = results.map(item => item.index);
-            setHighlightedLines(lineIndices);
+            const lineIndices = results.map((item) => item.index);
+
             if (lineIndices.length > 0) {
-                setHighlightedIndex(lineIndices[0]);
-                setHighlightedLines(lineIndices);
-                scrollToHighlightedLine(lineIndices[0]);
-                console.log("Found keyword at line", lineIndices[0]);
-            }    
+                const randomIndex = lineIndices[Math.floor(Math.random() * lineIndices.length)];
+                setHighlightedIndex(randomIndex);
+                scrollToHighlightedLine(randomIndex);
+                console.log("Randomly highlighting keyword at line", randomIndex);
+            }
         }
 
         // Find context lines dynamically
@@ -58,12 +55,13 @@ export default function CodeBlock () {
             setHighlightedContext(contextLines);
         }
     };
-    
 
     function findLinesWithKeyword(code: string, keyword?: string) {
         if (!keyword || !code) return [];
-        return code.split("\n").map((line, index) => ({ line, index }))
-            .filter(item => item.line.toLowerCase().includes(keyword.toLowerCase()));
+        return code
+            .split("\n")
+            .map((line, index) => ({ line, index }))
+            .filter((item) => item.line.toLowerCase().includes(keyword.toLowerCase()));
     }
 
     function findContext(code: string, keyword?: string): number[] {
@@ -124,7 +122,7 @@ export default function CodeBlock () {
     }
 
     return (
-        <ScrollArea 
+        <ScrollArea
             ref={viewportRef} // Use ref instead of viewportRef
             style={{
                 marginLeft: "2%",
@@ -132,9 +130,9 @@ export default function CodeBlock () {
                 marginTop: "1%",
                 marginBottom: "1%",
                 height: 700,
-                width: "96%"
+                width: "96%",
             }}
-        >                   
+        >
             <SyntaxHighlighter
                 language={language}
                 style={atomDark}
@@ -142,7 +140,7 @@ export default function CodeBlock () {
                 wrapLines
                 lineProps={(lineNumber) => {
                     const actualLine = lineNumber - 1; // Adjust for zero-based indexing
-                    if (highlightedLines.includes(actualLine)) {
+                    if (actualLine === highlightedIndex) {
                         return { style: { backgroundColor: "rgba(255, 0, 0, 0.5)", fontWeight: "bold" } };
                     }
                     if (highlightedContext.includes(actualLine)) {
