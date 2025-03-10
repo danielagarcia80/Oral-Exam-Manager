@@ -12,6 +12,7 @@ export default function QuestionBlock() {
     useEffect(() => {
         if (examDetails?.questions?.length && examDetails?.questions?.length > 0) {
             setCurrentQuestion(examDetails?.questions[currentQuestionIndex]);
+            console.log("Current question:", examDetails?.questions[currentQuestionIndex]);
         }
     }, [examDetails, currentQuestionIndex, setCurrentQuestion]);
 

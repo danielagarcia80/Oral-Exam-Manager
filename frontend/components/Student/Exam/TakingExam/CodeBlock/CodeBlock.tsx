@@ -8,53 +8,124 @@ export default function CodeBlock () {
     const viewportRef = useRef<HTMLDivElement>(null);
     const [highlightedLines, setHighlightedLines] = useState<number[]>([]);
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
-    const fileString = useExam().fileString;
+    const [highlightedContext, setHighlightedContext] = useState<number[]>([]);
+    const fileString = useExam().fileString || ""; // Ensure it's not undefined
     const currentQuestion = useExam().currentQuestion;
-    const language = useExam().examLanguage;
+    const currentQuestionIndex = useExam().currentQuestionIndex
+    const language = useExam().examLanguage || "plaintext"; // Default language
 
     useEffect(() => {
-        handleSearch();
-    }, [currentQuestion?.keywords]); 
-
-    const handleSearch = () => {
-        if (!currentQuestion?.keywords[0]) {
-            setHighlightedLines([]);
-            setHighlightedIndex(null);
-            return;
-        }
-        const results = findLinesWithKeyword(fileString, currentQuestion.keywords[0].keyword);
-        const lineIndices = results.map(item => item.index);
-        setHighlightedLines(lineIndices);
-        if (lineIndices.length > 0) {
-            setHighlightedIndex(lineIndices[0]);
-            scrollToHighlightedLine(lineIndices[0]);
-        }
-    };
+        handleQuestionChange();
+    }, [currentQuestionIndex, currentQuestion]); // Fix the dependency
 
     const scrollToHighlightedLine = (index: number) => {
         if (viewportRef.current) {
-            const lineHeight = 20; // Adjust based on font size
-            const position = lineHeight * (index - 2); // Offset for visibility
+            const lineHeight = 20; 
+            const position = lineHeight * (index - 2);
             viewportRef.current.scrollTo({ top: position, behavior: 'smooth' });
         }
     };
 
-    const scrollToLine = (lineIndex: number) => {
-        if (viewportRef.current) {
-                const lineHeight = 20;
-                const position = lineHeight * lineIndex;
-                viewportRef.current.scrollTop = position - (viewportRef.current.offsetHeight / 2);
+    const handleQuestionChange = () => {
+        if (!currentQuestion) return; // Ensure currentQuestion is loaded before running
+        setHighlightedIndex(null);
+        setHighlightedLines([]);
+        setHighlightedContext([]);
+
+        if (currentQuestion.question_type === "general") {
+            setHighlightedIndex(null);
+            setHighlightedLines([]);
+            setHighlightedContext([]);
+        }
+    
+        if (currentQuestion.question_type === "keyword") {
+            const keyword = currentQuestion.keywords[0].keyword;
+            const results = findLinesWithKeyword(fileString, keyword);
+            const lineIndices = results.map(item => item.index);
+            setHighlightedLines(lineIndices);
+            if (lineIndices.length > 0) {
+                setHighlightedIndex(lineIndices[0]);
+                setHighlightedLines(lineIndices);
+                scrollToHighlightedLine(lineIndices[0]);
+                console.log("Found keyword at line", lineIndices[0]);
+            }    
+        }
+
+        // Find context lines dynamically
+        if (currentQuestion.question_type === "context" && currentQuestion.context_keywords?.length > 0) {
+            console.log("Finding context lines...", currentQuestion.context_keywords[0].keyword);
+            const contextLines = findContext(fileString, currentQuestion.context_keywords[0].keyword);
+            setHighlightedContext(contextLines);
         }
     };
+    
 
     function findLinesWithKeyword(code: string, keyword?: string) {
-        if (!keyword) return [];
-        return code.split('\n').map((line, index) => ({ line, index }))
-                   .filter(item => item.line.toLowerCase().includes(keyword.toLowerCase()));
+        if (!keyword || !code) return [];
+        return code.split("\n").map((line, index) => ({ line, index }))
+            .filter(item => item.line.toLowerCase().includes(keyword.toLowerCase()));
+    }
+
+    function findContext(code: string, keyword?: string): number[] {
+        if (!keyword || !code) return [];
+        const lines = code.split("\n");
+        let contextLines = new Set<number>();
+
+        lines.forEach((line, index) => {
+            if (line.includes(keyword)) {
+                let bracketDepth = 0;
+                let startLine = index;
+                let endLine = index;
+
+                // Move upwards to find the start of the context block
+                for (let i = index; i >= 0; i--) {
+                    const trimmed = lines[i].trim();
+                    if (trimmed.endsWith("{")) {
+                        bracketDepth--;
+                        if (bracketDepth === 0) {
+                            startLine = i;
+                            break;
+                        }
+                    }
+                    if (trimmed.match(/\b(if|for|while|function|class)\b/)) {
+                        startLine = i;
+                        break;
+                    }
+                    if (trimmed.includes("}")) {
+                        bracketDepth++;
+                    }
+                }
+
+                // Move downwards to find the end of the context block
+                bracketDepth = 0;
+                for (let i = index; i < lines.length; i++) {
+                    const trimmed = lines[i].trim();
+                    contextLines.add(i);
+                    if (trimmed.includes("{")) {
+                        bracketDepth++;
+                    }
+                    if (trimmed.includes("}")) {
+                        bracketDepth--;
+                        if (bracketDepth === 0) {
+                            endLine = i;
+                            break;
+                        }
+                    }
+                }
+
+                // Capture all lines in the found range
+                for (let i = startLine; i <= endLine; i++) {
+                    contextLines.add(i);
+                }
+            }
+        });
+
+        return Array.from(contextLines);
     }
 
     return (
-        <ScrollArea
+        <ScrollArea 
+            ref={viewportRef} // Use ref instead of viewportRef
             style={{
                 marginLeft: "2%",
                 marginRight: "2%",
@@ -63,7 +134,6 @@ export default function CodeBlock () {
                 height: 700,
                 width: "96%"
             }}
-            viewportRef={viewportRef}
         >                   
             <SyntaxHighlighter
                 language={language}
@@ -73,7 +143,10 @@ export default function CodeBlock () {
                 lineProps={(lineNumber) => {
                     const actualLine = lineNumber - 1; // Adjust for zero-based indexing
                     if (highlightedLines.includes(actualLine)) {
-                        return { style: { backgroundColor: "rgba(255, 0, 0, 0.5)", fontWeight: "bold" } }; // 🔵 Highlighted keyword lines
+                        return { style: { backgroundColor: "rgba(255, 0, 0, 0.5)", fontWeight: "bold" } };
+                    }
+                    if (highlightedContext.includes(actualLine)) {
+                        return { style: { backgroundColor: "rgba(0, 0, 255, 0.5)", fontWeight: "bold" } };
                     }
                     return {};
                 }}
@@ -83,4 +156,4 @@ export default function CodeBlock () {
             </SyntaxHighlighter>
         </ScrollArea>
     );
-};
+}

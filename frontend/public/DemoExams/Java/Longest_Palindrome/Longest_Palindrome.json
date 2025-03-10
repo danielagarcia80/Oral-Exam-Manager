@@ -22,8 +22,7 @@
       "question_content": "Explain the purpose of this condition.",
       "keywords": [
         {
-          "keyword": "if",
-          "line_number": 4
+          "keyword": "if"
         }
       ],
       "context_keywords": []
@@ -35,14 +34,12 @@
       "question_content": "Explain the purpose of this condition within the loop.",
       "keywords": [
         {
-          "keyword": "if",
-          "line_number": 13
+          "keyword": "if"
         }
       ],
       "context_keywords": [
         {
-          "keyword": "for",
-          "line_number": 9
+          "keyword": "for"
         }
       ]
     },
@@ -53,8 +50,7 @@
       "question_content": "Explain the purpose of this loop in the algorithm.",
       "keywords": [
         {
-          "keyword": "for",
-          "line_number": 9
+          "keyword": "for"
         }
       ],
       "context_keywords": []
@@ -74,8 +70,7 @@
       "question_content": "Explain how this loop works and why it stops.",
       "keywords": [
         {
-          "keyword": "while",
-          "line_number": 22
+          "keyword": "while"
         }
       ],
       "context_keywords": []
@@ -87,14 +82,12 @@
       "question_content": "Explain how the expandFromCenter method is used within the main function's loop.",
       "keywords": [
         {
-          "keyword": "expandFromCenter",
-          "line_number": 11
+          "keyword": "expandFromCenter"
         }
       ],
       "context_keywords": [
         {
-          "keyword": "for",
-          "line_number": 9
+          "keyword": "for"
         }
       ]
     }
