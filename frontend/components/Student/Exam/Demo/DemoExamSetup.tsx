@@ -16,24 +16,24 @@ export default function DemoExamSetup() {
 
   const examOptionsPerLanguage: ExamOptions = {
     java: [
-      { value: "1", label: "Longest Palindrome" },
-      { value: "2", label: "Container With Most Water"},
-      { value: "3", label: "Binary Search Tree" },
+      { value: "Longest Palindrome", label: "Longest Palindrome" },
+      { value: "Container With Most Water", label: "Container With Most Water" },
+      { value: "Binary Search Tree", label: "Binary Search Tree" },
     ],
     "c++": [
-      { value: "1", label: "Memory Management with Pointers" },
-      { value: "2", label: "Linked List with Pointers" },
-      { value: "3", label: "File I/O with Raw Pointers" },
+      { value: "Memory Management with Pointers", label: "Memory Management with Pointers" },
+      { value: "Linked List with Pointers", label: "Linked List with Pointers" },
+      { value: "File I/O with Raw Pointers", label: "File I/O with Raw Pointers" },
     ],
     python: [
-      { value: "1", label: "Web Scraper with BeautifulSoup" },
-      { value: "2", label: "Data Analysis with Pandas" },
-      { value: "3", label: "File Management Automation" },
+      { value: "Web Scraper with BeautifulSoup", label: "Web Scraper with BeautifulSoup" },
+      { value: "Data Analysis with Pandas", label: "Data Analysis with Pandas" },
+      { value: "File Management Automation", label: "File Management Automation" },
     ],
     typescript: [
-      { value: "1", label: "To-Do List App with React" },
-      { value: "2", label: "API with TypeScript & Node" },
-      { value: "3", label: "Type-Safe Form Validation" },
+      { value: "To-Do List App with React", label: "To-Do List App with React" },
+      { value: "API with TypeScript & Node", label: "API with TypeScript & Node" },
+      { value: "Type-Safe Form Validation", label: "Type-Safe Form Validation" },
     ],
   };
 
@@ -47,7 +47,6 @@ export default function DemoExamSetup() {
     python: Record<string, string>;
     typescript: Record<string, string>;
   };
-  
   const examFiles: ExamFiles = {
     java: {
       "Longest Palindrome": "/DemoExams/Java/Longest_Palindrome/Longest_Palindrome.java",
@@ -72,107 +71,63 @@ export default function DemoExamSetup() {
   };
 
   const handleLanguageSelection = (value: string) => {
-    console.log("Setting Language: ", value)
     setExamLanguage(value);
-    setExamLanguage(value)
     const options = examOptionsPerLanguage[value as keyof ExamOptions] || [];
-    console.log(options)
     setExamOptions(options);
     setSelectedExam(null);
   };
-  
+
   const handleExamSelection = (value: string | null) => {
-    console.log(value);
     if (value === null) {
       setExamId(0);
       setSelectedExam(null);
-    } else {
-      setSelectedExam(value); // Set the selected exam value correctly
-  
-      const selectedExamLabel = examOptionsPerLanguage[examLanguage as keyof ExamOptions].find(
+      return;
+    }
+    // Store the selected VALUE, not the label
+    setSelectedExam(value);
+    setExamId(parseInt(value));
+
+    // Find the label for fetching the exam file
+    const selectedExamLabel =
+      examOptionsPerLanguage[examLanguage as keyof ExamOptions].find(
         (exam) => exam.value === value
-      )?.label;
-  
-      if (selectedExamLabel) {
-        setExamId(parseInt(value));
-        fetchExamFile(selectedExamLabel, examLanguage);
-      }
+      )?.label || null; // Ensure it's not undefined
+
+    if (selectedExamLabel) {
+      fetchExamFile(selectedExamLabel);
     }
   };
-  
-  const getExamJsonPath = (examName: string, language: string): string | null => {
-    if (!examFiles[language as keyof ExamFiles]) {
-      console.error(`Language ${language} not found in examFiles.`);
-      return null;
-    }
-  
-    const filePath = examFiles[language as keyof ExamFiles][examName];
-  
-    if (!filePath) {
-      console.error(`Exam ${examName} not found in examFiles.`);
-      return null;
-    }
-  
-    // Replace the file extension with `.json`
-    return filePath.replace(/\.\w+$/, ".json");
-  };
-  
-  const fetchExamFile = (examName: string, language: string) => {
-    console.log("Fetching exam file for:", examName, "Language:", language);
-  
-    if (language) {
-      const languageFiles = examFiles[language as keyof ExamFiles]; 
+
+  const fetchExamFile = (examName: string) => {
+    if (examLanguage) {
+      const languageFiles = examFiles[examLanguage as keyof ExamFiles];
       const filePath = languageFiles[examName];
-  
       if (filePath) {
         fetch(filePath)
           .then((response) => response.text())
           .then((code) => {
             setFileString(code);
-            console.log("Fetched file content:", code);
           })
           .catch((error) => {
             console.error("Error fetching exam file:", error);
+            setSelectedExam(null);
             alert("Error loading exam file.");
           });
       } else {
         alert("Exam file not found.");
       }
-    } else {
-      alert("Exam language is not set.");
     }
   };
-  
-  
+
   const handleStartExam = (e: React.FormEvent) => {
     e.preventDefault();
-  
-    if (selectedExam && examLanguage) {
-      // Convert `selectedExam` (value) to label for lookup
-      const selectedExamLabel = examOptionsPerLanguage[examLanguage as keyof ExamOptions].find(
-        (exam) => exam.value === selectedExam
-      )?.label;
-  
-      if (!selectedExamLabel) {
-        alert("Invalid exam selection.");
-        return;
-      }
-  
-      // Get the correct JSON path from `examFiles`
-      const examJsonPath = getExamJsonPath(selectedExamLabel, examLanguage);
-  
-      if (!examJsonPath) {
-        alert("Exam JSON file path not found.");
-        return;
-      }
-  
-      console.log("Passing URL to setDemoExamDetails:", examJsonPath);
-      setDemoExamDetails(examJsonPath);
-  
+
+    if (selectedExam) {
+      setDemoExamDetails(examLanguage, selectedExam.replace(/ /g, '_'));
       if (fileString) {
         const examDetails = {
           exam_id: 1,
-          exam_title: selectedExamLabel,
+          exam_title: selectedExam,
           exam_instructions: "Please answer the following questions...",
           language: examLanguage,
           available_from: new Date().toISOString(),
@@ -180,7 +135,6 @@ export default function DemoExamSetup() {
           access_code: "12345",
           questions: [],
         };
-  
         setExamDetails(examDetails);
         router.push("taking-exam");
       } else {
@@ -190,10 +144,6 @@ export default function DemoExamSetup() {
       alert("Please select an exam.");
     }
   };
-  
-  
-  
-  
 
   return (
     <Flex justify="center" align="center" style={{ height: "100vh" }}>
@@ -211,14 +161,17 @@ export default function DemoExamSetup() {
             Select Preferred Language:
           </Text>
           <LanguageSelector onLanguageSelect={handleLanguageSelection} />
+          <Text size="md" style={{ marginTop: "4%", textAlign: "left", fontSize: "17px", fontWeight: "600" }}>
+            Choose Exam:
+          </Text>
           <Select
             size="md"
             w="100%"
             mt="md"
-            label="Select Exam:"
+            // label="Select Exam:"
             placeholder="Choose an exam"
             data={examOptions}
-            value={selectedExam}
+            value={selectedExam} // Ensure `selectedExam` is the `value`
             onChange={(value: string | null) => {
               if (value) {
                 handleExamSelection(value);

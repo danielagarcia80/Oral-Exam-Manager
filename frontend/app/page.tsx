@@ -1,20 +1,36 @@
-'use client'
-// Use relative imports to test if the issue lies specifically with alias resolution
-import { Welcome } from '../components/Home/1_WelcomeBanner/WelcomeBanner';
-import { Header } from '../components/Home/0_Header/Header';
-import React from 'react';
-import Footer from '@/components/Home/4_Footer/Footer';
-import About from '@/components/Home/3_About/About';
-import HeroSection from '@/components/Home/2_HeroSection/HeroSection';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import Loading from '@/components/Loading/Loading';
+import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
+import { Welcome } from '../components/Welcome/Welcome';
+import Home from '@/components/Home/Home';
 
 export default function HomePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // useEffect(() => {
+  //   if (status === 'unauthenticated') {
+  //     router.push('/auth/signin');
+  //   }
+  // }, [status, router]);
+
+  // if (status === 'loading' || status === 'unauthenticated') {
+  //   return <Loading />;
+  // }
+
   return (
     <>
-      <Header/>
-      <Welcome />
-      <HeroSection />
-      <About />
-      <Footer />
+      {/* {session?.user?.email ? ( */}
+        <>
+          <Home />
+        </>
+      {/* ) : (
+        <Loading />
+      )} */}
     </>
   );
 }

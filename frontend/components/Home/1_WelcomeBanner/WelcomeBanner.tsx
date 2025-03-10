@@ -5,7 +5,7 @@ import classes from './WelcomeBanner.module.css';
 import { useRouter } from "next/navigation";
 import { IconDeviceTvOld, IconLogin2, IconUser } from '@tabler/icons-react';
 
-export function Welcome() {
+export function WelcomeBanner() {
   const router = useRouter();
 
   const handleExamStart = (e: React.FormEvent) => {

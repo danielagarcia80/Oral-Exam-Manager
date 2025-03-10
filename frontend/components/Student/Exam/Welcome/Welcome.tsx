@@ -22,11 +22,11 @@ export function Welcome() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!session) {
-      router.push('/auth/signin');
-    }
-  }, [session]);
+  // useEffect(() => {
+  //   if (!session) {
+  //     router.push('/auth/signin');
+  //   }
+  // }, [session]);
 
   const fetchTests = async () => {
     setLoadingTests(true);
