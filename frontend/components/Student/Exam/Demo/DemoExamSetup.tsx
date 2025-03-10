@@ -47,7 +47,6 @@ export default function DemoExamSetup() {
     python: Record<string, string>;
     typescript: Record<string, string>;
   };
-
   const examFiles: ExamFiles = {
     java: {
       "Longest Palindrome": "/DemoExams/Java/Longest_Palindrome/Longest_Palindrome.java",
