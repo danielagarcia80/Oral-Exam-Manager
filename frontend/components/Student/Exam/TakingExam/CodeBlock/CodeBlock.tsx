@@ -48,13 +48,71 @@ export default function CodeBlock() {
             }
         }
 
-        // Find context lines dynamically
         if (currentQuestion.question_type === "context" && currentQuestion.context_keywords?.length > 0) {
             console.log("Finding context lines...", currentQuestion.context_keywords[0].keyword);
-            const contextLines = findContext(fileString, currentQuestion.context_keywords[0].keyword);
+            const { contextLines, keywordLine } = findContextAndKeyword(fileString, currentQuestion.context_keywords[0].keyword, currentQuestion.keywords[0].keyword);
+            console.log(contextLines, keywordLine);
             setHighlightedContext(contextLines);
+            if (keywordLine !== null) {
+                setHighlightedIndex(keywordLine);
+                scrollToHighlightedLine(keywordLine);
+                console.log("Highlighting keyword inside context at line", keywordLine);
+            }
         }
     };
+
+    function findContextAndKeyword(code: string, contextKeyword?: string, keyword?: string) {
+        if (!contextKeyword || !code) return { contextLines: [], keywordLine: null };
+        console.log("Finding context and keyword...", contextKeyword, keyword);
+    
+        const lines = code.split("\n");
+        let contextLines = new Set<number>();
+        let keywordLines: number[] = [];
+    
+        let bracketDepth = 0;
+        let insideTargetContext = false;
+        let startLine = -1;
+        let endLine = -1;
+    
+        lines.forEach((line, index) => {
+            const trimmed = line.trim();
+    
+            // Identify the start of the correct context (e.g., `for (...) {`)
+            if (!insideTargetContext && trimmed.startsWith(contextKeyword) && trimmed.includes("{")) {
+                console.log(`Found '${contextKeyword}' at line ${index}`);
+                insideTargetContext = true;
+                startLine = index;
+                bracketDepth = 1; // Start tracking brackets
+            }
+    
+            // Only track brackets if we have encountered the correct context keyword
+            if (insideTargetContext) {
+                contextLines.add(index);
+    
+                if (trimmed.includes("{")) bracketDepth++;
+                if (trimmed.includes("}")) {
+                    bracketDepth--;
+    
+                    // When bracketDepth reaches 0, we have found the closing brace of the `for` loop
+                    if (bracketDepth === 0) {
+                        endLine = index;
+                        insideTargetContext = false; // Stop tracking
+                    }
+                }
+            }
+    
+            // Check if the keyword exists within the found context
+            if (insideTargetContext && keyword && trimmed.includes(keyword)) {
+                keywordLines.push(index);
+            }
+        });
+    
+        return {
+            contextLines: Array.from(contextLines),
+            keywordLine: keywordLines.length > 0 ? keywordLines[Math.floor(Math.random() * keywordLines.length)] : null,
+        };
+    }
+     
 
     function findLinesWithKeyword(code: string, keyword?: string) {
         if (!keyword || !code) return [];

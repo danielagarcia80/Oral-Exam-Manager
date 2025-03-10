@@ -28,7 +28,7 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const processedQuestions = data.data.questions.map(question => ({
         ...question,
         general_keywords: question.keywords.filter(k => k.type === 'general'),
-        context_keywords: question.keywords.filter(k => k.type === 'context')
+        context_keywords: question.context_keywords || []
       }));
 
       const sortedQuestions = processedQuestions.sort((a, b) => {
@@ -56,7 +56,7 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const processedQuestions = data.questions.map((question) => ({
           ...question,
           general_keywords: question.keywords.filter((k) => k.type === 'general'),
-          context_keywords: question.keywords.filter((k) => k.type === 'context'),
+          context_keywords: question.context_keywords || [],
         }));
   
         // Sorting questions by type
