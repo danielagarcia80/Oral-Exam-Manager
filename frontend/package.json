@@ -30,7 +30,8 @@
     "next": "^15.2.0-canary.69",
     "next-auth": "^4.24.11",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "react-syntax-highlighter": "^15.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
@@ -47,6 +48,7 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
     "@types/react": "19.0.7",
+    "@types/react-syntax-highlighter": "^15",
     "babel-loader": "^9.2.1",
     "eslint": "^9.18.0",
     "eslint-config-mantine": "^4.0.3",

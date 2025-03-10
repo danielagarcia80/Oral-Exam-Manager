@@ -6,31 +6,31 @@ import { useSession } from 'next-auth/react';
 import Loading from '@/components/Loading/Loading';
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { Welcome } from '../components/Welcome/Welcome';
+import Home from '@/components/Home/Home';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
-    }
-  }, [status, router]);
+  // useEffect(() => {
+  //   if (status === 'unauthenticated') {
+  //     router.push('/auth/signin');
+  //   }
+  // }, [status, router]);
 
-  if (status === 'loading' || status === 'unauthenticated') {
-    return <Loading />;
-  }
+  // if (status === 'loading' || status === 'unauthenticated') {
+  //   return <Loading />;
+  // }
 
   return (
     <>
-      {session?.user?.email ? (
+      {/* {session?.user?.email ? ( */}
         <>
-          <Welcome />
-          <ColorSchemeToggle />
+          <Home />
         </>
-      ) : (
+      {/* ) : (
         <Loading />
-      )}
+      )} */}
     </>
   );
 }

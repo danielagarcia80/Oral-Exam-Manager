@@ -13,6 +13,7 @@ import {
   Paper,
   PaperProps,
   PasswordInput,
+  Select,
   Stack,
   Text,
   TextInput,
@@ -41,6 +42,7 @@ export default function SignIn(props: PaperProps) {
       name: '',
       password: '',
       terms: true,
+      roleType: 'STUDENT',
     },
     validate: {
       email: (val: string) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email'),
@@ -60,6 +62,7 @@ export default function SignIn(props: PaperProps) {
           name: form.values.name,
           email: form.values.email,
           password: form.values.password,
+          roleType: form.values.roleType,
         }),
       });
 
@@ -140,6 +143,24 @@ export default function SignIn(props: PaperProps) {
               error={form.errors.password}
               radius="md"
             />
+
+            {type === 'register' && (
+              <Select
+                label="Role"
+                placeholder="Select role"
+                data={[
+                  { value: 'STUDENT', label: 'Student' },
+                  { value: 'TEACHER', label: 'Teacher' },
+                ]}  
+                value={form.values.roleType}
+                onChange={(event) => {
+                  if (event) {
+                    form.setFieldValue('roleType', event);
+                  }
+                }}
+                radius="md"
+              />
+            )}
 
             {type === 'register' && (
               <Checkbox

@@ -1,0 +1,95 @@
+{
+  "exam_id": 201,
+  "exam_title": "Java Longest Palindrome Algorithm",
+  "exam_instructions": "Answer all questions below. Provide clear and concise explanations where needed, referencing the provided code.",
+  "language": "Java",
+  "available_from": "2025-03-01T00:00:00Z",
+  "available_to": "2025-03-15T23:59:59Z",
+  "access_code": "PALINDROME2025",
+  "questions": [
+    {
+      "question_id": 1,
+      "question_title": "High-Level Explanation",
+      "question_type": "generalized",
+      "question_content": "Explain your code at a high level. How does it determine the longest palindromic substring?",
+      "keywords": [],
+      "context_keywords": []
+    },
+    {
+      "question_id": 2,
+      "question_title": "Understanding the Condition",
+      "question_type": "keyword",
+      "question_content": "Explain the purpose of this condition.",
+      "keywords": [
+        {
+          "keyword": "if"
+        }
+      ],
+      "context_keywords": []
+    },
+    {
+      "question_id": 3,
+      "question_title": "Loop and Condition Interaction",
+      "question_type": "context",
+      "question_content": "Explain the purpose of this condition within the loop.",
+      "keywords": [
+        {
+          "keyword": "if"
+        }
+      ],
+      "context_keywords": [
+        {
+          "keyword": "for"
+        }
+      ]
+    },
+    {
+      "question_id": 4,
+      "question_title": "Loop Structure",
+      "question_type": "keyword",
+      "question_content": "Explain the purpose of this loop in the algorithm.",
+      "keywords": [
+        {
+          "keyword": "for"
+        }
+      ],
+      "context_keywords": []
+    },
+    {
+      "question_id": 5,
+      "question_title": "Functionality of expandFromCenter",
+      "question_type": "generalized",
+      "question_content": "What is the role of the expandFromCenter method in this algorithm?",
+      "keywords": [],
+      "context_keywords": []
+    },
+    {
+      "question_id": 6,
+      "question_title": "Loop Inside expandFromCenter",
+      "question_type": "keyword",
+      "question_content": "Explain how this loop works and why it stops.",
+      "keywords": [
+        {
+          "keyword": "while"
+        }
+      ],
+      "context_keywords": []
+    },
+    {
+      "question_id": 7,
+      "question_title": "Interaction Between expandFromCenter and Main Method",
+      "question_type": "context",
+      "question_content": "Explain how the expandFromCenter method is used within the main function's loop.",
+      "keywords": [
+        {
+          "keyword": "expandFromCenter"
+        }
+      ],
+      "context_keywords": [
+        {
+          "keyword": "for"
+        }
+      ]
+    }
+  ]
+}

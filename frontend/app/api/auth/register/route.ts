@@ -4,11 +4,11 @@ import prisma from '../../../../../common/lib/prisma';
 
 export async function POST(req: {
   json: () =>
-    | PromiseLike<{ email: any; password: any; name: any }>
-    | { email: any; password: any; name: any };
+    | PromiseLike<{ email: any; password: any; name: any; roleType: any }>
+    | { email: any; password: any; name: any; roleType: any };
 }) {
   try {
-    const { email, password, name } = await req.json();
+    const { email, password, name, roleType } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -21,7 +21,7 @@ export async function POST(req: {
     }
 
     const role = await prisma.role.findUniqueOrThrow({
-      where:{ name: 'DEFAULT'}
+      where:{ name: roleType}
     })
     if (!role) {
       return NextResponse.json({ error: 'Something went wrong' }, { status: 400 });
@@ -30,7 +30,7 @@ export async function POST(req: {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name, role_id: role?.uuid },
+      data: { email, password: hashedPassword, name, role_id: role?.uuid,  roleType },
     });
 
     return NextResponse.json(user);
