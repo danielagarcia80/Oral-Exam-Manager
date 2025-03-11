@@ -82,7 +82,7 @@ export default function CodeBlock() {
                 console.log(`Found '${contextKeyword}' at line ${index}`);
                 insideTargetContext = true;
                 startLine = index;
-                bracketDepth = 1; // Start tracking brackets
+                bracketDepth = 0; // Start tracking brackets
             }
     
             // Only track brackets if we have encountered the correct context keyword
