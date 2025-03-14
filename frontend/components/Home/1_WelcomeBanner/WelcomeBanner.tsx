@@ -15,7 +15,7 @@ export function WelcomeBanner() {
 
   const handleOpenDashboard = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/proctor/instructor-dashboard');
+    router.push('/auth/signin ');
   };
 
   return (

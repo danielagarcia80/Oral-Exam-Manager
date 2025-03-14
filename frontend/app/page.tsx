@@ -4,8 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Loading from '@/components/Loading/Loading';
-import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
-import { Welcome } from '../components/Welcome/Welcome';
 import Home from '@/components/Home/Home';
 
 export default function HomePage() {
