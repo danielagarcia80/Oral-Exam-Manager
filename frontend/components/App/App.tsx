@@ -8,6 +8,7 @@ import { institute } from '@/configurations';
 export const App: React.FC<{ children: React.ReactNode }> = ({ children }) => { 
     const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
     const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
+    const currentUrl = window.location.href;
     return (
         <AppShell
             header={{ height: 60 }}
@@ -30,7 +31,7 @@ export const App: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <AppShell.Main>
                 {children}
             </AppShell.Main>
-            <AppShell.Aside p="md">Aside</AppShell.Aside>
+            <AppShell.Aside p="md">{currentUrl}</AppShell.Aside>
             <AppShell.Footer p="md">OEM</AppShell.Footer>
         </AppShell>
     );

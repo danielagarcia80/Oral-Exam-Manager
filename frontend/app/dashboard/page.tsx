@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import Loading from '@/components/Loading/Loading';
 import { App } from '@/components/App/App';
+import DashBoard from '@/components/DashBoard/DashBaord';
 
 export default function Dashboard() {
 
@@ -22,7 +23,7 @@ export default function Dashboard() {
       }
     return (
         <App>
-            <h1>Dashboard</h1>
+            <DashBoard />
         </App>
     );
 }
