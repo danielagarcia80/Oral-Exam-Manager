@@ -53,7 +53,7 @@ export default function NavTabs({
 }: ExamTableProps) {
   const iconStyle = { width: rem(18), height: rem(18) };
     const { courses, selectedCourseId } = useInstructorDataContext();
-    const selectedCourse = courses.find(course => course.course_id === selectedCourseId);
+    const selectedCourse = courses.find((course: { course_id: any; }) => course.course_id === selectedCourseId);
   
 
 
