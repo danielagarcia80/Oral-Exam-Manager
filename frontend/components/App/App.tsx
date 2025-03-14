@@ -1,6 +1,6 @@
-import { AppShell, Burger, Group, Skeleton } from '@mantine/core';
+import { ActionIcon, AppShell, Burger, Group, Skeleton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconBadge4k } from '@tabler/icons-react';
+import { IconBadge4k, IconOctahedron } from '@tabler/icons-react';
 import Navbar from '../NavBar/NavBar';
 import { institute } from '@/configurations';
 
@@ -21,7 +21,7 @@ export const App: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <Group h="100%" px="md">
                     <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
                     <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" />
-                    <IconBadge4k stroke={2} />
+                        <IconOctahedron />
                     {institute.name}
                 </Group>
             </AppShell.Header>
