@@ -1,6 +1,8 @@
 import { AppShell, Burger, Group, Skeleton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconBadge4k } from '@tabler/icons-react';
+import Navbar from '../NavBar/NavBar';
+import { institute } from '@/configurations';
 
 
 export const App: React.FC<{ children: React.ReactNode }> = ({ children }) => { 
@@ -19,21 +21,17 @@ export const App: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
                     <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" />
                     <IconBadge4k stroke={2} />
+                    {institute.name}
                 </Group>
             </AppShell.Header>
             <AppShell.Navbar p="md">
-                Navbar
-                {Array(15)
-                    .fill(0)
-                    .map((_, index) => (
-                        <Skeleton key={index} h={28} mt="sm" animate={false} />
-                    ))}
+                <Navbar />
             </AppShell.Navbar>
             <AppShell.Main>
                 {children}
             </AppShell.Main>
             <AppShell.Aside p="md">Aside</AppShell.Aside>
-            <AppShell.Footer p="md">Footer</AppShell.Footer>
+            <AppShell.Footer p="md">OEM</AppShell.Footer>
         </AppShell>
     );
 }
