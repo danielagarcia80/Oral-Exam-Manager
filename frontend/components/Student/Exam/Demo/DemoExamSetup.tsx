@@ -1,8 +1,9 @@
-import { Button, Container, Flex, Paper, Select, Space, Text, Title } from "@mantine/core";
+import { ActionIcon, Button, Container, Divider, Flex, Paper, Select, Slider, Space, Text, Title } from "@mantine/core";
 import { useState } from "react";
 import { useExam } from "../ExamDataProvider";
 import { useRouter } from "next/navigation";
 import LanguageSelector from "../ExamSetup/LanguageSelector";
+import { IconArrowLeft } from "@tabler/icons-react";
 
 type ExamOptions = {
   java: { value: string; label: string }[];
@@ -13,6 +14,14 @@ type ExamOptions = {
 
 export default function DemoExamSetup() {
   const router = useRouter();
+
+  const difficultyOptions = [
+    { value: 0, label: 'Beginnner' },
+    { value: 25, label: 'Intermediate' },
+    { value: 50, label: 'Proficient' },
+    { value: 75, label: 'Advanced' },
+    { value: 100, label: 'Expert' },
+  ];
 
   const examOptionsPerLanguage: ExamOptions = {
     java: [
@@ -40,6 +49,9 @@ export default function DemoExamSetup() {
   const { fileString, setFileString, setExamId, examLanguage, setExamLanguage, setExamDetails, setDemoExamDetails } = useExam();
   const [examOptions, setExamOptions] = useState<{ value: string; label: string }[]>([]);
   const [selectedExam, setSelectedExam] = useState<string | null>("");
+
+  const marginTop = "4%";
+  const marginTop2 = "8%";
 
   type ExamFiles = {
     java: Record<string, string>;
@@ -146,32 +158,53 @@ export default function DemoExamSetup() {
   };
 
   return (
+    <div color="darkGray" style={{ backgroundColor: "#71797E" }}>
     <Flex justify="center" align="center" style={{ height: "100vh" }}>
-      <Container size={800}>
-        <Paper shadow="xl" radius="md" p="lg">
-          {/* Centered Title */}
-          <Flex justify="center">
-            <Title order={2}>Exam Instructions</Title>
+      <Container size={1000}>
+        <Paper shadow="xl" radius="xl" p="xl">
+          <Flex
+            style={{ position: "relative", width: "100%", height: "40px" }}
+            align="center"
+            justify="center"
+            mb="md"
+          >
+            <IconArrowLeft
+              style={{
+                position: "absolute",
+                left: 0,
+                cursor: "pointer",
+              }}
+              onClick={() => router.back()}
+            />
+            <Title order={2} style={{ margin: "0 auto" }}>
+              Demo Exam Setup
+            </Title>
           </Flex>
-
-          <Space h="xl" />
-
-          {/* Left-aligned text above Language Selector */}
-          <Text size="md" style={{ textAlign: "left", fontSize: "17px", fontWeight: "600" }}>
+          <Divider my="md" />
+          <Text size="md" style={{ textAlign: "left", fontSize: "17px", fontWeight: "600", marginTop: marginTop }}>
             Select Preferred Language:
           </Text>
           <LanguageSelector onLanguageSelect={handleLanguageSelection} />
-          <Text size="md" style={{ marginTop: "4%", textAlign: "left", fontSize: "17px", fontWeight: "600" }}>
+          <Text size="md" style={{ textAlign: "left", fontSize: "17px", fontWeight: "600", marginTop: marginTop2 }}>
+            Select Difficulty Level:
+          </Text>
+          <Slider
+            defaultValue={0}
+            label={(val) => difficultyOptions.find((mark) => mark.value === val)!.label}
+            step={25}
+            marks={difficultyOptions}
+            style={{ marginTop: marginTop, width: "99%", marginLeft: ".5%" }}
+          />
+          <Text size="md" style={{ marginTop: marginTop2, textAlign: "left", fontSize: "17px", fontWeight: "600" }}>
             Choose Exam:
           </Text>
           <Select
             size="md"
             w="100%"
             mt="md"
-            // label="Select Exam:"
             placeholder="Choose an exam"
             data={examOptions}
-            value={selectedExam} // Ensure `selectedExam` is the `value`
+            value={selectedExam}
             onChange={(value: string | null) => {
               if (value) {
                 handleExamSelection(value);
@@ -180,10 +213,6 @@ export default function DemoExamSetup() {
             required
             disabled={!examLanguage}
           />
-
-          <Space h="xl" />
-
-          {/* Centered Start Exam Button */}
           <Flex justify="center" mt="lg">
             <Button size="md" onClick={handleStartExam} disabled={!examLanguage || !selectedExam}>
               Start Exam
@@ -192,5 +221,6 @@ export default function DemoExamSetup() {
         </Paper>
       </Container>
     </Flex>
+    </div>
   );
 }
