@@ -10,7 +10,7 @@ export function WelcomeBanner() {
 
   const handleExamStart = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/student/demo-exam-setup');
+    router.push('/demo');
   };
 
   const handleOpenDashboard = (e: React.FormEvent) => {

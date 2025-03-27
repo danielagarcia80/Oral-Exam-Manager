@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: any }) {
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme='light' forceColorScheme='light'/>
         <link rel="shortcut icon" href="/favicon.svg" />
         <meta
           name="viewport"
@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-        <MantineProvider theme={theme}>
+        <MantineProvider theme={theme} defaultColorScheme='light' forceColorScheme='light'>
           <AuthProvider>
             <ExamDataProvider>
               {children}
