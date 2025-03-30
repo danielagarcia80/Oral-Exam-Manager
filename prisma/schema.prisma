@@ -9,127 +9,237 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mysql" // change if you're using MySQL or SQLite
   url      = env("DATABASE_URL")
 }
 
-model Test {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  name     String?
-  password String?
+enum Role {
+  INSTRUCTOR
+  STUDENT
+  ADMIN
+}
+
+enum ExamType {
+  ASYNCHRONOUS
+  SYNCHRONOUS
+  PRACTICE
+}
+
+model User {
+  user_id              String   @id @default(uuid())
+  email                String   @unique
+  password             String?  // email/password auth
+  first_name           String
+  last_name            String
+  account_creation_date DateTime
+  otter_id             String?  @unique
+  role                 Role
+
+  // Auth-related fields for OAuth support
+  name                 String?  // e.g., from Google profile
+  image                String?  // profile picture
+  emailVerified        DateTime?
+
+  // Auth-related relations
+  accounts             Account[]
+  sessions             Session[]
+
+  // App-specific relations
+  teaches              Teaches[]
+  enrollments          Enrollment[]
+  submissions          ExamSubmission[]
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String  @map("user_id")
-  type              String
-  provider          String
-  providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [user_id])
 
   @@unique([provider, providerAccountId])
-  @@index([userId], map: "Account_userId_fkey")
-  @@map("accounts")
 }
 
 model Session {
   id           String   @id @default(cuid())
-  sessionToken String   @unique @map("session_token")
-  userId       String   @map("user_id")
+  sessionToken String   @unique
+  userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("sessions")
-}
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  password      String?
-  image         String?
-  isDeleted     Boolean?  @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  role_id       String    
-  roleType      String?   @map("role_type") @default("DEFAULT")
-  role          Role?     @relation(fields: [role_id], references: [uuid])
-  accounts      Account[]
-  sessions      Session[]
-  Token         Token[]
-
-  @@map("users")
+  user User @relation(fields: [userId], references: [user_id])
 }
 
 model VerificationToken {
   identifier String
-  token      String
+  token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("verification_tokens")
 }
 
+model Course {
+  course_id   String     @id @default(uuid())
+  title       String
+  start_date  DateTime
+  end_date    DateTime
 
-
-enum RoleStatus {
-  ACTIVE
-  INACTIVE
-  DELETED
-  PENDING
+  teaches     Teaches[]
+  enrollments Enrollment[]
+  exams       Exam[]
+  outcomes    CourseLearningOutcome[]
 }
 
-model Role {
-  uuid          String      @id @unique @default(uuid())
-  name          String    @unique
-  status        RoleStatus
-  date_created  DateTime    @default(now())
-  date_modified DateTime?
-  tags          String?
-  privileges    Privilege[]
-  users         User[]
-  Token         Token[]
+model Teaches {
+  id            String @id @default(uuid())
+  course        Course @relation(fields: [course_id], references: [course_id])
+  instructor    User   @relation(fields: [instructor_id], references: [user_id])
+  course_id     String
+  instructor_id String
+
+  @@unique([course_id, instructor_id])
 }
 
-model Privilege {
-  uuid          String     @id @default(uuid())
-  action        String
-  resource      String // Renamed 'field' for clarity
-  status        RoleStatus
-  date_created  DateTime   @default(now())
-  date_modified DateTime?
+model Enrollment {
+  enrollment_id String @id @default(uuid())
+  student       User   @relation(fields: [student_id], references: [user_id])
+  course        Course @relation(fields: [course_id], references: [course_id])
+  student_id    String
+  course_id     String
+  status        String @db.VarChar(16)
 
-  role_uuid String
-  role      Role   @relation(fields: [role_uuid], references: [uuid])
-
-  @@index([role_uuid])
+  @@unique([student_id, course_id])
 }
 
-enum TokenStatus {
-  ACTIVE
-  EXPIRED
-  DELETED
-  PENDING
+model Exam {
+  exam_id     String    @id @default(uuid())
+  title       String
+  description String
+  type        ExamType
+  start_date  DateTime
+  end_date    DateTime
+  course      Course    @relation(fields: [course_id], references: [course_id])
+  course_id   String
+
+  submissions ExamSubmission[]
+  questions   ExamIncludesQuestion[]
 }
 
-model Token {
-  uuid         String      @id @default(uuid())
-  date_created DateTime    @default(now())
-  status       TokenStatus
-  token        String
-  role_uuid    String?     @unique
-  user_id      String?     @unique
+model LearningOutcome {
+  learning_outcome_id String @id @default(uuid())
+  description         String
 
-  role Role? @relation(fields: [role_uuid], references: [uuid])
-  user User? @relation(fields: [user_id], references: [id])
+  questions           QuestionAddressesOutcome[]
+  courses             CourseLearningOutcome[]
+}
+
+model CourseLearningOutcome {
+  id                  String          @id @default(uuid())
+  course              Course          @relation(fields: [course_id], references: [course_id])
+  learning_outcome    LearningOutcome @relation(fields: [learning_outcome_id], references: [learning_outcome_id])
+  course_id           String
+  learning_outcome_id String
+
+  @@unique([course_id, learning_outcome_id])
+}
+
+model Keyword {
+  keyword_id String @id @default(uuid())
+  text       String @unique
+
+  questions  QuestionHasKeyword[]
+}
+
+model Question {
+  question_id          String                     @id @default(uuid())
+  text                 String
+  difficulty           Int
+  type                 String
+  source               String
+  max_duration_minutes Int
+
+  keywords             QuestionHasKeyword[]
+  outcomes             QuestionAddressesOutcome[]
+  images               QuestionHasImage[]
+  exams                ExamIncludesQuestion[]
+  uploads              FileUpload[]
+}
+
+model QuestionImages {
+  image_id   String   @id @default(uuid())
+  image_data String
+  questions  QuestionHasImage[]
+}
+
+model QuestionHasKeyword {
+  id          String   @id @default(uuid())
+  question    Question @relation(fields: [question_id], references: [question_id])
+  keyword     Keyword  @relation(fields: [keyword_id], references: [keyword_id])
+  question_id String
+  keyword_id  String
+
+  @@unique([question_id, keyword_id])
+}
+
+model QuestionAddressesOutcome {
+  id                   String          @id @default(uuid())
+  question             Question        @relation(fields: [question_id], references: [question_id])
+  learning_outcome     LearningOutcome @relation(fields: [learning_outcome_id], references: [learning_outcome_id])
+  question_id          String
+  learning_outcome_id  String
+
+  @@unique([question_id, learning_outcome_id])
+}
+
+model QuestionHasImage {
+  id          String         @id @default(uuid())
+  question    Question       @relation(fields: [question_id], references: [question_id])
+  image       QuestionImages @relation(fields: [image_id], references: [image_id])
+  question_id String
+  image_id    String
+
+  @@unique([question_id, image_id])
+}
+
+model ExamIncludesQuestion {
+  id          String   @id @default(uuid())
+  exam        Exam     @relation(fields: [exam_id], references: [exam_id])
+  question    Question @relation(fields: [question_id], references: [question_id])
+  order_index Int
+  exam_id     String
+  question_id String
+
+  @@unique([exam_id, question_id])
+}
+
+model FileUpload {
+  file_id     String   @id @default(uuid())
+  question    Question @relation(fields: [question_id], references: [question_id])
+  question_id String
+  file_name   String
+  file_type   String
+  file_url    String
+  uploaded_at DateTime
+}
+
+model ExamSubmission {
+  submission_id     String   @id @default(uuid())
+  student           User     @relation(fields: [student_id], references: [user_id])
+  exam              Exam     @relation(fields: [exam_id], references: [exam_id])
+  student_id        String
+  exam_id           String
+  submitted_at      DateTime
+  attempt_number    Int
+  recording_url     String
+  duration_minutes  Float
+  grade_percentage  Float
+  feedback          String
 }
