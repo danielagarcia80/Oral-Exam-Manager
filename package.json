@@ -41,6 +41,7 @@
   "homepage": "https://github.com/RNAStructureAnalysisLab/OEM#readme",
   "description": "",
   "dependencies": {
+    "@nestjs/mapped-types": "*",
     "@prisma/client": "^6.3.1",
     "prisma": "^6.3.1"
   },
