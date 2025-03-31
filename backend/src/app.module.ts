@@ -10,6 +10,7 @@ import { PrismaService } from './prisma/prisma.service';
 // import { UserModule } from './user/user.module';
 // import { APP_GUARD } from '@nestjs/core';
 // import { JwtAuthGuard } from './auth/jwt.guard';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { PrismaService } from './prisma/prisma.service';
     // PrivilegeModule,
     // RoleModule,
     // UserModule,
-  ],
+  UserModule],
   controllers: [AppController],
   providers: [
   //   {
