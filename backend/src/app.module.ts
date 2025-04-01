@@ -3,26 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
 import { UserModule } from './user/user.module';
-<<<<<<< Updated upstream
-
-@Module({
-  imports: [
-    // TestModule,
-    // AuthModule,
-    // TokenModule,
-    // PrivilegeModule,
-    // RoleModule,
-    // UserModule,
-  UserModule],
-  controllers: [AppController],
-  providers: [
-  //   {
-  //     provide: APP_GUARD,
-  //     useClass: JwtAuthGuard,
-  //   },
-    AppService,
-    PrismaService,
-=======
 import { CourseModule } from './course/course.module';
 import { TeachesModule } from './teaches/teaches.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
@@ -38,6 +18,7 @@ import { QuestionImageLinkModule } from './question-image-link/question-image-li
 import { ExamQuestionLinkModule } from './exam-question-link/exam-question-link.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
+
 
 @Module({
   imports: [
@@ -57,7 +38,6 @@ import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
     ExamQuestionLinkModule,
     FileUploadModule,
     ExamSubmissionModule,
->>>>>>> Stashed changes
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
