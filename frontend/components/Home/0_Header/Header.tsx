@@ -4,7 +4,7 @@ import { Container, Flex, Group, Image } from '@mantine/core';
 import classes from './Header.module.css';
 
 const links = [
-  { link: '/login', label: 'Login' },
+  { link: '/auth/signin', label: 'Login' },
   { link: '/about', label: 'About' },
 ];
 

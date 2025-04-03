@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @author Shaun Rose <srose@csumb.edu>
  * @description The instructor dashboard is the main interface the instructor uses to manage exams. 
