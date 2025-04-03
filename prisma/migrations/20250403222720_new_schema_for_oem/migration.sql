@@ -1,58 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the `Privilege` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Role` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Test` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Token` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `accounts` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `sessions` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `users` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `verification_tokens` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE `Privilege` DROP FOREIGN KEY `Privilege_role_uuid_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Token` DROP FOREIGN KEY `Token_role_uuid_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Token` DROP FOREIGN KEY `Token_user_id_fkey`;
-
--- DropForeignKey
-ALTER TABLE `accounts` DROP FOREIGN KEY `accounts_user_id_fkey`;
-
--- DropForeignKey
-ALTER TABLE `sessions` DROP FOREIGN KEY `sessions_user_id_fkey`;
-
--- DropForeignKey
-ALTER TABLE `users` DROP FOREIGN KEY `users_role_id_fkey`;
-
--- DropTable
-DROP TABLE `Privilege`;
-
--- DropTable
-DROP TABLE `Role`;
-
--- DropTable
-DROP TABLE `Test`;
-
--- DropTable
-DROP TABLE `Token`;
-
--- DropTable
-DROP TABLE `accounts`;
-
--- DropTable
-DROP TABLE `sessions`;
-
--- DropTable
-DROP TABLE `users`;
-
--- DropTable
-DROP TABLE `verification_tokens`;
-
 -- CreateTable
 CREATE TABLE `User` (
     `user_id` VARCHAR(191) NOT NULL,
@@ -118,6 +63,7 @@ CREATE TABLE `Course` (
     `title` VARCHAR(191) NOT NULL,
     `start_date` DATETIME(3) NOT NULL,
     `end_date` DATETIME(3) NOT NULL,
+    `banner_url` VARCHAR(191) NULL,
 
     PRIMARY KEY (`course_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

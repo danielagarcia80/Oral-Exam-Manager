@@ -91,6 +91,7 @@ model Course {
   title       String
   start_date  DateTime
   end_date    DateTime
+  banner_url  String?
 
   teaches     Teaches[]
   enrollments Enrollment[]
