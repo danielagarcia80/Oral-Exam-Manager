@@ -8,6 +8,8 @@ import { CourseCards } from './1_CourseCards/CourseCards';
 import { UpcomingExams } from './2_UpcomingExams/UpcomingExams';
 import { PastExams } from './3_PastExams/PastExams';
 import { Container, Stack } from '@mantine/core';
+import { InstructorExams } from './2_InstructorExams/InstructorExams';
+import { EnrolledStudents } from './3_EnrolledStudents/EnrolledStudents';
 
 
 export default function Dashboard() {
@@ -31,8 +33,17 @@ export default function Dashboard() {
       <Stack gap="lg">
         <Header />
         <CourseCards isInstructor={isInstructor} />
-        <UpcomingExams />
-        <PastExams />
+        {isInstructor ? (
+          <>
+            <InstructorExams />
+            <EnrolledStudents />
+          </>
+        ) : (
+          <>
+            <UpcomingExams />
+            <PastExams />
+          </>
+        )}
       </Stack>
     </Container>
   );

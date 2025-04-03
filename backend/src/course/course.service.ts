@@ -14,7 +14,7 @@ export class CourseService {
 
   async findAll(): Promise<CourseResponseDto[]> {
     const courses = await this.prisma.course.findMany();
-    return courses.map(this.toCourseResponse);
+    return courses.map((course) => this.toCourseResponse(course));
   }
 
   async findOne(id: string): Promise<CourseResponseDto> {
@@ -31,7 +31,40 @@ export class CourseService {
     return this.toCourseResponse(course);
   }
 
-  private toCourseResponse(course: any): CourseResponseDto {
+  async getCoursesForStudent(userId: string): Promise<CourseResponseDto[]> {
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { student_id: userId },
+      include: { course: true },
+    });
+
+    return enrollments.map((enrollment) => ({
+      course_id: enrollment.course.course_id,
+      title: enrollment.course.title,
+      start_date: enrollment.course.start_date,
+      end_date: enrollment.course.end_date,
+    }));
+  }
+
+  async getCoursesForInstructor(userId: string): Promise<CourseResponseDto[]> {
+    const teaches = await this.prisma.teaches.findMany({
+      where: { instructor_id: userId },
+      include: { course: true },
+    });
+
+    return teaches.map((teaching) => ({
+      course_id: teaching.course.course_id,
+      title: teaching.course.title,
+      start_date: teaching.course.start_date,
+      end_date: teaching.course.end_date,
+    }));
+  }
+
+  private toCourseResponse(course: {
+    course_id: string;
+    title: string;
+    start_date: Date;
+    end_date: Date;
+  }): CourseResponseDto {
     return {
       course_id: course.course_id,
       title: course.title,

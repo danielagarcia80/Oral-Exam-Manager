@@ -26,4 +26,18 @@ export class CourseController {
   delete(@Param('id') id: string): Promise<CourseResponseDto> {
     return this.courseService.delete(id);
   }
+
+  @Get('student/:userId')
+  getCoursesForStudent(
+    @Param('userId') userId: string,
+  ): Promise<CourseResponseDto[]> {
+    return this.courseService.getCoursesForStudent(userId);
+  }
+
+  @Get('instructor/:userId')
+  getCoursesForInstructor(
+    @Param('userId') userId: string,
+  ): Promise<CourseResponseDto[]> {
+    return this.courseService.getCoursesForInstructor(userId);
+  }
 }
