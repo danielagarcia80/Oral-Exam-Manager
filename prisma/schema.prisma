@@ -89,6 +89,7 @@ model VerificationToken {
 model Course {
   course_id   String     @id @default(uuid())
   title       String
+  description String?
   start_date  DateTime
   end_date    DateTime
   banner_url  String?
