@@ -42,4 +42,4 @@ import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,42 +1,47 @@
-import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
 import prisma from '../../../../../common/lib/prisma';
+import bcrypt from 'bcrypt';
+import { NextResponse } from 'next/server';
 
-export async function POST(req: {
-  json: () =>
-    | PromiseLike<{ email: any; password: any; name: any; roleType: any }>
-    | { email: any; password: any; name: any; roleType: any };
-}) {
+export async function POST(req: Request) {
   try {
-    const { email, password, name, roleType } = await req.json();
+    const body = await req.json();
+    const { email, password, first_name, last_name, role } = body;
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    if (!email || !password || !first_name || !last_name || !role) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
 
     if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
-    }
-
-    const role = await prisma.role.findUniqueOrThrow({
-      where:{ name: roleType}
-    })
-    if (!role) {
-      return NextResponse.json({ error: 'Something went wrong' }, { status: 400 });
+      return NextResponse.json({ error: 'User already exists' }, { status: 409 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name, role_id: role?.uuid,  roleType },
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        first_name,
+        last_name,
+        role,
+        account_creation_date: new Date(),
+      },
+      select: {
+        user_id: true,
+        email: true,
+        first_name: true,
+        last_name: true,
+        role: true,
+      },
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json({ user: newUser, message: 'User created successfully' }, { status: 201 });
   } catch (error) {
-    console.log(error);
-    
+    console.error('Registration error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

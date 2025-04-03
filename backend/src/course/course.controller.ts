@@ -1,8 +1,7 @@
-import { Controller, Post, Get, Param, Body, Patch, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Delete } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from './create-course.dto';
 import { CourseResponseDto } from './course-response.dto';
-import { UpdateCourseDto } from './update-course.dto';
 
 @Controller('courses')
 export class CourseController {
@@ -23,13 +22,8 @@ export class CourseController {
     return this.courseService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateCourseDto): Promise<CourseResponseDto> {
-    return this.courseService.update(id, dto);
-  }
-
   @Delete(':id')
-  delete(@Param('id') id: string): Promise<void> {
+  delete(@Param('id') id: string): Promise<CourseResponseDto> {
     return this.courseService.delete(id);
   }
 }
