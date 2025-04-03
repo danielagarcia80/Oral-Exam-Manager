@@ -3,8 +3,8 @@ import '@mantine/core/styles.css';
 import React from 'react';
 import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
 import AuthProvider from '@/components/SessionProvider/SessionProvider';
-import { theme } from '../theme';
 import { ExamDataProvider } from '@/components/Student/Exam/ExamDataProvider';
+import { theme } from '../theme';
 
 export const metadata = {
   title: 'OEM - RNA3DS LAB',
@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: any }) {
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
-        <ColorSchemeScript defaultColorScheme='light' forceColorScheme='light'/>
+        <ColorSchemeScript defaultColorScheme="light" forceColorScheme="light" />
         <link rel="shortcut icon" href="/favicon.svg" />
         <meta
           name="viewport"
@@ -23,11 +23,9 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-        <MantineProvider theme={theme} defaultColorScheme='light' forceColorScheme='light'>
+        <MantineProvider theme={theme} defaultColorScheme="light" forceColorScheme="light">
           <AuthProvider>
-            <ExamDataProvider>
-              {children}
-            </ExamDataProvider>
+            <ExamDataProvider>{children}</ExamDataProvider>
           </AuthProvider>
         </MantineProvider>
       </body>

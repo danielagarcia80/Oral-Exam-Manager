@@ -1,4 +1,4 @@
-import { MantineProvider, Loader } from '@mantine/core';
+import { Loader, MantineProvider } from '@mantine/core';
 import { CssLoader } from './CssLoader';
 
 export default function LoaderComponent() {

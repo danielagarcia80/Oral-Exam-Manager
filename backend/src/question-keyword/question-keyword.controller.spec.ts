@@ -8,7 +8,9 @@ export class QuestionKeywordController {
   constructor(private readonly service: QuestionKeywordService) {}
 
   @Post()
-  async create(@Body() dto: CreateQuestionKeywordDto): Promise<QuestionKeywordResponseDto> {
+  async create(
+    @Body() dto: CreateQuestionKeywordDto,
+  ): Promise<QuestionKeywordResponseDto> {
     return this.service.create(dto);
   }
 

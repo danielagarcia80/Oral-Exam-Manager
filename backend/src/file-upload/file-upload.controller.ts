@@ -8,7 +8,9 @@ export class FileUploadController {
   constructor(private readonly service: FileUploadService) {}
 
   @Post()
-  async create(@Body() dto: CreateFileUploadDto): Promise<FileUploadResponseDto> {
+  async create(
+    @Body() dto: CreateFileUploadDto,
+  ): Promise<FileUploadResponseDto> {
     return this.service.create(dto);
   }
 

@@ -1,87 +1,131 @@
-import { PrismaClient, RoleStatus } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const roles = [
-    {
-      uuid: "87ca7b7a-700e-459c-82f2-1381c6fe090c",
-      name: "ADMIN",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      tags: "",
+  // Hash passwords
+  const hashPassword = async (plain: string) => await bcrypt.hash(plain, 10);
+
+  // Create Instructor
+  const instructor = await prisma.user.create({
+    data: {
+      email: 'instructor0@email.com',
+      password: await hashPassword('instructor0_pass'),
+      first_name: 'Instructor',
+      last_name: 'Zero',
+      role: 'INSTRUCTOR',
+      account_creation_date: new Date(),
     },
-    {
-      uuid: "ae818b0a-5ff2-454d-be4a-1f7cfa4ed7bb",
-      name: "TEACHER",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      tags: "",
+  });
+
+  // Create Course
+  const course = await prisma.course.create({
+    data: {
+      title: 'Intro to CS',
+      start_date: new Date('2025-04-03'),
+      end_date: new Date('2025-07-02'),
+      teaches: {
+        create: {
+          instructor_id: instructor.user_id,
+        },
+      },
     },
-    {
-      uuid: "764fcf70-91f2-4caa-94f3-82a517f78f30",
-      name: "STUDENT",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      tags: "",
+    include: {
+      teaches: true,
     },
-  ];
+  });
 
-  const privileges = [
-    {
-      uuid: "e2f4687a-1fbe-4871-89d0-510bd6c5b7c4",
-      action: "#1100,",
-      resource: "#role,",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      role_uuid: "87ca7b7a-700e-459c-82f2-1381c6fe090c",
+  // Create Learning Outcome
+  const learningOutcome = await prisma.learningOutcome.create({
+    data: {
+      description: 'Understand basic algorithms and data structures.',
     },
-    {
-      uuid: "beddd438-f05b-4d8d-a5b5-8f03c81c9fff",
-      action: "#1100,",
-      resource: "#role,",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      role_uuid: "ae818b0a-5ff2-454d-be4a-1f7cfa4ed7bb",
+  });
+
+  // Link Learning Outcome to Course
+  await prisma.courseLearningOutcome.create({
+    data: {
+      course_id: course.course_id,
+      learning_outcome_id: learningOutcome.learning_outcome_id,
     },
-    
+  });
 
-  ]
+  // Create Students
+  const students = await Promise.all(
+    [0, 1, 2].map(async (i) =>
+      prisma.user.create({
+        data: {
+          email: `student${i}@email.com`,
+          password: await hashPassword(`student${i}_pass`),
+          first_name: `Student${i}`,
+          last_name: 'User',
+          role: 'STUDENT',
+          account_creation_date: new Date(),
+        },
+      })
+    )
+  );
 
-  const users = [
-    {
-      uuid: ""
-    }
-  ]
-  
+  // Enroll Students
+  await Promise.all(
+    students.map((student) =>
+      prisma.enrollment.create({
+        data: {
+          student_id: student.user_id,
+          course_id: course.course_id,
+          status: 'ACTIVE',
+        },
+      })
+    )
+  );
 
-  for (const role of roles) {
-    await prisma.role.upsert({
-      where: { uuid: role.uuid },
-      update: role,
-      create: role,
-    });
-  }
+  // Create Exam
+  const exam = await prisma.exam.create({
+    data: {
+      title: 'Midterm 1',
+      description: 'Basic CS midterm',
+      course_id: course.course_id,
+      type: 'ASYNCHRONOUS',
+      start_date: new Date('2025-04-03'),
+      end_date: new Date('2025-07-02'),
+    },
+  });
 
-  for (const privilege of privileges) {
-    await prisma.privilege.upsert({
-      where: { uuid: privilege.uuid },
-      update: privilege,
-      create: privilege,
-    });
-  }
+  // Create Question
+  const question = await prisma.question.create({
+    data: {
+      text: 'What is a binary search?',
+      difficulty: 2,
+      type: 'EXPLAIN',
+      source: 'Instructor Created',
+      max_duration_minutes: 5,
+    },
+  });
 
-  console.log("Seeding completed!");
+  // Link Question to Exam
+  await prisma.examIncludesQuestion.create({
+    data: {
+      exam_id: exam.exam_id,
+      question_id: question.question_id,
+      order_index: 1,
+    },
+  });
+
+  // Link Question to Learning Outcome
+  await prisma.questionAddressesOutcome.create({
+    data: {
+      question_id: question.question_id,
+      learning_outcome_id: learningOutcome.learning_outcome_id,
+    },
+  });
+
+  console.log('✅ Seed complete!');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {

@@ -7,7 +7,9 @@ import { LearningOutcomeResponseDto } from './learning-outcome-response.dto';
 export class LearningOutcomeService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateLearningOutcomeDto): Promise<LearningOutcomeResponseDto> {
+  async create(
+    data: CreateLearningOutcomeDto,
+  ): Promise<LearningOutcomeResponseDto> {
     return this.prisma.learningOutcome.create({ data });
   }
 

@@ -19,7 +19,6 @@ import { ExamQuestionLinkModule } from './exam-question-link/exam-question-link.
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
 
-
 @Module({
   imports: [
     UserModule,
@@ -42,4 +41,4 @@ import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
-export class AppModule { }
+export class AppModule {}

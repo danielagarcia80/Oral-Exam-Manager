@@ -8,7 +8,9 @@ export class ExamQuestionLinkController {
   constructor(private readonly service: ExamQuestionLinkService) {}
 
   @Post()
-  async create(@Body() dto: CreateExamQuestionLinkDto): Promise<ExamQuestionLinkResponseDto> {
+  async create(
+    @Body() dto: CreateExamQuestionLinkDto,
+  ): Promise<ExamQuestionLinkResponseDto> {
     return this.service.create(dto);
   }
 

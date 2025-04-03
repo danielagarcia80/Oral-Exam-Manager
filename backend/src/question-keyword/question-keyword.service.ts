@@ -7,10 +7,16 @@ import { QuestionKeywordResponseDto } from './question-keyword-response.dto';
 export class QuestionKeywordService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateQuestionKeywordDto): Promise<QuestionKeywordResponseDto> {
+  async create(
+    dto: CreateQuestionKeywordDto,
+  ): Promise<QuestionKeywordResponseDto> {
     // Check if both question and keyword exist
-    const question = await this.prisma.question.findUnique({ where: { question_id: dto.question_id } });
-    const keyword = await this.prisma.keyword.findUnique({ where: { keyword_id: dto.keyword_id } });
+    const question = await this.prisma.question.findUnique({
+      where: { question_id: dto.question_id },
+    });
+    const keyword = await this.prisma.keyword.findUnique({
+      where: { keyword_id: dto.keyword_id },
+    });
 
     if (!question || !keyword) {
       throw new BadRequestException('Invalid question_id or keyword_id');

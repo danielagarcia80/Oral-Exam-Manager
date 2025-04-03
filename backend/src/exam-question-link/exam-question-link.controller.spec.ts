@@ -9,7 +9,9 @@ describe('ExamQuestionLinkController', () => {
       controllers: [ExamQuestionLinkController],
     }).compile();
 
-    controller = module.get<ExamQuestionLinkController>(ExamQuestionLinkController);
+    controller = module.get<ExamQuestionLinkController>(
+      ExamQuestionLinkController,
+    );
   });
 
   it('should be defined', () => {

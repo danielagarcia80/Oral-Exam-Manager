@@ -8,7 +8,9 @@ export class QuestionImageLinkController {
   constructor(private readonly service: QuestionImageLinkService) {}
 
   @Post()
-  async create(@Body() dto: CreateQuestionImageLinkDto): Promise<QuestionImageLinkResponseDto> {
+  async create(
+    @Body() dto: CreateQuestionImageLinkDto,
+  ): Promise<QuestionImageLinkResponseDto> {
     return this.service.create(dto);
   }
 

@@ -7,10 +7,16 @@ import { CourseLearningOutcomeResponseDto } from './course-learning-outcome-resp
 export class CourseLearningOutcomeService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateCourseLearningOutcomeDto): Promise<CourseLearningOutcomeResponseDto> {
+  async create(
+    dto: CreateCourseLearningOutcomeDto,
+  ): Promise<CourseLearningOutcomeResponseDto> {
     // Check course and outcome existence
-    const course = await this.prisma.course.findUnique({ where: { course_id: dto.course_id } });
-    const outcome = await this.prisma.learningOutcome.findUnique({ where: { learning_outcome_id: dto.learning_outcome_id } });
+    const course = await this.prisma.course.findUnique({
+      where: { course_id: dto.course_id },
+    });
+    const outcome = await this.prisma.learningOutcome.findUnique({
+      where: { learning_outcome_id: dto.learning_outcome_id },
+    });
 
     if (!course || !outcome) {
       throw new BadRequestException('Invalid course_id or learning_outcome_id');

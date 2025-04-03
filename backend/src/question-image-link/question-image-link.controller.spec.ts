@@ -9,7 +9,9 @@ describe('QuestionImageLinkController', () => {
       controllers: [QuestionImageLinkController],
     }).compile();
 
-    controller = module.get<QuestionImageLinkController>(QuestionImageLinkController);
+    controller = module.get<QuestionImageLinkController>(
+      QuestionImageLinkController,
+    );
   });
 
   it('should be defined', () => {

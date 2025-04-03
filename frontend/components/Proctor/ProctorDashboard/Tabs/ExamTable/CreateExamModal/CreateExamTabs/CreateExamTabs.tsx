@@ -1,12 +1,12 @@
-import { Container, Tabs, rem } from '@mantine/core';
-import { IconQuestionMark, IconArticle } from '@tabler/icons-react';
+import React, { useState } from 'react';
+import { IconArticle, IconQuestionMark } from '@tabler/icons-react';
+import { Container, rem, Tabs } from '@mantine/core';
+import { useInstructorDataContext } from '@/static/utils/InstructorDataContext/InstructorDataContext';
 import ExamDetails from './ExamDetails/ExamDetails';
 import QuestionDetails from './QuestionDetails/QuestionDetails';
-import React, { useState } from 'react';
-import { useInstructorDataContext } from '@/static/utils/InstructorDataContext/InstructorDataContext';
 
 interface ModalContentProps {
-  closeModal: () => void;  // Prop type declaration for the onClose function
+  closeModal: () => void; // Prop type declaration for the onClose function
   questions: Questions[];
 }
 
@@ -24,8 +24,8 @@ const CreateExamTabs: React.FC<ModalContentProps> = ({ closeModal, questions }) 
   const { selectedCourseId } = useInstructorDataContext();
 
   const handleExamSaved = async (examId: number) => {
-    const questionIds = examLinkedQuestions.map(q => q.question_id);
-    console.log("Linking questions to exams", examLinkedQuestions);
+    const questionIds = examLinkedQuestions.map((q) => q.question_id);
+    console.log('Linking questions to exams', examLinkedQuestions);
     try {
       const response = await fetch(`http://localhost:3001/exams/${examId}/questions`, {
         method: 'PUT',
@@ -59,10 +59,7 @@ const CreateExamTabs: React.FC<ModalContentProps> = ({ closeModal, questions }) 
           </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="exam-details">
-          <ExamDetails
-            closeModal={closeModal}
-            onExamSaved={(examId) => handleExamSaved(examId)}
-          />
+          <ExamDetails closeModal={closeModal} onExamSaved={(examId) => handleExamSaved(examId)} />
         </Tabs.Panel>
         <Tabs.Panel value="questions">
           <QuestionDetails
@@ -74,6 +71,6 @@ const CreateExamTabs: React.FC<ModalContentProps> = ({ closeModal, questions }) 
       </Tabs>
     </>
   );
-}
+};
 
 export default CreateExamTabs;

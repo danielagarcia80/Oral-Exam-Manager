@@ -1,10 +1,11 @@
-import { DateTimePicker } from '@mantine/dates';
-import { Flex, Space } from "@mantine/core";
 import React from 'react';
+import { Flex, Space } from '@mantine/core';
+import { DateTimePicker } from '@mantine/dates';
+
 import '@mantine/dates/styles.css';
 
 interface Props {
-  form: any;  // Use specific form type if available
+  form: any; // Use specific form type if available
 }
 
 export default function DateTimeEntry({ form }: Props) {
@@ -24,8 +25,7 @@ export default function DateTimeEntry({ form }: Props) {
       />
       <Space w="xl" />
       <DateTimePicker
-      
-      size="xl"
+        size="xl"
         clearable
         label="Available Until:"
         placeholder="Pick date and time"

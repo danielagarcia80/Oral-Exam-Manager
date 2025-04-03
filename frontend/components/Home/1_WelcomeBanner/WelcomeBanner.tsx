@@ -1,9 +1,10 @@
-'use client'; // Ensures this is a Client Component
+'use client';
 
-import { Title, Text, Button, Image } from '@mantine/core';
-import classes from './WelcomeBanner.module.css';
-import { useRouter } from "next/navigation";
+// Ensures this is a Client Component
+import { useRouter } from 'next/navigation';
 import { IconDeviceTvOld, IconLogin2, IconUser } from '@tabler/icons-react';
+import { Button, Image, Text, Title } from '@mantine/core';
+import classes from './WelcomeBanner.module.css';
 
 export function WelcomeBanner() {
   const router = useRouter();
@@ -20,7 +21,12 @@ export function WelcomeBanner() {
 
   return (
     <>
-      <Title className={classes.title} ta="center" mt={100} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Title
+        className={classes.title}
+        ta="center"
+        mt={100}
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+      >
         <Image
           style={{ width: '300px', height: '300px' }} // Adjust size here
           src={'/Images/logo.png'}
@@ -30,25 +36,24 @@ export function WelcomeBanner() {
         </Text>
       </Title>
       <Text className={classes.instructions} ta="center">
-        The world's #1 programming assessment platform.
-        -Sameer
+        The world's #1 programming assessment platform. -Sameer
       </Text>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '20px' }}>
-        <Button 
-          size="xl" 
-          className={classes.Button} 
-          onClick={handleExamStart} 
+        <Button
+          size="xl"
+          className={classes.Button}
+          onClick={handleExamStart}
           leftSection={<IconLogin2 size={34} />}
-          style={{ width: '15%' }}  
+          style={{ width: '15%' }}
         >
           Try Demo
         </Button>
-        <Button 
-          size="xl" 
-          className={classes.Button} 
-          onClick={handleOpenDashboard} 
+        <Button
+          size="xl"
+          className={classes.Button}
+          onClick={handleOpenDashboard}
           leftSection={<IconUser size={34} />}
-          style={{ width: '15%' }} 
+          style={{ width: '15%' }}
         >
           Login
         </Button>

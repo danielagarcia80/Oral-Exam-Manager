@@ -1,21 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Table,
-  ScrollArea,
-  UnstyledButton,
-  Group,
-  Text,
-  Center,
-  TextInput,
-  Checkbox,
-  Flex,
+  IconChevronDown,
+  IconChevronUp,
+  IconEdit,
+  IconSearch,
+  IconSelector,
+} from '@tabler/icons-react';
+import {
   Button,
-  rem,
+  Center,
+  Checkbox,
   Container,
-  Divider
+  Divider,
+  Flex,
+  Group,
+  rem,
+  ScrollArea,
+  Table,
+  Text,
+  TextInput,
+  UnstyledButton,
 } from '@mantine/core';
-import { IconSearch, IconChevronDown, IconChevronUp, IconSelector, IconEdit } from '@tabler/icons-react';
-import classes from "./QuestionsByTopic.module.css";
+import classes from './QuestionsByTopic.module.css';
 
 interface RowData {
   question_id: number; // Ensure there is a unique identifier
@@ -27,13 +33,19 @@ interface RowData {
 interface Props {
   questionProp: RowData[];
   examQuestions: RowData[];
-  
+
   setExamQuestions: (newQuestions: RowData[]) => void;
   updateExamQuestions: (newQuestions: RowData[]) => void;
-  closeModal?: () => void
+  closeModal?: () => void;
 }
 
-function QuestionsByTopic({ questionProp, examQuestions, setExamQuestions, updateExamQuestions, closeModal }: Props,  ) {
+function QuestionsByTopic({
+  questionProp,
+  examQuestions,
+  setExamQuestions,
+  updateExamQuestions,
+  closeModal,
+}: Props) {
   const [questions, setQuestions] = useState<RowData[]>(questionProp);
   const [search, setSearch] = useState('');
   const [sortedData, setSortedData] = useState<RowData[]>([]);
@@ -43,40 +55,42 @@ function QuestionsByTopic({ questionProp, examQuestions, setExamQuestions, updat
 
   function updateExams() {
     setExamQuestions(selectedRows);
-    updateExamQuestions(selectedRows)
+    updateExamQuestions(selectedRows);
     if (closeModal) {
-      closeModal();  // Close the modal after updating
+      closeModal(); // Close the modal after updating
     }
   }
 
   useEffect(() => {
     setSortedData(questions);
-    setSelectedRows(examQuestions); 
+    setSelectedRows(examQuestions);
   }, [questions, examQuestions]);
 
   const handleCheckboxChange = (question: RowData, isChecked: boolean) => {
-    setSelectedRows(prev => {
+    setSelectedRows((prev) => {
       if (isChecked) {
         return [...prev, question]; // Add to selected rows
       } else {
-        return prev.filter(item => item.question_id !== question.question_id); // Remove using unique identifier
+        return prev.filter((item) => item.question_id !== question.question_id); // Remove using unique identifier
       }
     });
   };
 
-  const rows = sortedData.map(question => (
+  const rows = sortedData.map((question) => (
     <Table.Tr key={question.question_id}>
       <Table.Td>
         <Flex align="center">
           <Checkbox
             aria-label="Select row"
-            checked={selectedRows.some(row => row.question_id === question.question_id)}
+            checked={selectedRows.some((row) => row.question_id === question.question_id)}
             onChange={(event) => handleCheckboxChange(question, event.currentTarget.checked)}
           />
           <div className={classes.inner}>
             <div>
-            <Text size="xl" style={{fontWeight: 500}}>{question.question_title}</Text>
-            <Text size="xl">{question.question_content}</Text>
+              <Text size="xl" style={{ fontWeight: 500 }}>
+                {question.question_title}
+              </Text>
+              <Text size="xl">{question.question_content}</Text>
             </div>
           </div>
         </Flex>
@@ -98,17 +112,20 @@ function QuestionsByTopic({ questionProp, examQuestions, setExamQuestions, updat
       </Container> */}
       <ScrollArea>
         <Table horizontalSpacing="md" verticalSpacing="xs" layout="fixed" highlightOnHover>
-          <Table.Tbody>
-            {rows}
-          </Table.Tbody>
+          <Table.Tbody>{rows}</Table.Tbody>
         </Table>
       </ScrollArea>
-      
-      <Divider style={{ padding: "20px" }}/>
-      <Flex style={{width: "100%"}}>
-      <Button style={{marginLeft: "35%", marginBottom: "20px"}} size="xl" onClick={updateExams} variant="default">
-        Update Exam Questions
-      </Button>
+
+      <Divider style={{ padding: '20px' }} />
+      <Flex style={{ width: '100%' }}>
+        <Button
+          style={{ marginLeft: '35%', marginBottom: '20px' }}
+          size="xl"
+          onClick={updateExams}
+          variant="default"
+        >
+          Update Exam Questions
+        </Button>
       </Flex>
     </>
   );

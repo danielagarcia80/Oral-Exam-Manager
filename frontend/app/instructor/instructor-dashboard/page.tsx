@@ -1,11 +1,5 @@
-
-// ____________________________________________________________________________________________________________
-
-import InstructorDashboard from "@/components/Proctor/ProctorDashboard/ProctorDashboard";
-import React from "react";
-
-// ____________________________________________________________________________________________________________
-
+import React from 'react';
+import { InstructorDashboard } from '@/components/Instructor/InstructorDashboard/InstructorDashboard';
 const InstructorDashboardPage = () => {
   return (
     <div>

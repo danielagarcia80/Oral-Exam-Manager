@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { FileButton, Button, Group, Text } from '@mantine/core';
+import { useEffect, useState } from 'react';
 import { IconUpload } from '@tabler/icons-react';
+import { Button, FileButton, Group, Text } from '@mantine/core';
 
 interface Props {
   setCodeFile: (content: string) => void;
@@ -16,24 +16,28 @@ export default function FileUploadButton({ setCodeFile }: Props) {
         if (event.target && event.target.result) {
           setCodeFile(event.target.result.toString());
         } else {
-          console.error("Failed to read file");
+          console.error('Failed to read file');
         }
       };
-      reader.readAsText(file); 
+      reader.readAsText(file);
     }
-  }, [file, setCodeFile]); 
+  }, [file, setCodeFile]);
   return (
     <>
-    <Group justify="center" style={{ marginTop: "20px" }}>
-      <FileButton  onChange={setFile}>
-        {(props) => <Button {...props} size="md" color={"red"} leftSection={<IconUpload/>}>Upload Code Here</Button>}
-      </FileButton>
-    </Group>
-    {file && (
-      <Text size="sm" ta="center" mt="sm">
-        Picked file: {file.name}
-      </Text>
-    )}
+      <Group justify="center" style={{ marginTop: '20px' }}>
+        <FileButton onChange={setFile}>
+          {(props) => (
+            <Button {...props} size="md" color={'red'} leftSection={<IconUpload />}>
+              Upload Code Here
+            </Button>
+          )}
+        </FileButton>
+      </Group>
+      {file && (
+        <Text size="sm" ta="center" mt="sm">
+          Picked file: {file.name}
+        </Text>
+      )}
     </>
   );
 }

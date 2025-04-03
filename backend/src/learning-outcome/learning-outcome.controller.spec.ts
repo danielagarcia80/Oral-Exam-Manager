@@ -9,7 +9,9 @@ describe('LearningOutcomeController', () => {
       controllers: [LearningOutcomeController],
     }).compile();
 
-    controller = module.get<LearningOutcomeController>(LearningOutcomeController);
+    controller = module.get<LearningOutcomeController>(
+      LearningOutcomeController,
+    );
   });
 
   it('should be defined', () => {

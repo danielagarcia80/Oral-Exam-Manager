@@ -3,7 +3,6 @@
 import { Button, Group, Paper, Stack, Table, TextInput, Title } from '@mantine/core';
 import { useStudentDashboardStyles } from '../DemoDashboard.styles';
 
-
 type Exam = {
   id: string;
   name: string;
@@ -17,7 +16,6 @@ const mockExams: Exam[] = [
 ];
 
 export function UpcomingExams() {
-
   const styles = useStudentDashboardStyles();
 
   return (

@@ -1,14 +1,23 @@
-import { useState, useEffect, useContext } from 'react';
-import { Divider, Flex, Select, Space, Title, Modal, Button } from '@mantine/core';
-import { IconSwitchHorizontal, IconLogout, IconChalkboard, IconPlus, IconTrash } from '@tabler/icons-react';
-import React from 'react';
-import classes from './SideNavbar.module.css';
-import AddSemesterModal from './AddSemester/AddSemester';
-import AddCourse from './AddCourse/AddCourse';
+import React, { useContext, useEffect, useState } from 'react';
+import {
+  IconChalkboard,
+  IconLogout,
+  IconPlus,
+  IconSwitchHorizontal,
+  IconTrash,
+} from '@tabler/icons-react';
+import { Button, Divider, Flex, Modal, Select, Space, Title } from '@mantine/core';
+import {
+  deleteCourseAPI,
+  fetchCoursesExamsQuestionsAPI,
+  fetchSemestersAPI,
+} from '@/api/instructor/instructorAPIs';
+import GoogleSignInButton from '@/components/Home/Login/GoogleSignInButton';
 import { useInstructorDataContext } from '@/static/utils/InstructorDataContext/InstructorDataContext';
 import { Semester } from '@/static/utils/InstructorDataContext/InstructorDataContextTypes';
-import { fetchSemestersAPI, fetchCoursesExamsQuestionsAPI, deleteCourseAPI } from '@/api/instructor/instructorAPIs';
-import GoogleSignInButton from '@/components/Home/Login/GoogleSignInButton';
+import AddCourse from './AddCourse/AddCourse';
+import AddSemesterModal from './AddSemester/AddSemester';
+import classes from './SideNavbar.module.css';
 
 const SideNavbar: React.FC = () => {
   const { setCourses, setSelectedCourseId, courses, selectedCourseId } = useInstructorDataContext();
@@ -33,7 +42,7 @@ const SideNavbar: React.FC = () => {
 
     const semestersWithAddNew = [
       ...sortedSemesters,
-      { group: ' ', items: [{ value: 'add-new', label: 'Add New Semester' }] }
+      { group: ' ', items: [{ value: 'add-new', label: 'Add New Semester' }] },
     ];
     setSemesters(semestersWithAddNew);
 
@@ -49,14 +58,14 @@ const SideNavbar: React.FC = () => {
     if (!parts) return { year: 0, season: 0 };
 
     const seasonWeight: Record<string, number> = {
-      'Spring': 1,
-      'Summer': 2,
-      'Fall': 3,
-      'Winter': 4
+      Spring: 1,
+      Summer: 2,
+      Fall: 3,
+      Winter: 4,
     };
     return {
       year: parseInt(parts[2], 10),
-      season: seasonWeight[parts[1]] || 0
+      season: seasonWeight[parts[1]] || 0,
     };
   };
 
@@ -65,7 +74,7 @@ const SideNavbar: React.FC = () => {
       if (value === 'add-new') {
         setSemesterModalOpened(true);
       } else {
-        setSelectedSemester(semesters.find(semester => semester.value === value) || null);
+        setSelectedSemester(semesters.find((semester) => semester.value === value) || null);
         setSelectedCourseId(null);
         fetchCoursesExamsQuestions(value);
       }
@@ -80,7 +89,11 @@ const SideNavbar: React.FC = () => {
     }
   };
 
-  const selectCourse = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, courseId: number, courseTitle: string) => {
+  const selectCourse = (
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+    courseId: number,
+    courseTitle: string
+  ) => {
     event.preventDefault();
     setSelectedCourseId(courseId);
   };
@@ -89,7 +102,7 @@ const SideNavbar: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this course?')) {
       const success = await deleteCourseAPI(courseId);
       if (success) {
-        setCourses(courses.filter(course => course.course_id !== courseId));
+        setCourses(courses.filter((course) => course.course_id !== courseId));
         setSelectedCourseId(null);
       }
     }
@@ -99,11 +112,10 @@ const SideNavbar: React.FC = () => {
     <>
       <nav className={classes.navbar}>
         <div className={classes.navbarMain}>
-          
-        <GoogleSignInButton/>
-          <Flex justify='space-between'>
+          <GoogleSignInButton />
+          <Flex justify="space-between">
             {/* here */}
-            
+
             <Title size="1.5rem" className={classes.header}>
               Semester:
             </Title>
@@ -126,22 +138,22 @@ const SideNavbar: React.FC = () => {
           <Space h="md" />
           <Divider />
           <Space h="md" />
-          <Flex justify='space-between'>
+          <Flex justify="space-between">
             <Title size="1.5rem" className={classes.header}>
               Courses:
             </Title>
           </Flex>
-          {courses.map(course => (
+          {courses.map((course) => (
             <div key={course.course_id} className={classes.courseContainer}>
               <a
                 className={classes.link}
                 data-active={course.course_id === selectedCourseId || undefined}
                 href=""
-                onClick={event => selectCourse(event, course.course_id, course.course_title)}
+                onClick={(event) => selectCourse(event, course.course_id, course.course_title)}
               >
                 <Flex>
-                  <IconChalkboard stroke={2.5} style={{ marginRight: "20px" }} />
-                  <span style={{ fontSize: "15px", width: "150px" }}>{course.course_title}</span>
+                  <IconChalkboard stroke={2.5} style={{ marginRight: '20px' }} />
+                  <span style={{ fontSize: '15px', width: '150px' }}>{course.course_title}</span>
                   <Button variant="subtle" onClick={() => deleteCourse(course.course_id)}>
                     <IconTrash size={16} />
                   </Button>
@@ -149,31 +161,23 @@ const SideNavbar: React.FC = () => {
               </a>
             </div>
           ))}
-          <Modal
-            opened={opened}
-            onClose={() => setOpened(false)}
-            title="Adding a course:"
-          >
+          <Modal opened={opened} onClose={() => setOpened(false)} title="Adding a course:">
             <AddCourse semester_id={selectedSemesterId} closeModal={() => setOpened(false)} />
           </Modal>
-          <a
-            className={classes.link}
-            onClick={() => setOpened(true)}
-          >
-            <IconPlus stroke={2.5} style={{ marginRight: "20px" }} />
-            <span style={{ fontSize: "15px" }}>Create a new course</span>
+          <a className={classes.link} onClick={() => setOpened(true)}>
+            <IconPlus stroke={2.5} style={{ marginRight: '20px' }} />
+            <span style={{ fontSize: '15px' }}>Create a new course</span>
           </a>
         </div>
         <div className={classes.footer}>
-          <a href="#" className={classes.link} onClick={event => event.preventDefault()}>
+          <a href="#" className={classes.link} onClick={(event) => event.preventDefault()}>
             <IconSwitchHorizontal className={classes.linkIcon} stroke={1.5} />
             <span>Change account</span>
           </a>
-          <a href="#" className={classes.link} onClick={event => event.preventDefault()}>
+          <a href="#" className={classes.link} onClick={(event) => event.preventDefault()}>
             <IconLogout className={classes.linkIcon} stroke={1.5} />
             <span>Logout</span>
           </a>
-          
         </div>
       </nav>
     </>

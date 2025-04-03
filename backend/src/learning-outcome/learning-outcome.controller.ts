@@ -8,7 +8,9 @@ export class LearningOutcomeController {
   constructor(private readonly service: LearningOutcomeService) {}
 
   @Post()
-  async create(@Body() dto: CreateLearningOutcomeDto): Promise<LearningOutcomeResponseDto> {
+  async create(
+    @Body() dto: CreateLearningOutcomeDto,
+  ): Promise<LearningOutcomeResponseDto> {
     return this.service.create(dto);
   }
 

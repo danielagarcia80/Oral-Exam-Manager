@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Tabs, rem, Flex, Button } from '@mantine/core';
-import { IconUsers, IconQuestionMark, IconArticle } from '@tabler/icons-react';
+import { IconArticle, IconQuestionMark, IconUsers } from '@tabler/icons-react';
+import { Button, Container, Flex, rem, Tabs } from '@mantine/core';
 import ExamDetails from '../CreateExamModal/CreateExamTabs/ExamDetails/ExamDetails';
 import QuestionDetails from '../CreateExamModal/CreateExamTabs/QuestionDetails/QuestionDetails';
 import EditExam from './EditExam/EditExam';
@@ -35,7 +35,9 @@ const EditExamTabs: React.FC<ModalContentProps> = ({ closeModal, questions, curr
     const fetchExamLinkedQuestions = async () => {
       if (currentExam && currentExam.exam_id) {
         try {
-          const response = await fetch(`http://localhost:3001/exams/${currentExam.exam_id}/linked-questions`);
+          const response = await fetch(
+            `http://localhost:3001/exams/${currentExam.exam_id}/linked-questions`
+          );
           if (!response.ok) throw new Error('Failed to fetch linked questions');
           const data = await response.json();
           setExamQuestions(data);
@@ -48,9 +50,8 @@ const EditExamTabs: React.FC<ModalContentProps> = ({ closeModal, questions, curr
     fetchExamLinkedQuestions();
   }, [currentExam]);
 
-
   const handleExamSaved = async (examId: number) => {
-    const questionIds = examLinkedQuestions.map(q => q.question_id);
+    const questionIds = examLinkedQuestions.map((q) => q.question_id);
 
     try {
       const response = await fetch(`http://localhost:3001/exams/${examId}/questions`, {
@@ -84,11 +85,15 @@ const EditExamTabs: React.FC<ModalContentProps> = ({ closeModal, questions, curr
           <EditExam onExamSaved={(examId) => handleExamSaved(examId)} examData={currentExam} />
         </Tabs.Panel>
         <Tabs.Panel value="questions">
-          <EditQuestionDetails updateExamQuestions={setExamQuestions} examLinkedQuestions={examLinkedQuestions} questions={questions} />
+          <EditQuestionDetails
+            updateExamQuestions={setExamQuestions}
+            examLinkedQuestions={examLinkedQuestions}
+            questions={questions}
+          />
         </Tabs.Panel>
       </Tabs>
     </>
   );
-}
+};
 
 export default EditExamTabs;

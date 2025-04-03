@@ -8,7 +8,9 @@ export class EnrollmentController {
   constructor(private readonly enrollmentService: EnrollmentService) {}
 
   @Post()
-  async create(@Body() dto: CreateEnrollmentDto): Promise<EnrollmentResponseDto> {
+  async create(
+    @Body() dto: CreateEnrollmentDto,
+  ): Promise<EnrollmentResponseDto> {
     return this.enrollmentService.create(dto);
   }
 
