@@ -92,8 +92,8 @@ export default function SignIn(props: PaperProps) {
 
         if (role === 'STUDENT') {
           router.push('/student/student-dashboard');
-        } else if (role === 'INSTRUCTOR') {
-          router.push('/instructor/instructor-dashboard');
+        // } else if (role === 'INSTRUCTOR') {
+        //   router.push('/instructor/instructor-dashboard');
         } else {
           router.push('/'); // fallback
         }

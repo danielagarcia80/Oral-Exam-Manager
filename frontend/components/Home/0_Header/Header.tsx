@@ -1,6 +1,9 @@
+'use client';
+
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Container, Flex, Group, Image } from '@mantine/core';
+import { Container, Flex, Group, Image, Button } from '@mantine/core';
+import { useSession, signOut } from 'next-auth/react';
 import classes from './Header.module.css';
 
 const links = [
@@ -11,7 +14,9 @@ const links = [
 export function Header() {
   const [active, setActive] = useState(links[0].link);
   const router = useRouter();
-  
+  const { data: session, status } = useSession();
+  const isLoggedIn = status === 'authenticated';
+
   const items = links.map((link) => (
     <a
       key={link.label}
@@ -19,6 +24,7 @@ export function Header() {
       className={classes.link}
       data-active={active === link.link || undefined}
       onClick={(event) => {
+        event.preventDefault(); // Prevent default anchor behavior
         setActive(link.link);
         router.push(link.link);
       }}
@@ -30,22 +36,33 @@ export function Header() {
   return (
     <header className={classes.header}>
       <Container size="xl" className={classes.inner}>
-      <Flex align="center"> {/* Align items vertically */}
+        <Flex align="center">
           <Image
             radius="md"
             height="50"
             width="auto"
             fit="contain"
-            src="/Images/logo.png" // Correct path referencing the public directory
+            src="/Images/logo.png"
           />
-          <span style={{ marginLeft: '10px' }}> {/* Optional: add spacing between the logo and text */}
+          <span style={{ marginLeft: '10px' }}>
             Code Oriented Oral Exam Manager
           </span>
         </Flex>
+
         <Group justify="space-between" h="100%" grow>
           {items}
+          {isLoggedIn && (
+            <Button
+              variant="outline"
+              color="red"
+              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+            >
+              Logout
+            </Button>
+          )}
         </Group>
       </Container>
     </header>
   );
 }
+
