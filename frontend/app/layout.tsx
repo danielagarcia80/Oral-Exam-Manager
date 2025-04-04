@@ -5,6 +5,7 @@ import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/c
 import AuthProvider from '@/components/SessionProvider/SessionProvider';
 import { ExamDataProvider } from '@/components/Student/Exam/ExamDataProvider';
 import { theme } from '../theme';
+import { Notifications } from '@mantine/notifications';
 
 export const metadata = {
   title: 'OEM - RNA3DS LAB',
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: any }) {
       </head>
       <body>
         <MantineProvider theme={theme} defaultColorScheme="light" forceColorScheme="light">
+          <Notifications position="top-right" />
           <AuthProvider>
             <ExamDataProvider>{children}</ExamDataProvider>
           </AuthProvider>

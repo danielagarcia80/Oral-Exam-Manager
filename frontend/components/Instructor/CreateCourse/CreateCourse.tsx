@@ -1,3 +1,8 @@
+/* Currently you can assign as role to a user whichich is in line with the design
+ * document. However, if users already have a role, and they can only be that role,
+ * then what's the point of evening giving the option? We should rethink this. ]
+*/ 
+
 'use client';
 
 import {
@@ -16,6 +21,7 @@ import { DatePickerInput } from '@mantine/dates';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { notifications } from '@mantine/notifications';
 
 export function CreateCourseForm() {
   const [title, setTitle] = useState('');
@@ -28,7 +34,16 @@ export function CreateCourseForm() {
   const router = useRouter();
   const { data: session } = useSession();
 
+  const [validationErrors, setValidationErrors] = useState<{
+    title?: string;
+    startDate?: string;
+    endDate?: string;
+  }>({});
+  
+
   const handleInviteChange = (index: number, field: 'email' | 'role', value: string) => {
+    if (value === null) {return;}
+
     const updated = [...invites];
     if (field === 'role') {
       updated[index][field] = value.toUpperCase() as 'STUDENT' | 'INSTRUCTOR';
@@ -47,14 +62,34 @@ export function CreateCourseForm() {
     setInvites(updated);
   };
 
+  const validateForm = () => {
+    const errors: typeof validationErrors = {};
+  
+    if (!title.trim()) {errors.title = 'Title is required';}
+    if (!startDate) {errors.startDate = 'Start date is required';}
+    if (!endDate) {errors.endDate = 'End date is required';}
+  
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  
+
   const handleSubmit = async () => {
     if (!session?.accessToken) {
       console.error('User is not authenticated');
       return;
     }
 
-    const formData = new FormData();
+    if (!validateForm()) {
+      notifications.show({
+        title: 'Missing Fields',
+        message: 'Please fill in all required fields.',
+        color: 'red',
+      });
+      return;
+    }
 
+    const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
     formData.append('start_date', startDate?.toISOString() || '');
@@ -73,11 +108,25 @@ export function CreateCourseForm() {
       body: formData,
     });
 
-    if (res.ok) {
-      router.push('/dashboard'); // or show a success screen
-    }else {
-      console.error('Failed to create course:', res.statusText);
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      notifications.show({
+        title: 'Course Creation Failed',
+        message: errorText || 'Something went wrong. Please try again.',
+        color: 'red',
+      });
+      return;
     }
+    
+
+    notifications.show({
+      title: 'Course Created!',
+      message: 'Your course has been successfully created.',
+      color: 'green',
+    });
+    router.push('/dashboard');
+      
   };
 
   return (
@@ -90,6 +139,7 @@ export function CreateCourseForm() {
             label="Course Title"
             value={title}
             onChange={(e) => setTitle(e.currentTarget.value)}
+            error={validationErrors.title}
           />
 
           <Textarea
@@ -133,6 +183,7 @@ export function CreateCourseForm() {
               size="sm"
               radius="md"
               popoverProps={{ withinPortal: true }}
+              error={validationErrors.startDate}
             />
             <DatePickerInput
               label="End Date"
@@ -141,6 +192,7 @@ export function CreateCourseForm() {
               size="sm"
               radius="md"
               popoverProps={{ withinPortal: true }}
+              error={validationErrors.endDate}
             />
           </Group>
 
