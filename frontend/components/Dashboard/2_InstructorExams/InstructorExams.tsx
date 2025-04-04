@@ -57,7 +57,7 @@ export function InstructorExams() {
           <thead>
             <tr>
               <th style={{ textAlign: 'left' }}>Exam Name</th>
-              <th style={{ textAlign: 'left', width: '240px' }}>Start → End</th>
+              <th style={{ textAlign: 'left', width: '240px' }}>Due Date</th>
               <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
             </tr>
           </thead>
@@ -66,7 +66,7 @@ export function InstructorExams() {
               <tr key={exam.exam_id}>
                 <td>{exam.title}</td>
                 <td>
-                  {new Date(exam.start_date).toLocaleString()} →{' '}
+                  {/* {new Date(exam.start_date).toLocaleString()} →{' '} */}
                   {new Date(exam.end_date).toLocaleString()}
                 </td>
                 <td>

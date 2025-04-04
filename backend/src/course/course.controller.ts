@@ -1,3 +1,7 @@
+// Lint was being incredibly frustrating with this file
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Controller,
   Post,
@@ -7,35 +11,46 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CourseService } from './course.service';
-// import { CreateCourseDto } from './create-course.dto';
 import { CourseResponseDto } from './course-response.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('courses')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('banner'))
   async create(
     @UploadedFile() banner: Express.Multer.File,
-    @Body() body: Record<string, any>,
+    @Body() body: any,
+    @Req() req: Request,
   ): Promise<CourseResponseDto> {
-    const banner_url = banner ? `uploads/${banner.originalname}` : null;
+    const instructor_id = (req as any).user?.user_id;
+    const invites = JSON.parse(body.invites ?? '[]') as {
+      email: string;
+      role: 'STUDENT' | 'INSTRUCTOR';
+    }[];
 
-    // manually build what CreateCourseDto would contain
-    const data = {
+    if (!instructor_id) {
+      throw new UnauthorizedException('Instructor ID not found.');
+    }
+
+    return this.courseService.create({
       title: body.title,
-      course_id: body.course_id,
       description: body.description,
       start_date: new Date(body.start_date),
       end_date: new Date(body.end_date),
-      banner_url,
-    };
-
-    return this.courseService.create(data as any); // if needed, cast to `any` for now
+      banner_url: banner ? `uploads/${banner.originalname}` : null,
+      instructor_id,
+      invites,
+    });
   }
 
   @Get()

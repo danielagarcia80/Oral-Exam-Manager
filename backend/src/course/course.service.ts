@@ -7,8 +7,77 @@ import { CourseResponseDto } from './course-response.dto';
 export class CourseService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateCourseDto): Promise<CourseResponseDto> {
-    const course = await this.prisma.course.create({ data });
+  async create(
+    data: CreateCourseDto & {
+      instructor_id: string;
+      invites?: { email: string; role: 'STUDENT' | 'INSTRUCTOR' }[];
+    },
+  ): Promise<CourseResponseDto> {
+    // Destructure instructor_id and invites
+    const { instructor_id, invites, ...courseData } = data;
+
+    // Create the course
+    const course = await this.prisma.course.create({
+      data: courseData,
+    });
+
+    // Link the creating instructor
+    await this.prisma.teaches.create({
+      data: {
+        instructor_id,
+        course_id: course.course_id,
+      },
+    });
+
+    // 👇 Handle additional invites if provided
+    if (invites?.length) {
+      for (const invite of invites) {
+        console.log('[CreateCourse] Processing invite:', invite);
+        const user = await this.prisma.user.findUnique({
+          where: { email: invite.email },
+        });
+
+        if (!user) {
+          console.warn(`[CourseService] User not found: ${invite.email}`);
+          continue;
+        }
+
+        if (invite.role === 'STUDENT') {
+          if (user.role !== 'STUDENT') {
+            console.warn(
+              `[CourseService] Role mismatch: ${invite.email} is not a STUDENT`,
+            );
+            continue;
+          }
+
+          console.log(`[CreateCourse] Enrolling student: ${invite.email}`);
+          await this.prisma.enrollment.create({
+            data: {
+              student_id: user.user_id,
+              course_id: course.course_id,
+              status: 'ACTIVE',
+            },
+          });
+        } else if (invite.role === 'INSTRUCTOR') {
+          if (user.role !== 'INSTRUCTOR') {
+            console.warn(
+              `[CourseService] Role mismatch: ${invite.email} is not an INSTRUCTOR`,
+            );
+            continue;
+          }
+
+          console.log(`[CreateCourse] Adding instructor: ${invite.email}`);
+          await this.prisma.teaches.create({
+            data: {
+              instructor_id: user.user_id,
+              course_id: course.course_id,
+            },
+          });
+        }
+      }
+    }
+
+    // ✅ Return the course as a DTO
     return this.toCourseResponse(course);
   }
 

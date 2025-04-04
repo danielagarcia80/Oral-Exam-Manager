@@ -18,6 +18,7 @@ import { QuestionImageLinkModule } from './question-image-link/question-image-li
 import { ExamQuestionLinkModule } from './exam-question-link/exam-question-link.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
     ExamQuestionLinkModule,
     FileUploadModule,
     ExamSubmissionModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

@@ -2,27 +2,52 @@
 
 import { Button, Group, Paper, Stack, Table, TextInput, Title } from '@mantine/core';
 import { useDashboardStyles } from '../Dashboard.styles';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 type Exam = {
-  id: string;
-  name: string;
-  dueDate: string;
-};
-
-const mockPastExams: Exam[] = [
-  { id: '1', name: 'Quiz 1 - Computer Architecture', dueDate: '2025-02-20' },
-  { id: '2', name: 'Midterm - Algorithms', dueDate: '2025-03-01' },
-  { id: '3', name: 'Practice - Operating Systems', dueDate: '2025-03-10' },
-];
+  exam_id: string;
+  title: string;
+  description: string;
+  type: string;
+  start_date: string;
+  end_date: string;
+  course_id: string;
+}
 
 export function PastExams() {
+  const { data: session } = useSession();
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [search, setSearch] = useState('');
+
   const styles = useDashboardStyles();
+
+  useEffect(() => {
+    const fetchExams = async () => {
+      const userId = session?.user?.id;
+      if (!userId) {return;}
+
+      const res = await fetch(`http://localhost:4000/exams/student/${userId}`);
+
+      const data = await res.json();
+      setExams(data);
+    }
+  })
+
+  const filteredExams = exams.filter((exam) =>
+    exam.title.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <Stack gap="sm" style={styles.section}>
       <Group justify="space-between" align="center">
         <Title order={4}>Past Exams</Title>
-        <TextInput placeholder="Search past exams..." w={250} />
+        <TextInput 
+          placeholder="Search past exams..." 
+          w={250} 
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+        />
       </Group>
 
       <Paper style={styles.tableWrapper}>
@@ -35,10 +60,10 @@ export function PastExams() {
             </tr>
           </thead>
           <tbody>
-            {mockPastExams.map((exam) => (
-              <tr key={exam.id}>
-                <td>{exam.name}</td>
-                <td>{exam.dueDate}</td>
+            {filteredExams.map((exam) => (
+              <tr key={exam.exam_id}>
+                <td>{exam.title}</td>
+                <td>{new Date (exam.end_date).toLocaleString()}</td>
                 <td>
                   <Button size="xs" variant="light">
                     View
