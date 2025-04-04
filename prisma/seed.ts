@@ -1,82 +1,88 @@
-import { PrismaClient, RoleStatus } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+async function hashPassword(password: string) {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
+}
+
 async function main() {
-  const roles = [
-    {
-      uuid: "87ca7b7a-700e-459c-82f2-1381c6fe090c",
-      name: "ADMIN",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      tags: "",
+  // Clear old data
+  await prisma.examSubmission.deleteMany();
+  await prisma.enrollment.deleteMany();
+  await prisma.teaches.deleteMany();
+  await prisma.exam.deleteMany();
+  await prisma.course.deleteMany();
+  await prisma.user.deleteMany();
+
+
+  // Create Instructor
+  const instructor = await prisma.user.create({
+    data: {
+      email: 'instructor0@email.com',
+      password: await hashPassword('instructor0_pass'),
+      first_name: 'Instructor',
+      last_name: 'Zero',
+      role: 'INSTRUCTOR',
+      account_creation_date: new Date(),
     },
-    {
-      uuid: "ae818b0a-5ff2-454d-be4a-1f7cfa4ed7bb",
-      name: "TEACHER",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      tags: "",
+  });
+
+  // Create Student 0
+  const student0 = await prisma.user.create({
+    data: {
+      email: 'student0@email.com',
+      password: await hashPassword('student0_pass'),
+      first_name: 'Student',
+      last_name: 'Zero',
+      role: 'STUDENT',
+      account_creation_date: new Date(),
     },
-    {
-      uuid: "764fcf70-91f2-4caa-94f3-82a517f78f30",
-      name: "STUDENT",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      tags: "",
+  });
+
+  // Create Student 1
+  const student1 = await prisma.user.create({
+    data: {
+      email: 'student1@email.com',
+      password: await hashPassword('student1_pass'),
+      first_name: 'Student',
+      last_name: 'One',
+      role: 'STUDENT',
+      account_creation_date: new Date(),
     },
-  ];
+  });
 
-  const privileges = [
-    {
-      uuid: "e2f4687a-1fbe-4871-89d0-510bd6c5b7c4",
-      action: "#1100,",
-      resource: "#role,",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      role_uuid: "87ca7b7a-700e-459c-82f2-1381c6fe090c",
+  // Create a course
+  const course = await prisma.course.create({
+    data: {
+      title: 'Intro to Computer Science',
+      description: 'An introduction to foundational computer science concepts.',
+      start_date: new Date('2025-04-01'),
+      end_date: new Date('2025-07-01'),
+      banner_url: 'uploads/sample-banner.png',
+      teaches: {
+        create: {
+          instructor_id: instructor.user_id,
+        },
+      },
+      enrollments: {
+        create: [
+          {
+            student_id: student0.user_id,
+            status: 'ENROLLED',
+          },
+          {
+            student_id: student1.user_id,
+            status: 'ENROLLED',
+          },
+        ],
+      },
     },
-    {
-      uuid: "beddd438-f05b-4d8d-a5b5-8f03c81c9fff",
-      action: "#1100,",
-      resource: "#role,",
-      status: RoleStatus.ACTIVE,
-      date_created: new Date(),
-      date_modified: new Date(),
-      role_uuid: "ae818b0a-5ff2-454d-be4a-1f7cfa4ed7bb",
-    },
-    
+  });
 
-  ]
-
-  const users = [
-    {
-      uuid: ""
-    }
-  ]
-  
-
-  for (const role of roles) {
-    await prisma.role.upsert({
-      where: { uuid: role.uuid },
-      update: role,
-      create: role,
-    });
-  }
-
-  for (const privilege of privileges) {
-    await prisma.privilege.upsert({
-      where: { uuid: privilege.uuid },
-      update: privilege,
-      create: privilege,
-    });
-  }
-
-  console.log("Seeding completed!");
+  console.log('Database has been seeded successfully.');
 }
 
 main()

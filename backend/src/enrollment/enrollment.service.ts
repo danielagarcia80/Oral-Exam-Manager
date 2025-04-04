@@ -18,7 +18,9 @@ export class EnrollmentService {
     }
 
     if (user.role !== 'STUDENT') {
-      throw new BadRequestException('Only users with the STUDENT role can be enrolled.');
+      throw new BadRequestException(
+        'Only users with the STUDENT role can be enrolled.',
+      );
     }
 
     // 2. Create the enrollment

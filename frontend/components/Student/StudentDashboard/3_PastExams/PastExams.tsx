@@ -1,8 +1,7 @@
 'use client';
 
-import { Table, TextInput, Title, Group, Stack, Paper, Button } from '@mantine/core';
+import { Button, Group, Paper, Stack, Table, TextInput, Title } from '@mantine/core';
 import { useStudentDashboardStyles } from '../StudentDashboard.styles';
-
 
 type Exam = {
   id: string;
@@ -17,7 +16,6 @@ const mockPastExams: Exam[] = [
 ];
 
 export function PastExams() {
-
   const styles = useStudentDashboardStyles();
 
   return (

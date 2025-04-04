@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { FileButton, Button, Group, Text, Modal, Center } from '@mantine/core';
-import { IconUpload } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { IconUpload } from '@tabler/icons-react';
+import { Button, Center, FileButton, Group, Modal, Text } from '@mantine/core';
 import LoaderComponent from './Loader/Loader';
 
 export default function VideoUploadButton() {
@@ -31,54 +31,63 @@ export default function VideoUploadButton() {
       method: 'POST',
       body: formData,
     })
-    .then(response => {
-      setLoading(false);
-      if (response.ok) {
-        console.log("Upload successful");
-        setUploadSuccess(true);
-      } else {
-        console.error("Upload failed");
+      .then((response) => {
+        setLoading(false);
+        if (response.ok) {
+          console.log('Upload successful');
+          setUploadSuccess(true);
+        } else {
+          console.error('Upload failed');
+          setUploadSuccess(false);
+        }
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.error('Error uploading file:', error);
         setUploadSuccess(false);
-      }
-    })
-    .catch(error => {
-      setLoading(false);
-      console.error("Error uploading file:", error);
-      setUploadSuccess(false);
-    });
+      });
   };
 
   return (
     <>
-      <Group justify="center" style={{ paddingLeft: "20px" }}>
-        <FileButton onChange={(file) => {
-          setFile(file);
-          if (file) handleFileUpload(file);
-        }}>
-          {(props) => <Button {...props} color={"green"} rightSection={<IconUpload/>}>Upload Video</Button>}
+      <Group justify="center" style={{ paddingLeft: '20px' }}>
+        <FileButton
+          onChange={(file) => {
+            setFile(file);
+            if (file) handleFileUpload(file);
+          }}
+        >
+          {(props) => (
+            <Button {...props} color={'green'} rightSection={<IconUpload />}>
+              Upload Video
+            </Button>
+          )}
         </FileButton>
       </Group>
-      <Modal
-        opened={modalOpened}
-        onClose={() => setModalOpened(false)}
-        centered
-        size="xl"
-      >
+      <Modal opened={modalOpened} onClose={() => setModalOpened(false)} centered size="xl">
         <Center style={{ height: '600px' }}>
           {loading ? (
             <>
-            <Text style={{fontSize: "25px"}} size="xl">Uploading your submission, please wait...</Text>
-            <LoaderComponent/>
+              <Text style={{ fontSize: '25px' }} size="xl">
+                Uploading your submission, please wait...
+              </Text>
+              <LoaderComponent />
             </>
           ) : uploadSuccess ? (
             <>
-            <div>
-              <Text ta="center" size="xl">Upload Complete. Thank you for taking the oral exam!</Text>
-              <Text ta="center" size="md">Redirecting in: {countdown} seconds</Text>
+              <div>
+                <Text ta="center" size="xl">
+                  Upload Complete. Thank you for taking the oral exam!
+                </Text>
+                <Text ta="center" size="md">
+                  Redirecting in: {countdown} seconds
+                </Text>
               </div>
             </>
           ) : (
-            <Text ta="center" size="xl">Upload Failed. Please try again.</Text>
+            <Text ta="center" size="xl">
+              Upload Failed. Please try again.
+            </Text>
           )}
         </Center>
       </Modal>

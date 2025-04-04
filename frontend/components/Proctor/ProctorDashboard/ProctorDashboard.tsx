@@ -2,8 +2,8 @@
 
 // /**
 //  * @author Shaun Rose <srose@csumb.edu>
-//  * @description The instructor dashboard is the main interface the instructor uses to manage exams. 
-//  *              It is loaded in the instructor-dashboard.tsx page. 
+//  * @description The instructor dashboard is the main interface the instructor uses to manage exams.
+//  *              It is loaded in the instructor-dashboard.tsx page.
 //  */
 
 // // ____________________________________________________________________________________________________________
@@ -20,9 +20,9 @@
 
 // // ____________________________________________________________________________________________________________
 // /**
-//  * The exams interface is a datatype defined to store exam data from the api and pass it into the 
+//  * The exams interface is a datatype defined to store exam data from the api and pass it into the
 //  * tabs->examTable as a prop.
-//  * 
+//  *
 // */
 
 // interface Exams {
@@ -83,6 +83,5 @@
 //     </>
 //   );
 // };
-
 
 // export default InstructorDashboard;

@@ -9,7 +9,9 @@ describe('CourseLearningOutcomeService', () => {
       providers: [CourseLearningOutcomeService],
     }).compile();
 
-    service = module.get<CourseLearningOutcomeService>(CourseLearningOutcomeService);
+    service = module.get<CourseLearningOutcomeService>(
+      CourseLearningOutcomeService,
+    );
   });
 
   it('should be defined', () => {

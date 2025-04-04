@@ -1,8 +1,8 @@
 'use client';
 
+import { signOut, useSession } from 'next-auth/react';
 import { Button, Flex, Text, TextInput, Title } from '@mantine/core';
 import { useStudentDashboardStyles } from '../StudentDashboard.styles';
-import { useSession, signOut } from 'next-auth/react';
 
 type HeaderProps = {
   studentName?: string;
@@ -30,7 +30,11 @@ export function Header({ studentName = 'Student' }: HeaderProps) {
       <Flex align="center" gap="sm">
         <TextInput placeholder="Search" w={250} />
         {isLoggedIn && (
-          <Button variant="outline" color="red" onClick={() => signOut({ callbackUrl: '/auth/signin' })}>
+          <Button
+            variant="outline"
+            color="red"
+            onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+          >
             Logout
           </Button>
         )}

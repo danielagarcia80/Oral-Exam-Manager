@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Container, Flex, Group, Image, Button } from '@mantine/core';
-import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
+import { Button, Container, Flex, Group, Image } from '@mantine/core';
 import classes from './Header.module.css';
 
 const links = [
@@ -37,16 +37,8 @@ export function Header() {
     <header className={classes.header}>
       <Container size="xl" className={classes.inner}>
         <Flex align="center">
-          <Image
-            radius="md"
-            height="50"
-            width="auto"
-            fit="contain"
-            src="/Images/logo.png"
-          />
-          <span style={{ marginLeft: '10px' }}>
-            Code Oriented Oral Exam Manager
-          </span>
+          <Image radius="md" height="50" width="auto" fit="contain" src="/Images/logo.png" />
+          <span style={{ marginLeft: '10px' }}>Code Oriented Oral Exam Manager</span>
         </Flex>
 
         <Group justify="space-between" h="100%" grow>
@@ -65,4 +57,3 @@ export function Header() {
     </header>
   );
 }
-

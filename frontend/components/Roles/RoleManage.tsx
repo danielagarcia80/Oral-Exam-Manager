@@ -65,12 +65,12 @@ export default function RoleManage({ role }: RoleManageProps) {
           </Group>
         </Table.Td>
         {privilege.action
-          .split(',')[i].replace('#', '')
+          .split(',')
+          [i].replace('#', '')
           .split('')
           .map((char, j) => (
             <Table.Td key={`${resource}-${i}-${j}`}>
-              <Checkbox checked={char === '1'} 
-              onChange={() => handleCheckboxChange(resource, j)} />
+              <Checkbox checked={char === '1'} onChange={() => handleCheckboxChange(resource, j)} />
             </Table.Td>
           ))}
       </Table.Tr>

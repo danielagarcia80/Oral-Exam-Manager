@@ -8,7 +8,6 @@ type HeaderProps = {
 };
 
 export function Header({ studentName = 'Student' }: HeaderProps) {
-
   const styles = useStudentDashboardStyles();
 
   return (

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { ExamContextType, ExamData, QuestionData } from './ExamDataTypes';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import language from 'react-syntax-highlighter/dist/esm/languages/hljs/1c';
+import { ExamContextType, ExamData, QuestionData } from './ExamDataTypes';
 
 const ExamContext = createContext<ExamContextType | undefined>(undefined);
 
 export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [fileString, setFileString] = useState<string>("");
-  const [examLanguage, setExamLanguage] = useState<string>("");
+  const [fileString, setFileString] = useState<string>('');
+  const [examLanguage, setExamLanguage] = useState<string>('');
   const [courseId, setCourseId] = useState<number>(1);
   const [examId, setExamId] = useState<number>(0);
   const [examDetails, setExamDetails] = useState<ExamData | null>(null);
@@ -25,10 +25,10 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const data: { data: ExamData } = await response.json();
       console.log(data);
 
-      const processedQuestions = data.data.questions.map(question => ({
+      const processedQuestions = data.data.questions.map((question) => ({
         ...question,
-        general_keywords: question.keywords.filter(k => k.type === 'general'),
-        context_keywords: question.context_keywords || []
+        general_keywords: question.keywords.filter((k) => k.type === 'general'),
+        context_keywords: question.context_keywords || [],
       }));
 
       const sortedQuestions = processedQuestions.sort((a, b) => {
@@ -42,55 +42,64 @@ export const ExamDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-    // Function to set demo exam details from a local JSON file
-    const setDemoExamDetails = async (selectedLanguage: String, selectedDemoExam: String) => {
-      try {
-        const directory = '/DemoExams/' + selectedLanguage + "/" + selectedDemoExam + "/" + selectedDemoExam + ".json"
-        const response = await fetch(directory);
+  // Function to set demo exam details from a local JSON file
+  const setDemoExamDetails = async (selectedLanguage: String, selectedDemoExam: String) => {
+    try {
+      const directory =
+        '/DemoExams/' +
+        selectedLanguage +
+        '/' +
+        selectedDemoExam +
+        '/' +
+        selectedDemoExam +
+        '.json';
+      const response = await fetch(directory);
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch demo exam details');
-        }
-        const data: ExamData = await response.json();
-
-        const processedQuestions = data.questions.map((question) => ({
-          ...question,
-          general_keywords: question.keywords.filter((k) => k.type === 'general'),
-          context_keywords: question.context_keywords || [],
-        }));
-  
-        // Sorting questions by type
-        const sortedQuestions = processedQuestions.sort((a, b) => {
-          const order: Record<string, number> = { Generalized: 1, Keyword: 2, Context: 3 };
-          return (order[a.question_type] || 4) - (order[b.question_type] || 4);
-        });
-  
-        // Setting the exam details and questions
-        setExamDetails({ ...data, questions: sortedQuestions });
-      } catch (error) {
-        console.error('Error setting demo exam details:', error);
+      if (!response.ok) {
+        throw new Error('Failed to fetch demo exam details');
       }
-    };
+      const data: ExamData = await response.json();
+
+      const processedQuestions = data.questions.map((question) => ({
+        ...question,
+        general_keywords: question.keywords.filter((k) => k.type === 'general'),
+        context_keywords: question.context_keywords || [],
+      }));
+
+      // Sorting questions by type
+      const sortedQuestions = processedQuestions.sort((a, b) => {
+        const order: Record<string, number> = { Generalized: 1, Keyword: 2, Context: 3 };
+        return (order[a.question_type] || 4) - (order[b.question_type] || 4);
+      });
+
+      // Setting the exam details and questions
+      setExamDetails({ ...data, questions: sortedQuestions });
+    } catch (error) {
+      console.error('Error setting demo exam details:', error);
+    }
+  };
 
   return (
-    <ExamContext.Provider value={{
-      fileString,
-      setFileString,
-      examLanguage,
-      setExamLanguage,
-      courseId,
-      examId,
-      setExamId,
-      examDetails,
-      setExamDetails,
-      questions,
-      setQuestions,
-      currentQuestion,
-      setCurrentQuestion,
-      setDemoExamDetails,
-      currentQuestionIndex,
-      setCurrentQuestionIndex,
-    }}>
+    <ExamContext.Provider
+      value={{
+        fileString,
+        setFileString,
+        examLanguage,
+        setExamLanguage,
+        courseId,
+        examId,
+        setExamId,
+        examDetails,
+        setExamDetails,
+        questions,
+        setQuestions,
+        currentQuestion,
+        setCurrentQuestion,
+        setDemoExamDetails,
+        currentQuestionIndex,
+        setCurrentQuestionIndex,
+      }}
+    >
       {children}
     </ExamContext.Provider>
   );

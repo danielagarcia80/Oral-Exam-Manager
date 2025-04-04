@@ -7,12 +7,20 @@ import { QuestionOutcomeResponseDto } from './question-outcome-response.dto';
 export class QuestionOutcomeService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateQuestionOutcomeDto): Promise<QuestionOutcomeResponseDto> {
-    const question = await this.prisma.question.findUnique({ where: { question_id: dto.question_id } });
-    const outcome = await this.prisma.learningOutcome.findUnique({ where: { learning_outcome_id: dto.learning_outcome_id } });
+  async create(
+    dto: CreateQuestionOutcomeDto,
+  ): Promise<QuestionOutcomeResponseDto> {
+    const question = await this.prisma.question.findUnique({
+      where: { question_id: dto.question_id },
+    });
+    const outcome = await this.prisma.learningOutcome.findUnique({
+      where: { learning_outcome_id: dto.learning_outcome_id },
+    });
 
     if (!question || !outcome) {
-      throw new BadRequestException('Invalid question_id or learning_outcome_id');
+      throw new BadRequestException(
+        'Invalid question_id or learning_outcome_id',
+      );
     }
 
     return this.prisma.questionAddressesOutcome.create({ data: dto });

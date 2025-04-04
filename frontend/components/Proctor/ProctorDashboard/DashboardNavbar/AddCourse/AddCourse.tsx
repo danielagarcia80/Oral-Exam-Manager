@@ -1,17 +1,22 @@
-import { Box, Group, TextInput, Button, Divider } from "@mantine/core";
+import { useState } from 'react';
+import { IconDeviceFloppy, IconTrash } from '@tabler/icons-react';
+import { Box, Button, Divider, Group, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconDeviceFloppy, IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
+import {
+  fetchCoursesFromCanvas,
+  fetchStudentsFromCanvas,
+  handleStudentData,
+  studentsRow,
+} from '@/api/instructor/instructorAPIs';
 import classes from './AddCourse.module.css';
-import { fetchStudentsFromCanvas, handleStudentData, fetchCoursesFromCanvas, studentsRow } from "@/api/instructor/instructorAPIs";
 
 // Define a type for the form values
 interface FormValues {
   course_number: string;
   course_title: string;
   course_section: string;
-  course_id: string;  // Canvas course ID
-  canvas_authentication_token: string;  // Canvas API token
+  course_id: string; // Canvas course ID
+  canvas_authentication_token: string; // Canvas API token
 }
 
 interface ModalContentProps {
@@ -33,7 +38,7 @@ const AddCourse: React.FC<ModalContentProps> = ({ closeModal, semester_id }) => 
   const closeForm = () => {
     form.reset();
     close();
-  }
+  };
 
   const [openedMessageModal, setMessageOpened] = useState(false);
   const openMessageModal = () => setMessageOpened(true);
@@ -48,21 +53,19 @@ const AddCourse: React.FC<ModalContentProps> = ({ closeModal, semester_id }) => 
       course_number: '',
       course_title: '',
       course_section: '',
-      course_id: '',  // Initialize course ID field
-      canvas_authentication_token: ''  // Initialize Canvas token field
+      course_id: '', // Initialize course ID field
+      canvas_authentication_token: '', // Initialize Canvas token field
     },
 
-    validate: {
-
-    },
+    validate: {},
   });
 
   const submitCourse = async (values: FormValues) => {
     if (semester_id === undefined) {
-      console.error("No semester ID provided.");
+      console.error('No semester ID provided.');
       return;
     }
-    console.log(values)
+    console.log(values);
     try {
       // API call to create the course
       const courseResponse = await fetch('http://localhost:3001/courses', {
@@ -72,7 +75,7 @@ const AddCourse: React.FC<ModalContentProps> = ({ closeModal, semester_id }) => 
           course_title: values.course_title,
           course_number: values.course_number,
           course_section: values.course_section,
-          semester_id: semester_id,  // Include semester_id in the request
+          semester_id: semester_id, // Include semester_id in the request
         }),
       });
 
@@ -81,11 +84,14 @@ const AddCourse: React.FC<ModalContentProps> = ({ closeModal, semester_id }) => 
         console.log('Course created successfully with ID:', courseData.courseId);
 
         // Retrieve students from Canvas
-        const students = await fetchStudentsFromCanvas(values.course_id, values.canvas_authentication_token);
+        const students = await fetchStudentsFromCanvas(
+          values.course_id,
+          values.canvas_authentication_token
+        );
         if (students) {
           setStudentData(students);
           console.log(students);
-          console.log(courseData)
+          console.log(courseData);
           if (students.length > 0) {
             await handleStudentData(courseData.course_id, students);
           } else {
@@ -106,9 +112,7 @@ const AddCourse: React.FC<ModalContentProps> = ({ closeModal, semester_id }) => 
   return (
     <>
       <Box maw={800} mx="auto">
-        <form onChange={modified}
-          onSubmit={form.onSubmit(submitCourse)}
-        >
+        <form onChange={modified} onSubmit={form.onSubmit(submitCourse)}>
           <TextInput
             withAsterisk
             label="Course Number"
@@ -144,14 +148,14 @@ const AddCourse: React.FC<ModalContentProps> = ({ closeModal, semester_id }) => 
             {...form.getInputProps('canvas_authentication_token')}
             className={classes.inner}
           />
-          <Divider style={{ marginTop: "5%" }} />
+          <Divider style={{ marginTop: '5%' }} />
           <Group justify="center" mt="md">
             <Button
               color="red"
               type="button"
               onClick={handleCancel}
               leftSection={<IconTrash />}
-              style={{ margin: "5%" }}
+              style={{ margin: '5%' }}
             >
               Cancel
             </Button>
@@ -159,7 +163,7 @@ const AddCourse: React.FC<ModalContentProps> = ({ closeModal, semester_id }) => 
               color="green"
               type="submit"
               leftSection={<IconDeviceFloppy />}
-              style={{ margin: "5%" }}
+              style={{ margin: '5%' }}
             >
               Add Course
             </Button>
@@ -174,6 +178,6 @@ const AddCourse: React.FC<ModalContentProps> = ({ closeModal, semester_id }) => 
       </Box>
     </>
   );
-}
+};
 
 export default AddCourse;

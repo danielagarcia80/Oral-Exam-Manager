@@ -8,7 +8,9 @@ export class ExamSubmissionController {
   constructor(private readonly service: ExamSubmissionService) {}
 
   @Post()
-  async create(@Body() dto: CreateExamSubmissionDto): Promise<ExamSubmissionResponseDto> {
+  async create(
+    @Body() dto: CreateExamSubmissionDto,
+  ): Promise<ExamSubmissionResponseDto> {
     return this.service.create(dto);
   }
 

@@ -18,7 +18,6 @@ const mockCourses: Course[] = [
 ];
 
 export function CourseCards() {
-
   const styles = useStudentDashboardStyles();
 
   return (

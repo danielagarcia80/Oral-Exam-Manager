@@ -1,34 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Table,
-  ScrollArea,
-  UnstyledButton,
-  Group,
-  Text,
+  IconArticle,
+  IconChevronDown,
+  IconChevronUp,
+  IconQuestionMark,
+  IconSearch,
+  IconSelector,
+} from '@tabler/icons-react';
+import { format } from 'date-fns';
+import {
   Center,
-  TextInput,
-  rem,
   Flex,
-  NavLink,
+  Group,
   Modal,
-  Skeleton
+  NavLink,
+  rem,
+  ScrollArea,
+  Skeleton,
+  Table,
+  Text,
+  TextInput,
+  UnstyledButton,
 } from '@mantine/core';
-import { IconSelector, IconChevronDown, IconChevronUp, IconSearch, IconArticle, IconQuestionMark } from '@tabler/icons-react';
-import classes from './ExamTable.module.css';
-import CreateExamModal from './CreateExamModal/CreateExamModal';
-import EditExamTabs from './EditExamTabs/EditExamTabs';
 import { useInstructorDataContext } from '@/static/utils/InstructorDataContext/InstructorDataContext';
 import { Exam } from '@/static/utils/InstructorDataContext/InstructorDataContextTypes';
-import { format } from 'date-fns';
+import CreateExamModal from './CreateExamModal/CreateExamModal';
+import EditExamTabs from './EditExamTabs/EditExamTabs';
+import classes from './ExamTable.module.css';
 
 // ____________________________________________________________________________________________________________
 
 const formatDate = (dateString: string) => {
-  if (!dateString) return "N/A";
-  return format(new Date(dateString), "PPpp"); // Example: "Sep 30, 2024, 3:45 PM"
+  if (!dateString) return 'N/A';
+  return format(new Date(dateString), 'PPpp'); // Example: "Sep 30, 2024, 3:45 PM"
 };
 
-function Th({ children, reversed, sorted, onSort }: { children: React.ReactNode; reversed: boolean; sorted: boolean; onSort: () => void; }) {
+function Th({
+  children,
+  reversed,
+  sorted,
+  onSort,
+}: {
+  children: React.ReactNode;
+  reversed: boolean;
+  sorted: boolean;
+  onSort: () => void;
+}) {
   const Icon = sorted ? (reversed ? IconChevronUp : IconChevronDown) : IconSelector;
   return (
     <Table.Th className={classes.th}>
@@ -55,8 +72,8 @@ export function ExamTable() {
   const [currentExam, setCurrentExam] = useState<Exam>();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const selectedCourse = courses.find(course => course.course_id === selectedCourseId);
-  console.log(courses)
+  const selectedCourse = courses.find((course) => course.course_id === selectedCourseId);
+  console.log(courses);
 
   // ----------------------------------------------------------------------------------------------------------
 
@@ -91,7 +108,6 @@ export function ExamTable() {
       payload.search
     );
   };
-
 
   // ----------------------------------------------------------------------------------------------------------
 
@@ -132,11 +148,17 @@ export function ExamTable() {
 
   return (
     <>
-      <Group gap={10} className={classes.links} style={{ margin: "2%" }} justify="space-between" wrap="nowrap">
+      <Group
+        gap={10}
+        className={classes.links}
+        style={{ margin: '2%' }}
+        justify="space-between"
+        wrap="nowrap"
+      >
         <div>
           <TextInput
             size="md"
-            style={{ marginLeft: "1%", marginRight: "1%", width: "100%" }}
+            style={{ marginLeft: '1%', marginRight: '1%', width: '100%' }}
             placeholder="Search for exams"
             leftSection={<IconSearch style={{ width: rem(16), height: rem(16) }} stroke={3.5} />}
             value={search}
@@ -149,62 +171,90 @@ export function ExamTable() {
         <CreateExamModal questions={[]} />
       </Group>
       <ScrollArea className={classes.table}>
-        <Table horizontalSpacing="md" verticalSpacing="xs" miw={700} layout="fixed" withTableBorder >
-        <Table.Thead>
-          <Table.Tr>
-            <Th sorted={sortBy === 'exam_title'} reversed={reverseSortDirection} onSort={() => setSorting('exam_title')}>
-              <Text size="lg" fw={600}>
-                Exam Title
-              </Text>
-            </Th>
-            <Th sorted={sortBy === 'available_from'} reversed={reverseSortDirection} onSort={() => setSorting('available_from')}>
-              <Text size="lg" fw={600}>
-                Available From
-              </Text>
-            </Th>
-            <Th sorted={sortBy === 'available_to'} reversed={reverseSortDirection} onSort={() => setSorting('available_to')}>
-              <Text size="lg" fw={600}>
-                Available To
-              </Text>
-            </Th>
-          </Table.Tr>
+        <Table horizontalSpacing="md" verticalSpacing="xs" miw={700} layout="fixed" withTableBorder>
+          <Table.Thead>
+            <Table.Tr>
+              <Th
+                sorted={sortBy === 'exam_title'}
+                reversed={reverseSortDirection}
+                onSort={() => setSorting('exam_title')}
+              >
+                <Text size="lg" fw={600}>
+                  Exam Title
+                </Text>
+              </Th>
+              <Th
+                sorted={sortBy === 'available_from'}
+                reversed={reverseSortDirection}
+                onSort={() => setSorting('available_from')}
+              >
+                <Text size="lg" fw={600}>
+                  Available From
+                </Text>
+              </Th>
+              <Th
+                sorted={sortBy === 'available_to'}
+                reversed={reverseSortDirection}
+                onSort={() => setSorting('available_to')}
+              >
+                <Text size="lg" fw={600}>
+                  Available To
+                </Text>
+              </Th>
+            </Table.Tr>
           </Table.Thead>
           <Modal
             opened={editModalOpen}
             onClose={() => setEditModalOpen(false)} // Wrap in an arrow function
             fullScreen
           >
-            <EditExamTabs closeModal={() => setEditModalOpen(false)} questions={[]} currentExam={currentExam} />
+            <EditExamTabs
+              closeModal={() => setEditModalOpen(false)}
+              questions={[]}
+              currentExam={currentExam}
+            />
           </Modal>
           <Table.Tbody>
-          {loading ? (
-            Array(5).fill(0).map((_, index) => (
-              <Table.Tr key={index}>
-                <Table.Td><Skeleton height={30} radius="md" animate /></Table.Td>
-                <Table.Td><Skeleton height={30} radius="md" animate /></Table.Td>
-                <Table.Td><Skeleton height={30} radius="md" animate /></Table.Td>
+            {loading ? (
+              Array(5)
+                .fill(0)
+                .map((_, index) => (
+                  <Table.Tr key={index}>
+                    <Table.Td>
+                      <Skeleton height={30} radius="md" animate />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton height={30} radius="md" animate />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton height={30} radius="md" animate />
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+            ) : sortedData.length > 0 ? (
+              sortedData.map((row, index) => (
+                <Table.Tr
+                  key={index}
+                  onClick={() => handleRowClick(row)}
+                  className={classes.clickableRow}
+                >
+                  <Table.Td className={classes.td}>
+                    <Text size="lg">{row.exam_title}</Text>
+                  </Table.Td>
+                  <Table.Td className={classes.td}>
+                    <Text size="lg">{formatDate(row.available_from)}</Text>
+                  </Table.Td>
+                  <Table.Td className={classes.td}>
+                    <Text size="lg">{formatDate(row.available_to)}</Text>
+                  </Table.Td>
+                </Table.Tr>
+              ))
+            ) : (
+              <Table.Tr>
+                <Table.Td colSpan={3}>No exams available</Table.Td>
               </Table.Tr>
-            ))
-          ) : sortedData.length > 0 ? (
-            sortedData.map((row, index) => (
-              <Table.Tr key={index} onClick={() => handleRowClick(row)} className={classes.clickableRow}>
-                <Table.Td className={classes.td}>
-                  <Text size="lg">{row.exam_title}</Text>
-                </Table.Td>
-                <Table.Td className={classes.td}>
-                  <Text size="lg">{formatDate(row.available_from)}</Text>
-                </Table.Td>
-                <Table.Td className={classes.td}>
-                  <Text size="lg">{formatDate(row.available_to)}</Text>
-                </Table.Td>
-              </Table.Tr>
-            ))            
-          ) : (
-            <Table.Tr>
-              <Table.Td colSpan={3}>No exams available</Table.Td>
-            </Table.Tr>
-          )}
-        </Table.Tbody>
+            )}
+          </Table.Tbody>
         </Table>
       </ScrollArea>
     </>

@@ -95,11 +95,9 @@ export const authOptions = {
         name: token.name,
       };
 
-      session.accessToken = jwt.sign(
-        accessTokenPayload,
-        process.env.NEXTAUTH_SECRET!,
-        { expiresIn: '30d' }
-      );
+      session.accessToken = jwt.sign(accessTokenPayload, process.env.NEXTAUTH_SECRET!, {
+        expiresIn: '30d',
+      });
 
       return session;
     },

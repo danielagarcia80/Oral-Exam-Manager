@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn, useSession, getSession } from 'next-auth/react';
+import { getSession, signIn, useSession } from 'next-auth/react';
 import {
   Anchor,
   Button,
@@ -21,7 +21,6 @@ import { useForm } from '@mantine/form';
 import { upperFirst, useToggle } from '@mantine/hooks';
 import { GithubButton } from './GithubButton';
 import { GoogleButton } from './GoogleButton';
-
 
 export default function SignIn(props: PaperProps) {
   const [type, toggle] = useToggle(['login', 'register']);
@@ -46,8 +45,7 @@ export default function SignIn(props: PaperProps) {
     },
     validate: {
       email: (val) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email'),
-      password: (val) =>
-        val.length <= 6 ? 'Password must be at least 6 characters' : null,
+      password: (val) => (val.length <= 6 ? 'Password must be at least 6 characters' : null),
     },
   });
 
@@ -80,7 +78,7 @@ export default function SignIn(props: PaperProps) {
         setError(json.error || 'Registration failed');
       }
     } else {
-        const result = await signIn('credentials', {
+      const result = await signIn('credentials', {
         email: form.values.email,
         password: form.values.password,
         redirect: false,
@@ -90,10 +88,8 @@ export default function SignIn(props: PaperProps) {
         const session = await getSession(); // fetch updated session
         const role = session?.user?.role;
 
-        if (role === 'STUDENT') {
-          router.push('/student/student-dashboard');
-        // } else if (role === 'INSTRUCTOR') {
-        //   router.push('/instructor/instructor-dashboard');
+        if (role === 'STUDENT' || role === 'INSTRUCTOR') {
+          router.push('/dashboard');
         } else {
           router.push('/'); // fallback
         }
@@ -132,9 +128,7 @@ export default function SignIn(props: PaperProps) {
                   label="First Name"
                   placeholder="Your first name"
                   value={form.values.first_name}
-                  onChange={(event) =>
-                    form.setFieldValue('first_name', event.currentTarget.value)
-                  }
+                  onChange={(event) => form.setFieldValue('first_name', event.currentTarget.value)}
                   radius="md"
                   required
                 />
@@ -142,9 +136,7 @@ export default function SignIn(props: PaperProps) {
                   label="Last Name"
                   placeholder="Your last name"
                   value={form.values.last_name}
-                  onChange={(event) =>
-                    form.setFieldValue('last_name', event.currentTarget.value)
-                  }
+                  onChange={(event) => form.setFieldValue('last_name', event.currentTarget.value)}
                   radius="md"
                   required
                 />
@@ -166,9 +158,7 @@ export default function SignIn(props: PaperProps) {
               label="Password"
               placeholder="Your password"
               value={form.values.password}
-              onChange={(event) =>
-                form.setFieldValue('password', event.currentTarget.value)
-              }
+              onChange={(event) => form.setFieldValue('password', event.currentTarget.value)}
               error={form.errors.password}
               radius="md"
             />
@@ -199,13 +189,7 @@ export default function SignIn(props: PaperProps) {
           )}
 
           <Group justify="space-between" mt="xl">
-            <Anchor
-              component="button"
-              type="button"
-              c="dimmed"
-              onClick={() => toggle()}
-              size="xs"
-            >
+            <Anchor component="button" type="button" c="dimmed" onClick={() => toggle()} size="xs">
               {type === 'register'
                 ? 'Already have an account? Login'
                 : "Don't have an account? Register"}

@@ -14,7 +14,8 @@
 .header {
   padding-bottom: var(--mantine-spacing-md);
   /* margin-bottom: calc(var(--mantine-spacing-md) * 1.5); */
-  border-bottom: rem(1px) solid slight-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-bottom: rem(1px) solid
+    slight-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
 }
 
 .footer {
@@ -23,7 +24,7 @@
   border-top: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
 }
 
-.pad { 
+.pad {
   margin-top: 20px;
 }
 
