@@ -1,9 +1,9 @@
-import { IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class CreateTeachesDto {
-  @IsUUID()
-  course_id: string;
-
-  @IsUUID()
+  @IsString()
   instructor_id: string;
+
+  @IsString()
+  course_id: string;
 }
