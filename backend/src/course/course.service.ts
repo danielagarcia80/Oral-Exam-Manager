@@ -32,25 +32,25 @@ export class CourseService {
     // 👇 Handle additional invites if provided
     if (invites?.length) {
       for (const invite of invites) {
-        console.log('[CreateCourse] Processing invite:', invite);
+        // console.log('[CreateCourse] Processing invite:', invite);
         const user = await this.prisma.user.findUnique({
           where: { email: invite.email },
         });
 
         if (!user) {
-          console.warn(`[CourseService] User not found: ${invite.email}`);
+          // console.warn(`[CourseService] User not found: ${invite.email}`);
           continue;
         }
 
         if (invite.role === 'STUDENT') {
           if (user.role !== 'STUDENT') {
-            console.warn(
-              `[CourseService] Role mismatch: ${invite.email} is not a STUDENT`,
-            );
+            // console.warn(
+            //   `[CourseService] Role mismatch: ${invite.email} is not a STUDENT`,
+            // );
             continue;
           }
 
-          console.log(`[CreateCourse] Enrolling student: ${invite.email}`);
+          // console.log(`[CreateCourse] Enrolling student: ${invite.email}`);
           await this.prisma.enrollment.create({
             data: {
               student_id: user.user_id,
@@ -60,13 +60,13 @@ export class CourseService {
           });
         } else if (invite.role === 'INSTRUCTOR') {
           if (user.role !== 'INSTRUCTOR') {
-            console.warn(
-              `[CourseService] Role mismatch: ${invite.email} is not an INSTRUCTOR`,
-            );
+            // console.warn(
+            //   `[CourseService] Role mismatch: ${invite.email} is not an INSTRUCTOR`,
+            // );
             continue;
           }
 
-          console.log(`[CreateCourse] Adding instructor: ${invite.email}`);
+          // console.log(`[CreateCourse] Adding instructor: ${invite.email}`);
           await this.prisma.teaches.create({
             data: {
               instructor_id: user.user_id,
