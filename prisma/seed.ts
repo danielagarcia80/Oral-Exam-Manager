@@ -13,7 +13,16 @@ async function main() {
   await prisma.examSubmission.deleteMany();
   await prisma.enrollment.deleteMany();
   await prisma.teaches.deleteMany();
+
+  await prisma.examIncludesQuestion.deleteMany();
+  await prisma.questionHasKeyword.deleteMany();
+  await prisma.questionHasImage.deleteMany();
+  await prisma.questionAddressesOutcome.deleteMany();
+  await prisma.courseLearningOutcome.deleteMany();
+
   await prisma.exam.deleteMany();
+  await prisma.question.deleteMany();
+  await prisma.learningOutcome.deleteMany();
   await prisma.course.deleteMany();
   await prisma.user.deleteMany();
 
@@ -93,6 +102,72 @@ async function main() {
       },
     },
   });
+
+  // Creating learning outcomes
+  const learningOutcome0 = await prisma.learningOutcome.create({
+    data: {
+      description: 'Understand basic algorithm design and complexity analysis.',
+    },
+  });
+
+  await prisma.courseLearningOutcome.create({
+    data: {
+      course_id: course.course_id,
+      learning_outcome_id: learningOutcome0.learning_outcome_id,
+    },
+  });
+
+
+  const learningOutcome1 = await prisma.learningOutcome.create({
+    data: {
+      description: 'Understand basic process scheduling techniques.',
+    },
+  });
+
+
+  await prisma.courseLearningOutcome.create({
+    data: {
+      course_id: course.course_id,
+      learning_outcome_id: learningOutcome1.learning_outcome_id,
+    },
+  });
+
+  // Creating Questions
+  const question0 = await prisma.question.create({
+    data: {
+      text: 'What is the time complexity of binary search?',
+      difficulty: 1,
+      type: 'multiple-choice',
+      source: 'seeded',
+      max_duration_minutes: 5,
+    },
+  });
+
+  await prisma.questionAddressesOutcome.create({
+    data: {
+      question_id: question0.question_id,
+      learning_outcome_id: learningOutcome0.learning_outcome_id,
+    },
+  });
+
+
+  const question1 = await prisma.question.create({
+    data: {
+      text: 'What is the difference between a preemptive and a non-preemptive process scheduling policy?',
+      difficulty: 1,
+      type: 'free-response',
+      source: 'seeded',
+      max_duration_minutes: 5,
+    },
+  });
+
+  await prisma.questionAddressesOutcome.create({
+    data: {
+      question_id: question1.question_id,
+      learning_outcome_id: learningOutcome1.learning_outcome_id,
+    },
+  });
+
 
   // Add exams to the course
   await prisma.exam.createMany({

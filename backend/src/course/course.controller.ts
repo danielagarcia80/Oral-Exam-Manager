@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// TODO: fix lint issues
 import {
   Controller,
   Post,
@@ -21,6 +22,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { StudentDto } from './student.dto';
 
 @Controller('courses')
 export class CourseController {
@@ -96,5 +98,17 @@ export class CourseController {
     @Param('userId') userId: string,
   ): Promise<CourseResponseDto[]> {
     return this.courseService.getCoursesForInstructor(userId);
+  }
+
+  @Get(':courseId/question-bank')
+  getCourseQuestionBank(@Param('courseId') courseId: string) {
+    return this.courseService.getCourseQuestionBank(courseId);
+  }
+
+  @Get(':courseId/students')
+  getStudentsForCourse(
+    @Param('courseId') courseId: string,
+  ): Promise<StudentDto[]> {
+    return this.courseService.getStudentsForCourse(courseId);
   }
 }

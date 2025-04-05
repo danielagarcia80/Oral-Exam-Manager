@@ -23,4 +23,12 @@ export const useStyles = createStyles((theme) => ({
     borderRadius: theme.radius.md,
     border: `1px solid ${theme.colors.dark[4]}`,
   },
+
+  questionCard: {
+    padding: theme.spacing.sm,
+    border: `1px solid ${theme.colors.dark[4]}`,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.white,
+  },
+  
 }));

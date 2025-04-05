@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './create-course.dto';
 import { CourseResponseDto } from './course-response.dto';
+import { StudentDto } from './student.dto';
 
 @Injectable()
 export class CourseService {
@@ -168,5 +169,44 @@ export class CourseService {
       end_date: course.end_date,
       banner_url: course.banner_url,
     };
+  }
+
+  async getCourseQuestionBank(courseId: string) {
+    const outcomes = await this.prisma.courseLearningOutcome.findMany({
+      where: { course_id: courseId },
+      include: {
+        learning_outcome: {
+          include: {
+            questions: {
+              include: {
+                question: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return outcomes.map((entry) => ({
+      outcomeId: entry.learning_outcome.learning_outcome_id,
+      description: entry.learning_outcome.description,
+      questions: entry.learning_outcome.questions.map((qa) => qa.question),
+    }));
+  }
+
+  async getStudentsForCourse(courseId: string): Promise<StudentDto[]> {
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { course_id: courseId },
+      include: {
+        student: true,
+      },
+    });
+
+    return enrollments.map((e) => ({
+      user_id: e.student.user_id,
+      email: e.student.email,
+      first_name: e.student.first_name,
+      last_name: e.student.last_name,
+    }));
   }
 }

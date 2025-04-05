@@ -10,7 +10,7 @@ import {
   Table,
   Group,
 } from '@mantine/core';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useStyles } from '../CourseDetails.styles';
 
 interface Exam {
@@ -22,6 +22,7 @@ interface Exam {
 }
 
 export function ExamsSection() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = searchParams.get('courseId');
 
@@ -57,7 +58,11 @@ export function ExamsSection() {
             onChange={(e) => setSearch(e.currentTarget.value)}
             w={250}
           />
-          <Button size="sm" variant="light">
+          <Button 
+            size="sm" 
+            variant="light"
+            onClick={() => router.push(`/instructor/create-exam?courseId=${courseId}`)}
+          >
             + New Exam
           </Button>
         </Group>

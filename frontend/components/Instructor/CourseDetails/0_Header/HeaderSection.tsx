@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Group, Stack, Text, Title, Skeleton } from '@mantine/core';
+import { useStyles } from '../CourseDetails.styles';
 
 interface HeaderSectionProps {
   courseId: string;
@@ -18,6 +19,8 @@ interface CourseData {
 
 export function HeaderSection({ courseId }: HeaderSectionProps) {
   const [course, setCourse] = useState<CourseData | null>(null);
+
+  const { classes } = useStyles();
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -38,7 +41,7 @@ export function HeaderSection({ courseId }: HeaderSectionProps) {
   }
 
   return (
-    <Card withBorder radius="md" mb="md" shadow="sm">
+    <Card className={classes.tableWrapper} radius="md" mb="md" shadow="sm">
       <Stack gap="xs">
         <Group justify="space-between">
           <Title order={3}>{course.title}</Title>
@@ -51,10 +54,13 @@ export function HeaderSection({ courseId }: HeaderSectionProps) {
         {course.description && <Text>{course.description}</Text>}
 
         <Group>
-          <Text size="sm">👩‍🏫 Instructors: {course.instructors.join(', ')}</Text>
+          <Text size="sm">
+            👩‍🏫 Instructors: {course.instructors.join(', ')}
+          </Text>
           <Text size="sm">👥 Students: {course.numStudents}</Text>
         </Group>
       </Stack>
     </Card>
+
   );
 }
