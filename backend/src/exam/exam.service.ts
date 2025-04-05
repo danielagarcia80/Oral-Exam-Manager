@@ -64,6 +64,35 @@ export class ExamService {
     }));
   }
 
+  async getPastExamsForUser(userId: string): Promise<ExamResponseDto[]> {
+    const now = new Date();
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { student_id: userId },
+      include: {
+        course: {
+          include: {
+            exams: true,
+          },
+        },
+      },
+    });
+
+    const pastExams = enrollments.flatMap((enrollment) =>
+      enrollment.course.exams.filter((exam) => new Date(exam.end_date) <= now),
+    );
+
+    return pastExams.map((exam) => ({
+      exam_id: exam.exam_id,
+      title: exam.title,
+      description: exam.description,
+      type: exam.type,
+      course_id: exam.course_id,
+      start_date: exam.start_date,
+      end_date: exam.end_date,
+    }));
+  }
+
   async getExamsForInstructor(userId: string): Promise<ExamResponseDto[]> {
     const teaches = await this.prisma.teaches.findMany({
       where: { instructor_id: userId },
@@ -78,6 +107,50 @@ export class ExamService {
       where: {
         course_id: { in: courseIds },
       },
+      orderBy: { start_date: 'asc' },
+    });
+
+    return exams.map((exam) => ({
+      exam_id: exam.exam_id,
+      title: exam.title,
+      description: exam.description,
+      type: exam.type,
+      start_date: exam.start_date,
+      end_date: exam.end_date,
+      course_id: exam.course_id,
+    }));
+  }
+
+  async getAllExamsForStudent(userId: string): Promise<ExamResponseDto[]> {
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { student_id: userId },
+      include: {
+        course: {
+          include: {
+            exams: true,
+          },
+        },
+      },
+    });
+
+    const allExams = enrollments.flatMap(
+      (enrollment) => enrollment.course.exams,
+    );
+
+    return allExams.map((exam) => ({
+      exam_id: exam.exam_id,
+      title: exam.title,
+      description: exam.description,
+      type: exam.type,
+      course_id: exam.course_id,
+      start_date: exam.start_date,
+      end_date: exam.end_date,
+    }));
+  }
+
+  async getExamsForCourse(courseId: string): Promise<ExamResponseDto[]> {
+    const exams = await this.prisma.exam.findMany({
+      where: { course_id: courseId },
       orderBy: { start_date: 'asc' },
     });
 

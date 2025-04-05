@@ -1,6 +1,6 @@
 import { createStyles } from '@mantine/styles';
 
-export const useDashboardStyles = createStyles((theme) => ({
+export const useStyles = createStyles((theme) => ({
   section: {
     marginBottom: theme.spacing.lg,
   },

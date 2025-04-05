@@ -26,7 +26,7 @@ export function EnrolledStudents() {
   const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState('');
 
-  const styles = useDashboardStyles();
+  const { classes } = useDashboardStyles();
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -49,7 +49,7 @@ export function EnrolledStudents() {
   );
 
   return (
-    <Stack gap="sm" style={styles.section}>
+    <Stack gap="sm" className={classes.section}>
       <Group justify="space-between" align="center">
         <Title order={4}>Enrolled Students</Title>
         <TextInput
@@ -60,7 +60,7 @@ export function EnrolledStudents() {
         />
       </Group>
 
-      <Paper style={styles.tableWrapper}>
+      <Paper className={classes.tableWrapper}>
         <Table highlightOnHover>
           <thead>
             <tr>

@@ -20,7 +20,7 @@ export function InstructorExams() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [search, setSearch] = useState('');
 
-  const styles = useDashboardStyles();
+  const { classes } = useDashboardStyles();
 
   useEffect(() => {
     const fetchExams = async () => {
@@ -41,7 +41,7 @@ export function InstructorExams() {
   );
 
   return (
-    <Stack gap="sm" style={styles.section}>
+    <Stack gap="sm" className={classes.section}>
       <Group justify="space-between" align="center">
         <Title order={4}>Your Exams</Title>
         <TextInput
@@ -52,7 +52,7 @@ export function InstructorExams() {
         />
       </Group>
 
-      <Paper style={styles.tableWrapper}>
+      <Paper className={classes.tableWrapper}>
         <Table highlightOnHover>
           <thead>
             <tr>

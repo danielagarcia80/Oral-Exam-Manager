@@ -9,7 +9,7 @@ type HeaderProps = {
 };
 
 export function Header({ studentName = 'Student' }: HeaderProps) {
-  const styles = useDashboardStyles();
+  const { classes } = useDashboardStyles();
   const { data: session, status } = useSession();
 
   const isLoggedIn = status === 'authenticated';
@@ -17,7 +17,7 @@ export function Header({ studentName = 'Student' }: HeaderProps) {
   const userRole = session?.user?.role;
 
   return (
-    <Flex justify="space-between" align="center" style={styles.section}>
+    <Flex justify="space-between" align="center" className={classes.section}>
       <div>
         <Title order={2}>Hello, {userName}</Title>
         {isLoggedIn && (

@@ -17,7 +17,7 @@ export class ExamController {
     return this.examService.findAll();
   }
 
-  @Get('upcoming/:userId')
+  @Get('student/upcoming/:userId')
   getUpcomingExams(
     @Param('userId') userId: string,
   ): Promise<ExamResponseDto[]> {
@@ -29,5 +29,24 @@ export class ExamController {
     @Param('userId') userId: string,
   ): Promise<ExamResponseDto[]> {
     return this.examService.getExamsForInstructor(userId);
+  }
+
+  @Get('student/past/:userId')
+  getPastExams(@Param('userId') userId: string): Promise<ExamResponseDto[]> {
+    return this.examService.getPastExamsForUser(userId);
+  }
+
+  @Get('student/:userId')
+  getAllExamsForStudent(
+    @Param('userId') userId: string,
+  ): Promise<ExamResponseDto[]> {
+    return this.examService.getAllExamsForStudent(userId);
+  }
+
+  @Get('course/:courseId')
+  getExamsForCourse(
+    @Param('courseId') courseId: string,
+  ): Promise<ExamResponseDto[]> {
+    return this.examService.getExamsForCourse(courseId);
   }
 }

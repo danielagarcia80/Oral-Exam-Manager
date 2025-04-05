@@ -20,12 +20,12 @@ export function UpcomingExams() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [search, setSearch] = useState('');
   
-  const styles = useDashboardStyles();
+  const { classes } = useDashboardStyles();
 
   useEffect(() => {
     const fetchExams = async () => {
       const userId = session?.user?.id;
-      if (!userId) return;
+      if (!userId) {return;}
 
       const res = await fetch(`http://localhost:4000/exams/upcoming/${userId}`);
       if (!res.ok) {
@@ -45,7 +45,7 @@ export function UpcomingExams() {
   );
 
   return (
-    <Stack gap="sm" style={styles.section}>
+    <Stack gap="sm" className={classes.section}>
       <Group justify="space-between" align="center">
         <Title order={4}>Upcoming Exams</Title>
         <TextInput
@@ -56,7 +56,7 @@ export function UpcomingExams() {
         />
       </Group>
 
-      <Paper style={styles.tableWrapper}>
+      <Paper className={classes.tableWrapper}>
         <Table highlightOnHover>
           <thead>
             <tr>
