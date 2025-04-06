@@ -1,4 +1,4 @@
-import { Grid, Card, Text, TextInput, Stack } from '@mantine/core';
+import { Grid, Card, Text, TextInput, Stack, Group, Title } from '@mantine/core';
 import { AddCourseCard } from './AddCourseCard';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -47,12 +47,14 @@ export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
 
   return (
     <Stack mb="lg">
-      <TextInput
-        placeholder="Search courses..."
-        value={search}
-        onChange={(e) => setSearch(e.currentTarget.value)}
-        maw={300}
-      />
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <TextInput
+          placeholder="Search courses..."
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+          w={250}
+        />
+      </div>
 
       <Grid gutter="md">
         {filteredCourses.map((course) => (

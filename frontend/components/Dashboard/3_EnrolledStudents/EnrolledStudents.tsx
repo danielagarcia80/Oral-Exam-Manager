@@ -51,7 +51,7 @@ export function EnrolledStudents() {
   return (
     <Stack gap="sm" className={classes.section}>
       <Group justify="space-between" align="center">
-        <Title order={4}>Enrolled Students</Title>
+        <Title order={4}>Your Students</Title>
         <TextInput
           placeholder="Search students..."
           w={250}
