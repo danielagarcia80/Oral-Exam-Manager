@@ -1,4 +1,4 @@
-import { Grid, Card, Text, TextInput, Stack, Group, Title } from '@mantine/core';
+import { Grid, Card, Text, TextInput, Stack } from '@mantine/core';
 import { AddCourseCard } from './AddCourseCard';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
