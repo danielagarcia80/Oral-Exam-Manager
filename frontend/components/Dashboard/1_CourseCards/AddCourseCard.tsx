@@ -7,11 +7,11 @@ import { useDashboardStyles } from '../Dashboard.styles';
 
 export function AddCourseCard() {
   const router = useRouter();
-  const styles = useDashboardStyles();
+  const { classes } = useDashboardStyles();
 
   return (
     <Card
-      style= {styles.courseCard}
+    className={classes.courseCard}
       onClick={() => router.push('/instructor/create-course')}
     >
       <Center style={{ height: '100%', flexDirection: 'column' }}>

@@ -1,6 +1,6 @@
 import { createStyles } from '@mantine/styles';
 
-export const useDashboardStyles = createStyles((theme) => ({
+export const useStyles = createStyles((theme) => ({
   section: {
     marginBottom: theme.spacing.lg,
   },
@@ -23,4 +23,12 @@ export const useDashboardStyles = createStyles((theme) => ({
     borderRadius: theme.radius.md,
     border: `1px solid ${theme.colors.dark[4]}`,
   },
+
+  questionCard: {
+    padding: theme.spacing.sm,
+    border: `1px solid ${theme.colors.dark[4]}`,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.white,
+  },
+  
 }));

@@ -1,62 +1,63 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import {
   Stack,
-  Group,
   Title,
   TextInput,
-  Paper,
   Table,
-  Button,
+  Paper,
+  Group,
 } from '@mantine/core';
-import { useDashboardStyles } from '../Dashboard.styles'; // adjust if path differs
+import { useSearchParams } from 'next/navigation';
+import { useStyles } from '../CourseDetails.styles';
 
-type Student = {
+interface Student {
   user_id: string;
   first_name: string;
   last_name: string;
   email: string;
-  role: string;
-};
+}
 
-export function EnrolledStudents() {
-  const { data: session } = useSession();
+export function StudentsSection() {
+  const { classes } = useStyles();
   const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState('');
-
-  const { classes } = useDashboardStyles();
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get('courseId');
 
   useEffect(() => {
     const fetchStudents = async () => {
-      const userId = session?.user?.id;
-      if (!userId) {return;}
+      if (!courseId) {return;}
 
-      const res = await fetch(`http://localhost:4000/users/instructor/${userId}/students`);
+      const res = await fetch(`http://localhost:4000/courses/${courseId}/students`);
+      if (!res.ok) {
+        console.error('Failed to fetch students');
+        return;
+      }
 
       const data = await res.json();
       setStudents(data);
     };
 
     fetchStudents();
-  }, [session?.user?.id]);
+  }, [courseId]);
 
-  const filteredStudents = students.filter((student) =>
-    `${student.first_name} ${student.last_name}`
+  const filtered = students.filter((s) =>
+    `${s.first_name} ${s.last_name} ${s.email}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
 
   return (
-    <Stack gap="sm" className={classes.section}>
+    <Stack className={classes.section}>
       <Group justify="space-between" align="center">
-        <Title order={4}>Your Students</Title>
+        <Title order={4}>Enrolled Students</Title>
         <TextInput
           placeholder="Search students..."
-          w={250}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
+          w={250}
         />
       </Group>
 
@@ -64,21 +65,17 @@ export function EnrolledStudents() {
         <Table highlightOnHover>
           <thead>
             <tr>
-              <th style={{ textAlign: 'left' }}>Name</th>
+              <th style={{ textAlign: 'left' }}>First Name</th>
+              <th style={{ textAlign: 'left' }}>Last Name</th>
               <th style={{ textAlign: 'left' }}>Email</th>
-              <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredStudents.map((student) => (
+            {filtered.map((student) => (
               <tr key={student.user_id}>
-                <td>{student.first_name} {student.last_name}</td>
+                <td>{student.first_name}</td>
+                <td>{student.last_name}</td>
                 <td>{student.email}</td>
-                <td>
-                  <Button size="xs" variant="light">
-                    View
-                  </Button>
-                </td>
               </tr>
             ))}
           </tbody>

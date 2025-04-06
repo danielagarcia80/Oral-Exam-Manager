@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, Delete, Param } from '@nestjs/common';
 import { ExamQuestionLinkService } from './exam-question-link.service';
 import { CreateExamQuestionLinkDto } from './create-exam-question-link.dto';
 import { ExamQuestionLinkResponseDto } from './exam-question-link-response.dto';
@@ -17,5 +17,10 @@ export class ExamQuestionLinkController {
   @Get()
   async findAll(): Promise<ExamQuestionLinkResponseDto[]> {
     return this.service.findAll();
+  }
+
+  @Delete(':examId')
+  removeAll(@Param('examId') examId: string) {
+    return this.service.removeAllFromExam(examId);
   }
 }

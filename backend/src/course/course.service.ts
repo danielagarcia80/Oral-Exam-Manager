@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './create-course.dto';
 import { CourseResponseDto } from './course-response.dto';
+import { StudentDto } from './student.dto';
 
 @Injectable()
 export class CourseService {
@@ -106,12 +107,9 @@ export class CourseService {
       include: { course: true },
     });
 
-    return enrollments.map((enrollment) => ({
-      course_id: enrollment.course.course_id,
-      title: enrollment.course.title,
-      start_date: enrollment.course.start_date,
-      end_date: enrollment.course.end_date,
-    }));
+    return enrollments.map((enrollment) =>
+      this.toCourseResponse(enrollment.course),
+    );
   }
 
   async getCoursesForInstructor(userId: string): Promise<CourseResponseDto[]> {
@@ -120,25 +118,95 @@ export class CourseService {
       include: { course: true },
     });
 
-    return teaches.map((teaching) => ({
-      course_id: teaching.course.course_id,
-      title: teaching.course.title,
-      start_date: teaching.course.start_date,
-      end_date: teaching.course.end_date,
-    }));
+    return teaches.map((teaching) => this.toCourseResponse(teaching.course));
+  }
+
+  async getCourseDetails(courseId: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { course_id: courseId },
+      include: {
+        teaches: {
+          include: { instructor: true }, // user relation
+        },
+        enrollments: true,
+      },
+    });
+
+    if (!course) throw new NotFoundException('Course not found');
+
+    const instructorNames = course.teaches.map((t) => {
+      const first = t.instructor?.first_name || '';
+      const last = t.instructor?.last_name || '';
+      return `${first} ${last}`.trim();
+    });
+
+    const numStudents = course.enrollments.length;
+
+    return {
+      title: course.title,
+      description: course.description,
+      start_date: course.start_date,
+      end_date: course.end_date,
+      instructors: instructorNames,
+      numStudents,
+      banner_url: course.banner_url,
+    };
   }
 
   private toCourseResponse(course: {
     course_id: string;
     title: string;
+    description: string;
     start_date: Date;
     end_date: Date;
+    banner_url: string;
   }): CourseResponseDto {
     return {
       course_id: course.course_id,
       title: course.title,
+      description: course.description,
       start_date: course.start_date,
       end_date: course.end_date,
+      banner_url: course.banner_url,
     };
+  }
+
+  async getCourseQuestionBank(courseId: string) {
+    const outcomes = await this.prisma.courseLearningOutcome.findMany({
+      where: { course_id: courseId },
+      include: {
+        learning_outcome: {
+          include: {
+            questions: {
+              include: {
+                question: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return outcomes.map((entry) => ({
+      outcomeId: entry.learning_outcome.learning_outcome_id,
+      description: entry.learning_outcome.description,
+      questions: entry.learning_outcome.questions.map((qa) => qa.question),
+    }));
+  }
+
+  async getStudentsForCourse(courseId: string): Promise<StudentDto[]> {
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { course_id: courseId },
+      include: {
+        student: true,
+      },
+    });
+
+    return enrollments.map((e) => ({
+      user_id: e.student.user_id,
+      email: e.student.email,
+      first_name: e.student.first_name,
+      last_name: e.student.last_name,
+    }));
   }
 }

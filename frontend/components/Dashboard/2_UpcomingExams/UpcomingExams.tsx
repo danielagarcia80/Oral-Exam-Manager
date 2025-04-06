@@ -13,6 +13,9 @@ type Exam = {
   start_date: string;
   end_date: string;
   course_id: string;
+  course?: {
+    title: string;
+  };
 };
 
 export function UpcomingExams() {
@@ -20,14 +23,14 @@ export function UpcomingExams() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [search, setSearch] = useState('');
   
-  const styles = useDashboardStyles();
+  const { classes } = useDashboardStyles();
 
   useEffect(() => {
     const fetchExams = async () => {
       const userId = session?.user?.id;
-      if (!userId) return;
+      if (!userId) {return;}
 
-      const res = await fetch(`http://localhost:4000/exams/upcoming/${userId}`);
+      const res = await fetch(`http://localhost:4000/exams/student/upcoming/${userId}`);
       if (!res.ok) {
         console.error('Failed to fetch upcoming exams');
         return;
@@ -45,7 +48,7 @@ export function UpcomingExams() {
   );
 
   return (
-    <Stack gap="sm" style={styles.section}>
+    <Stack gap="sm" className={classes.section}>
       <Group justify="space-between" align="center">
         <Title order={4}>Upcoming Exams</Title>
         <TextInput
@@ -56,11 +59,12 @@ export function UpcomingExams() {
         />
       </Group>
 
-      <Paper style={styles.tableWrapper}>
+      <Paper className={classes.tableWrapper}>
         <Table highlightOnHover>
           <thead>
             <tr>
               <th style={{ textAlign: 'left' }}>Exam Name</th>
+              <th style={{ textAlign: 'left' }}>Course</th>
               <th style={{ textAlign: 'left', width: '240px' }}>Due Date</th>
               <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
             </tr>
@@ -69,6 +73,7 @@ export function UpcomingExams() {
             {filteredExams.map((exam) => (
               <tr key={exam.exam_id}>
                 <td>{exam.title}</td>
+                <td>{exam.course?.title}</td>
                 <td>{new Date(exam.end_date).toLocaleString()}</td>
                 <td>
                   <Button size="xs" variant="light">

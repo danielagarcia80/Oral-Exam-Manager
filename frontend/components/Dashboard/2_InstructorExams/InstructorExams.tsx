@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Stack, Group, Title, TextInput, Paper, Table, Button } from '@mantine/core';
 import { useDashboardStyles } from '../Dashboard.styles';
+import { useRouter } from 'next/navigation';
 
 type Exam = {
   exam_id: string;
@@ -13,6 +14,9 @@ type Exam = {
   start_date: string;
   end_date: string;
   course_id: string;
+  course?: {
+    title: string;
+  };
 };
 
 export function InstructorExams() {
@@ -20,7 +24,9 @@ export function InstructorExams() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [search, setSearch] = useState('');
 
-  const styles = useDashboardStyles();
+  const router = useRouter();
+
+  const { classes } = useDashboardStyles();
 
   useEffect(() => {
     const fetchExams = async () => {
@@ -41,7 +47,7 @@ export function InstructorExams() {
   );
 
   return (
-    <Stack gap="sm" style={styles.section}>
+    <Stack gap="sm" className={classes.section}>
       <Group justify="space-between" align="center">
         <Title order={4}>Your Exams</Title>
         <TextInput
@@ -52,11 +58,12 @@ export function InstructorExams() {
         />
       </Group>
 
-      <Paper style={styles.tableWrapper}>
+      <Paper className={classes.tableWrapper}>
         <Table highlightOnHover>
           <thead>
             <tr>
               <th style={{ textAlign: 'left' }}>Exam Name</th>
+              <th style={{ textAlign: 'left' }}>Course</th>
               <th style={{ textAlign: 'left', width: '240px' }}>Due Date</th>
               <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
             </tr>
@@ -65,12 +72,17 @@ export function InstructorExams() {
             {filteredExams.map((exam) => (
               <tr key={exam.exam_id}>
                 <td>{exam.title}</td>
+                <td>{exam.course?.title}</td>
                 <td>
                   {/* {new Date(exam.start_date).toLocaleString()} →{' '} */}
                   {new Date(exam.end_date).toLocaleString()}
                 </td>
                 <td>
-                  <Button size="xs" variant="light">
+                  <Button 
+                    size="xs" 
+                    variant="light"
+                    onClick={() => router.push(`/instructor/edit-exam?examId=${exam.exam_id}&courseId=${exam.course_id}`)}
+                  >
                     View
                   </Button>
                 </td>

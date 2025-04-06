@@ -1,7 +1,7 @@
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
-import { Button, Flex, Text, TextInput, Title } from '@mantine/core';
+import { Button, Flex, Text, Title } from '@mantine/core';
 import { useDashboardStyles } from '../Dashboard.styles';
 
 type HeaderProps = {
@@ -9,7 +9,7 @@ type HeaderProps = {
 };
 
 export function Header({ studentName = 'Student' }: HeaderProps) {
-  const styles = useDashboardStyles();
+  const { classes } = useDashboardStyles();
   const { data: session, status } = useSession();
 
   const isLoggedIn = status === 'authenticated';
@@ -17,7 +17,7 @@ export function Header({ studentName = 'Student' }: HeaderProps) {
   const userRole = session?.user?.role;
 
   return (
-    <Flex justify="space-between" align="center" style={styles.section}>
+    <Flex justify="space-between" align="center" className={classes.section}>
       <div>
         <Title order={2}>Hello, {userName}</Title>
         {isLoggedIn && (
@@ -28,7 +28,6 @@ export function Header({ studentName = 'Student' }: HeaderProps) {
       </div>
 
       <Flex align="center" gap="sm">
-        <TextInput placeholder="Search" w={250} />
         {isLoggedIn && (
           <Button
             variant="outline"
