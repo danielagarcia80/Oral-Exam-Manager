@@ -1,18 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button, Container, Stack } from '@mantine/core';
 import { ExamDetails } from './ExamDetails/ExamDetails';
 import { QuestionSelection } from './QuestionSelection/QuestionSelection';
+import { Button, Container, Loader, Stack } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 
-export default function CreateExam() {
-  const router = useRouter();
+export default function EditExam() {
   const searchParams = useSearchParams();
-  const courseId = searchParams.get('courseId');
+  const examId = searchParams.get('examId');
+  const router = useRouter();
 
-  // Exam form state
+  const [loading, setLoading] = useState(true);
+  const [courseId, setCourseId] = useState<string | null>(null);
+
+  // Exam state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [examType, setExamType] = useState('');
@@ -22,8 +25,38 @@ export default function CreateExam() {
   // Question selection state
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
 
+  useEffect(() => {
+    const fetchExam = async () => {
+      if (!examId) {return;}
+
+      try {
+        const res = await fetch(`http://localhost:4000/exams/${examId}`);
+        const data = await res.json();
+
+        setTitle(data.title);
+        setDescription(data.description);
+        setExamType(data.type);
+        setStartDate(new Date(data.start_date));
+        setEndDate(new Date(data.end_date));
+        setCourseId(data.course_id);
+
+        // Handle shape: [{ question: { question_id }, ... }]
+        const questionIds = data.questions.map((entry: any) =>
+          entry.question?.question_id ?? entry.question_id
+        );
+        setSelectedQuestions(questionIds);
+
+        setLoading(false);
+      } catch (err) {
+        console.error('[EditExam] Failed to fetch exam:', err);
+      }
+    };
+
+    fetchExam();
+  }, [examId]);
+
   const handleSubmit = async () => {
-    if (!title || !examType || !startDate || !endDate || !courseId || selectedQuestions.length === 0) {
+    if (!title || !examType || !startDate || !endDate || !examId || selectedQuestions.length === 0) {
       notifications.show({
         title: 'Form Incomplete',
         message: 'Please fill in all required fields and select at least one question.',
@@ -33,8 +66,9 @@ export default function CreateExam() {
     }
 
     try {
-      const res = await fetch('http://localhost:4000/exams', {
-        method: 'POST',
+      // Update exam metadata
+      await fetch(`http://localhost:4000/exams/${examId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
@@ -42,12 +76,13 @@ export default function CreateExam() {
           type: examType,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
-          course_id: courseId,
         }),
       });
 
-      const data = await res.json();
-      const examId = data.exam_id;
+      // Replace questions (delete all, then add selected)
+      await fetch(`http://localhost:4000/exam-question-links/${examId}`, {
+        method: 'DELETE',
+      });
 
       for (let index = 0; index < selectedQuestions.length; index++) {
         const question_id = selectedQuestions[index];
@@ -62,12 +97,26 @@ export default function CreateExam() {
           }),
         });
       }
+      
+
+      notifications.show({
+        title: 'Success',
+        message: 'Exam updated successfully.',
+        color: 'green',
+      });
 
       router.push(`/instructor/course-details?courseId=${courseId}`);
     } catch (err) {
-      console.error('[CreateExam] Failed to submit:', err);
+      console.error('[EditExam] Failed to update exam:', err);
+      notifications.show({
+        title: 'Error',
+        message: 'Something went wrong while updating the exam.',
+        color: 'red',
+      });
     }
   };
+
+  if (loading) {return <Loader />;}
 
   return (
     <Container pt="md">
@@ -91,7 +140,7 @@ export default function CreateExam() {
         />
 
         <Button mt="md" onClick={handleSubmit}>
-          Create Exam
+          Save Changes
         </Button>
       </Stack>
     </Container>

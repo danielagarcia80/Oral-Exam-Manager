@@ -13,7 +13,10 @@ type Exam = {
   start_date: string;
   end_date: string;
   course_id: string;
-}
+  course?: {
+    title: string;
+  };
+};
 
 export function PastExams() {
   const { data: session } = useSession();
@@ -27,7 +30,7 @@ export function PastExams() {
       const userId = session?.user?.id;
       if (!userId) {return;}
 
-      const res = await fetch(`http://localhost:4000/exams/past/${userId}`);
+      const res = await fetch(`http://localhost:4000/exams/student/past/${userId}`);
       if (!res.ok) {
         console.error('Failed to fetch upcoming exams');
         return;
@@ -61,6 +64,7 @@ export function PastExams() {
           <thead>
             <tr>
               <th style={{ textAlign: 'left' }}>Exam Name</th>
+              <th style={{ textAlign: 'left' }}>Course</th>
               <th style={{ textAlign: 'left', width: '240px' }}>Due Date</th>
               <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
             </tr>
@@ -69,6 +73,7 @@ export function PastExams() {
             {filteredExams.map((exam) => (
               <tr key={exam.exam_id}>
                 <td>{exam.title}</td>
+                <td>{exam.course?.title}</td>
                 <td>{new Date (exam.end_date).toLocaleString()}</td>
                 <td>
                   <Button size="xs" variant="light">

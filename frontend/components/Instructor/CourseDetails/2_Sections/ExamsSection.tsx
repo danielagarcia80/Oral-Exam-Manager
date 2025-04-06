@@ -86,7 +86,11 @@ export function ExamsSection() {
                   {new Date(exam.end_date).toLocaleDateString()}
                 </td>
                 <td>
-                  <Button size="xs" variant="light">
+                  <Button 
+                    size="xs" 
+                    variant="light"
+                    onClick={() => router.push(`/instructor/edit-exam?examId=${exam.exam_id}&courseId=${courseId}`)}
+                  >
                     View
                   </Button>
                 </td>

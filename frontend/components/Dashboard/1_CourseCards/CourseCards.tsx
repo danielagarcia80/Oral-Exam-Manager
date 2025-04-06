@@ -1,4 +1,4 @@
-import { Grid, Card, Text } from '@mantine/core';
+import { Grid, Card, Text, TextInput, Stack } from '@mantine/core';
 import { AddCourseCard } from './AddCourseCard';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -12,24 +12,22 @@ type Course = {
   start_date: string;
   end_date: string;
   banner_url: string;
-}
+};
 
 export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [search, setSearch] = useState('');
 
   const { classes } = useDashboardStyles();
 
   useEffect(() => {
     const fetchCourses = async () => {
       const userId = session?.user?.id;
-      
-      if (!userId) {
-        return;
-      } 
 
-      // Replace with your actual API endpoint once env setup is ready
+      if (!userId) {return;}
+
       const endpoint = isInstructor
         ? `http://localhost:4000/courses/instructor/${userId}`
         : `http://localhost:4000/courses/student/${userId}`;
@@ -42,10 +40,22 @@ export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
     fetchCourses();
   }, [isInstructor, session?.user?.id]);
 
+  // Filtered course list based on search term
+  const filteredCourses = courses.filter((course) =>
+    course.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <Grid gutter="md" mb="lg">
-      {courses.map((course) => {
-        return (
+    <Stack mb="lg">
+      <TextInput
+        placeholder="Search courses..."
+        value={search}
+        onChange={(e) => setSearch(e.currentTarget.value)}
+        maw={300}
+      />
+
+      <Grid gutter="md">
+        {filteredCourses.map((course) => (
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }} key={course.course_id}>
             <Card
               className={classes.courseCard}
@@ -75,15 +85,14 @@ export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
               </Text>
             </Card>
           </Grid.Col>
-        );
-      })}
+        ))}
 
-
-      {isInstructor && (
-        <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-          <AddCourseCard />
-        </Grid.Col>
-      )}
-    </Grid>
+        {isInstructor && (
+          <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+            <AddCourseCard />
+          </Grid.Col>
+        )}
+      </Grid>
+    </Stack>
   );
 }

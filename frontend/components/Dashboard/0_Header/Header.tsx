@@ -1,7 +1,7 @@
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
-import { Button, Flex, Text, TextInput, Title } from '@mantine/core';
+import { Button, Flex, Text, Title } from '@mantine/core';
 import { useDashboardStyles } from '../Dashboard.styles';
 
 type HeaderProps = {
@@ -28,7 +28,6 @@ export function Header({ studentName = 'Student' }: HeaderProps) {
       </div>
 
       <Flex align="center" gap="sm">
-        <TextInput placeholder="Search" w={250} />
         {isLoggedIn && (
           <Button
             variant="outline"

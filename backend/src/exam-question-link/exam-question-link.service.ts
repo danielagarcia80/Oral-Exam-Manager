@@ -27,4 +27,10 @@ export class ExamQuestionLinkService {
   async findAll(): Promise<ExamQuestionLinkResponseDto[]> {
     return this.prisma.examIncludesQuestion.findMany();
   }
+
+  async removeAllFromExam(exam_id: string) {
+    return this.prisma.examIncludesQuestion.deleteMany({
+      where: { exam_id },
+    });
+  }
 }

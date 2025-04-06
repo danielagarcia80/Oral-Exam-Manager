@@ -11,6 +11,7 @@ import {
   Group,
   Modal,
   TextInput,
+  Select,
 } from '@mantine/core';
 import { useSearchParams } from 'next/navigation';
 import { useStyles } from '../CourseDetails.styles';
@@ -43,7 +44,7 @@ export function QuestionBankSection() {
 
   const [questionText, setQuestionText] = useState('');
   const [difficulty, setDifficulty] = useState<number>(1);
-  const [type, setType] = useState('open-ended'); // or 'multiple-choice'
+  const [type, setType] = useState(''); // or 'multiple-choice'
 
   const handleAddLearningOutcome = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,17 +219,21 @@ export function QuestionBankSection() {
                         value={type}
                         onChange={(e) => setType(e.currentTarget.value)}
                         required
-                        placeholder="e.g., open-ended or multiple-choice"
                         mt="sm"
                       />
 
-                      <TextInput
+                      <Select
                         label="Difficulty"
                         type="number"
-                        value={difficulty}
-                        onChange={(e) => setDifficulty(Number(e.currentTarget.value))}
+                        value={difficulty.toString()}
+                        onChange={(e) => setDifficulty(Number(e))}
                         required
-                        mt="sm"
+                        data={[
+                          { value: '1', label: '1' },
+                          { value: '2', label: '2' },
+                          { value: '3', label: '3' },
+                        ]}
+                        mb="sm"
                       />
 
                       <Button type="submit" mt="md">

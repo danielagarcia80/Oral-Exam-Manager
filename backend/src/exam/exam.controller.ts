@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './create-exam.dto';
 import { ExamResponseDto } from './exam-response.dto';
+import { UpdateExamDto } from './update-exam.dto';
 
 @Controller('exams')
 export class ExamController {
@@ -10,6 +11,11 @@ export class ExamController {
   @Post()
   async create(@Body() dto: CreateExamDto): Promise<ExamResponseDto> {
     return this.examService.create(dto);
+  }
+
+  @Get(':id')
+  getExamById(@Param('id') id: string) {
+    return this.examService.findById(id);
   }
 
   @Get()
@@ -48,5 +54,10 @@ export class ExamController {
     @Param('courseId') courseId: string,
   ): Promise<ExamResponseDto[]> {
     return this.examService.getExamsForCourse(courseId);
+  }
+
+  @Put(':id')
+  updateExam(@Param('id') id: string, @Body() updateExamDto: UpdateExamDto) {
+    return this.examService.update(id, updateExamDto);
   }
 }
