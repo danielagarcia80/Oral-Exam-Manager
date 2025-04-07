@@ -137,7 +137,7 @@ async function main() {
     data: {
       text: 'What is the time complexity of binary search?',
       difficulty: 1,
-      type: 'multiple-choice',
+      type: 'FREE_RESPONSE',
       source: 'seeded',
       max_duration_minutes: 5,
     },
@@ -155,7 +155,7 @@ async function main() {
     data: {
       text: 'What is the difference between a preemptive and a non-preemptive process scheduling policy?',
       difficulty: 1,
-      type: 'free-response',
+      type: 'FREE_RESPONSE',
       source: 'seeded',
       max_duration_minutes: 5,
     },

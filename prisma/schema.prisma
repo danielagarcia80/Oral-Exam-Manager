@@ -25,6 +25,10 @@ enum ExamType {
   PRACTICE
 }
 
+enum Type {
+  FREE_RESPONSE
+}
+
 model User {
   user_id              String   @id @default(uuid())
   email                String   @unique
@@ -164,7 +168,7 @@ model Question {
   question_id          String                     @id @default(uuid())
   text                 String
   difficulty           Int
-  type                 String
+  type                 Type
   source               String
   max_duration_minutes Int
 

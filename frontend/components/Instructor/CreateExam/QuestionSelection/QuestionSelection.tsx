@@ -225,12 +225,13 @@ export function QuestionSelection({
             required
             mb="sm"
           />
-          <TextInput
+          <Select
             label="Type"
-            placeholder="e.g. free-response"
             value={newQuestionType}
-            onChange={(e) => setNewQuestionType(e.currentTarget.value)}
-            mb="sm"
+            onChange={(val) => val && setNewQuestionType(val)}
+            data={[{ value: 'FREE_RESPONSE', label: 'Free Response' }]}
+            required
+            mt="sm"
           />
           <Select
             label="Difficulty"

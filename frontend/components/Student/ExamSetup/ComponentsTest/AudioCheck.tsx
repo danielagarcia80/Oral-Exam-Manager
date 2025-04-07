@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, Progress, Text } from '@mantine/core';
+import { Progress, Text } from '@mantine/core';
 
 export function AudioCheck({ onSuccess }: { onSuccess?: () => void }) {
     const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'fail'>('idle');
@@ -45,7 +45,7 @@ export function AudioCheck({ onSuccess }: { onSuccess?: () => void }) {
             }
 
             return () => {
-                if (animationRef.current) cancelAnimationFrame(animationRef.current);
+                if (animationRef.current) {cancelAnimationFrame(animationRef.current);}
                 audioContext?.close();
             };
         };
@@ -53,22 +53,26 @@ export function AudioCheck({ onSuccess }: { onSuccess?: () => void }) {
         checkAudio();
 
         return () => {
-            if (animationRef.current) cancelAnimationFrame(animationRef.current);
+            if (animationRef.current) {cancelAnimationFrame(animationRef.current);}
             audioContext?.close();
         };
     }, [onSuccess]);
 
     return (
-        <div>
-            <Text fw={600}>Audio Check:</Text>
-            {status === 'checking' && (
-                <>
-                    <Text size="sm">Speak into your mic...</Text>
-                    <Progress mt="xs" value={Math.min(volume * 2, 100)} color="blue" />
-                </>
-            )}
-            {status === 'success' && <Text c="green">Microphone is working ✅</Text>}
-            {status === 'fail' && <Text c="red">Microphone not detected ❌</Text>}
-        </div>
+      <div>
+        <Text fw={600}>Audio Check:</Text>
+    
+        {(status === 'checking' || status === 'success') && (
+          <>
+            <Text size="sm">
+              {status === 'checking' ? 'Speak into your mic...' : 'Microphone is working ✅'}
+            </Text>
+            <Progress mt="xs" value={Math.min(volume * 2, 100)} color="blue" />
+          </>
+        )}
+    
+        {status === 'fail' && <Text c="red">Microphone not detected ❌</Text>}
+      </div>
     );
+    
 }

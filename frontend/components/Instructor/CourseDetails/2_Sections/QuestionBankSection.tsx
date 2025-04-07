@@ -214,13 +214,17 @@ export function QuestionBankSection() {
                         required
                       />
 
-                      <TextInput
+                      <Select
                         label="Type"
                         value={type}
-                        onChange={(e) => setType(e.currentTarget.value)}
+                        onChange={(val) => val && setType(val)}
+                        data={[
+                          { value: 'FREE_RESPONSE', label: 'Free Response' },
+                        ]}
                         required
                         mt="sm"
                       />
+
 
                       <Select
                         label="Difficulty"

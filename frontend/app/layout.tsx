@@ -3,7 +3,6 @@ import '@mantine/core/styles.css';
 import React from 'react';
 import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
 import AuthProvider from '@/components/SessionProvider/SessionProvider';
-import { ExamDataProvider } from '@/components/Student/Exam/ExamDataProvider';
 import { theme } from '../theme';
 import { Notifications } from '@mantine/notifications';
 
@@ -27,7 +26,7 @@ export default function RootLayout({ children }: { children: any }) {
         <MantineProvider theme={theme} defaultColorScheme="light" forceColorScheme="light">
           <Notifications position="top-right" />
           <AuthProvider>
-            <ExamDataProvider>{children}</ExamDataProvider>
+            {children}
           </AuthProvider>
         </MantineProvider>
       </body>
