@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Stack, Text } from '@mantine/core';
 
-export function ScreenShareCheck() {
+export function ScreenShareCheck({ onSuccess }: { onSuccess?: () => void }) {
   const [success, setSuccess] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
@@ -18,6 +18,8 @@ export function ScreenShareCheck() {
       console.log('[ScreenShare] Got stream:', newStream);
       setStream(newStream);
       setSuccess(true);
+
+      onSuccess?.();
     } catch (err) {
       console.error('[ScreenShare] Screen share error:', err);
       setSuccess(false);

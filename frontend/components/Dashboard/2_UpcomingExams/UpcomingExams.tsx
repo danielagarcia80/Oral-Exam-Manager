@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Stack, Group, Title, TextInput, Paper, Table, Button } from '@mantine/core';
 import { useDashboardStyles } from '../Dashboard.styles';
+import { useRouter } from 'next/navigation';
 
 type Exam = {
   exam_id: string;
@@ -24,6 +25,8 @@ export function UpcomingExams() {
   const [search, setSearch] = useState('');
   
   const { classes } = useDashboardStyles();
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchExams = async () => {
@@ -76,7 +79,14 @@ export function UpcomingExams() {
                 <td>{exam.course?.title}</td>
                 <td>{new Date(exam.end_date).toLocaleString()}</td>
                 <td>
-                  <Button size="xs" variant="light">
+
+                  <Button
+                    size="xs"
+                    variant="light"
+                    onClick={() =>
+                      router.push(`/student/exam-setup?examId=${exam.exam_id}`)
+                    }
+                  >
                     Take Exam
                   </Button>
                 </td>

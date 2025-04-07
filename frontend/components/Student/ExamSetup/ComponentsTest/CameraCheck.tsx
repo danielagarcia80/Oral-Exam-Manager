@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Stack, Text } from '@mantine/core';
 
-export function CameraCheck() {
+export function CameraCheck({ onSuccess }: { onSuccess?: () => void }) {
   const [success, setSuccess] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
@@ -16,6 +16,8 @@ export function CameraCheck() {
       console.log('[CameraCheck] Got stream:', newStream);
       setStream(newStream);
       setSuccess(true);
+      
+      onSuccess?.();
     } catch (err) {
       console.error('[CameraCheck] Error accessing camera:', err);
       setSuccess(false);

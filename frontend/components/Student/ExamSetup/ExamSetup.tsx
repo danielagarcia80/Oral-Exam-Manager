@@ -3,28 +3,16 @@
 
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import {
-  Button,
-  Container,
-  Stack,
-  Text,
-  Title,
-  Card,
-  Divider,
-  Group,
-  Badge,
-  Flex,
-  Box,
-} from '@mantine/core';
+import { Button, Container, Stack, Text, Title, Card, Divider,Flex } from '@mantine/core';
 import { IconCamera, IconMicrophone, IconScreenShare, IconClock } from '@tabler/icons-react';
 import { CameraCheck } from './ComponentsTest/CameraCheck';
 import { ScreenShareCheck } from './ComponentsTest/ScreenShare';
 import { AudioCheck } from './ComponentsTest/AudioCheck';
 
 type Exam = {
-  id: string;
+  exam_id: string;
   title: string;
   description: string;
   duration: number;
@@ -37,102 +25,86 @@ type Course = {
 };
 
 export default function ExamSetup() {
-  const searchParams = useSearchParams();
-  const examId = searchParams.get('examId');
+    const searchParams = useSearchParams();
+    const examId = searchParams.get('examId');
 
-  const [exam, setExam] = useState<Exam | null>(null);
-  const [course, setCourse] = useState<Course | null>(null);
+    const [exam, setExam] = useState<Exam | null>(null);
+    const [course, setCourse] = useState<Course | null>(null);
 
-  useEffect(() => {
-    const fetchExamAndCourse = async () => {
-      if (!examId) {return;}
+    const [cameraOk, setCameraOk] = useState(false);
+    const [audioOk, setAudioOk] = useState(false);
+    const [screenOk, setScreenOk] = useState(false);
 
-      try {
-        const examRes = await fetch(`http://localhost:4000/exams/${examId}`);
-        const examData = await examRes.json();
-        setExam(examData);
+    const router = useRouter();
+    
+    useEffect(() => {
+        const fetchExamAndCourse = async () => {
+            if (!examId) return;
 
-        const courseRes = await fetch(`http://localhost:4000/courses/${examData.course_id}`);
-        const courseData = await courseRes.json();
-        setCourse(courseData);
-      } catch (err) {
-        console.error('Failed to load exam or course:', err);
-      }
-    };
+            try {
+                const examRes = await fetch(`http://localhost:4000/exams/${examId}`);
+                const examData = await examRes.json();
+                setExam(examData);
 
-    fetchExamAndCourse();
-  }, [examId]);
+                const courseRes = await fetch(`http://localhost:4000/courses/${examData.course_id}`);
+                const courseData = await courseRes.json();
+                setCourse(courseData);
+            } catch (err) {
+                console.error('Failed to load exam or course:', err);
+            }
+        };
 
-  if (!exam || !course) {return <Text>Loading exam setup...</Text>;}
+        fetchExamAndCourse();
+    }, [examId]);
 
-  return (
-    <Container size="lg" py="lg">
-      <Stack gap="xs" mb="lg">
-        <Title order={2}>{exam.title}</Title>
-        <Text size="sm" c="dimmed">
-          Course: {course.title}
-        </Text>
-        <Text size="sm" c="dimmed">
-          {exam.description}
-        </Text>
-      </Stack>
+    if (!exam || !course) {return <Text>Loading exam setup...</Text>;}
 
-      <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Title order={4} mb="md">
-          Pre-exam Checklist
-        </Title>
-        <Divider mb="md" />
+    const allChecksPassed = cameraOk && audioOk && screenOk;
 
-        <Stack gap="md">
-          <ChecklistItem icon={<IconCamera size={18} />} label="Camera Check">
-            <CameraCheck />
-          </ChecklistItem>
+    return (
+        <Container size="lg" py="lg">
+            <Stack gap="xs" mb="lg">
+                <Title order={2}>{exam.title}</Title>
+                <Text size="sm" c="dimmed">Course: {course.title}</Text>
+                <Text size="sm" c="dimmed">{exam.description}</Text>
+            </Stack>
 
-          <ChecklistItem icon={<IconMicrophone size={18} />} label="Microphone Check">
-            <AudioCheck />
-          </ChecklistItem>
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Title order={4} mb="md">Pre-exam Checklist</Title>
+                <Divider mb="md" />
 
-          <ChecklistItem icon={<IconScreenShare size={18} />} label="Screen Share Check">
-            <ScreenShareCheck />
-          </ChecklistItem>
+                <Stack gap="md">
+                    <Stack gap="xs">
+                        <Text fw={500}><IconCamera size={16} style={{ marginRight: 6 }} /> Camera Check</Text>
+                        <CameraCheck onSuccess={() => setCameraOk(true)} />
+                    </Stack>
 
-          <ChecklistItem icon={<IconClock size={18} />} label="Exam Timer">
-            <Text size="sm">You will have {exam.duration ? exam.duration : "ERROR"} minutes once you begin.</Text>
-          </ChecklistItem>
-        </Stack>
-      </Card>
+                    <Stack gap="xs">
+                        <Text fw={500}><IconMicrophone size={16} style={{ marginRight: 6 }} /> Microphone Check</Text>
+                        <AudioCheck onSuccess={() => setAudioOk(true)} />
+                    </Stack>
 
-      <Flex justify="flex-end" mt="xl">
-        <Button size="md" color="blue">
-          Start Exam
-        </Button>
-      </Flex>
-    </Container>
-  );
+                    <Stack gap="xs">
+                        <Text fw={500}><IconScreenShare size={16} style={{ marginRight: 6 }} /> Screen Share Check</Text>
+                        <ScreenShareCheck onSuccess={() => setScreenOk(true)} />
+                    </Stack>
+
+                    <Stack gap="xs">
+                        <Text fw={500}><IconClock size={16} style={{ marginRight: 6 }} /> Exam Timer</Text>
+                        <Text size="sm">You will have {exam.duration ?? 'ERROR'} minutes once you begin.</Text>
+                    </Stack>
+                </Stack>
+
+            </Card>
+
+            <Flex justify="flex-end" mt="xl">
+                <Button size="md" color="blue" disabled={!allChecksPassed}
+                    onClick={() => router.push(`/student/taking-exam?examId=${exam.exam_id}`)
+                    }
+                >
+                    Start Exam
+                </Button>
+            </Flex>
+        </Container>
+    );
 }
-
-function ChecklistItem({
-  icon,
-  label,
-  children,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Flex align="flex-start" gap="md">
-      <Box w={200}>
-        <Badge variant="light" color="gray" leftSection={icon} fullWidth>
-          {label}
-        </Badge>
-      </Box>
-
-      <Box style={{ flex: 1 }}>
-        {children}
-      </Box>
-    </Flex>
-  );
-}
-
-
