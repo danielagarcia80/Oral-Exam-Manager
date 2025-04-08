@@ -39,7 +39,7 @@ export default function ExamSetup() {
     
     useEffect(() => {
         const fetchExamAndCourse = async () => {
-            if (!examId) return;
+            if (!examId) {return;}
 
             try {
                 const examRes = await fetch(`http://localhost:4000/exams/${examId}`);

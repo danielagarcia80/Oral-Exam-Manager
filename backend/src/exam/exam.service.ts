@@ -19,7 +19,23 @@ export class ExamService {
       throw new BadRequestException('Course not found');
     }
 
-    return this.prisma.exam.create({ data });
+    return this.prisma.exam.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        type: data.type,
+        start_date: new Date(data.start_date),
+        end_date: new Date(data.end_date),
+        course_id: data.course_id,
+
+        // ✅ new fields
+        duration_minutes: data.duration_minutes,
+        timing_mode: data.timing_mode,
+        requires_audio: data.requires_audio,
+        requires_video: data.requires_video,
+        requires_screen_share: data.requires_screen_share,
+      },
+    });
   }
 
   async findById(examId: string) {

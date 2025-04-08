@@ -19,11 +19,18 @@ export default function CreateExam() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
+  const [durationMinutes, setDurationMinutes] = useState(30);
+  const [timingMode, setTimingMode] = useState('OVERALL');
+  const [requiresAudio, setRequiresAudio] = useState(true);
+  const [requiresVideo, setRequiresVideo] = useState(true);
+  const [requiresScreenShare, setRequiresScreenShare] = useState(true);
+
+
   // Question selection state
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
 
   const handleSubmit = async () => {
-    if (!title || !examType || !startDate || !endDate || !courseId || selectedQuestions.length === 0) {
+    if (!title || !examType || !startDate || !endDate || !courseId) {
       notifications.show({
         title: 'Form Incomplete',
         message: 'Please fill in all required fields and select at least one question.',
@@ -37,12 +44,20 @@ export default function CreateExam() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title,
-          description,
-          type: examType,
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
-          course_id: courseId,
+          body: JSON.stringify({
+            title,
+            description,
+            type: examType,
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+            course_id: courseId,
+            duration_minutes: durationMinutes,
+            timing_mode: timingMode,
+            requires_audio: requiresAudio,
+            requires_video: requiresVideo,
+            requires_screen_share: requiresScreenShare,
+          }),
+          
         }),
       });
 
@@ -72,7 +87,7 @@ export default function CreateExam() {
   return (
     <Container pt="md">
       <Stack>
-        <ExamDetails
+      <ExamDetails
           title={title}
           setTitle={setTitle}
           description={description}
@@ -83,7 +98,19 @@ export default function CreateExam() {
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
+
+          durationMinutes={durationMinutes}
+          setDurationMinutes={setDurationMinutes}
+          timingMode={timingMode}
+          setTimingMode={setTimingMode}
+          requiresAudio={requiresAudio}
+          setRequiresAudio={setRequiresAudio}
+          requiresVideo={requiresVideo}
+          setRequiresVideo={setRequiresVideo}
+          requiresScreenShare={requiresScreenShare}
+          setRequiresScreenShare={setRequiresScreenShare}
         />
+
 
         <QuestionSelection
           selectedQuestions={selectedQuestions}

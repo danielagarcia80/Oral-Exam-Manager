@@ -25,6 +25,11 @@ enum ExamType {
   PRACTICE
 }
 
+enum TimingMode {
+  OVERALL
+  PER_QUESTION
+}
+
 enum Type {
   FREE_RESPONSE
 }
@@ -52,6 +57,7 @@ model User {
   teaches              Teaches[]
   enrollments          Enrollment[]
   submissions          ExamSubmission[]
+  assigned_exams       AssignedExam[]
 }
 
 model Account {
@@ -135,9 +141,29 @@ model Exam {
   course      Course    @relation(fields: [course_id], references: [course_id])
   course_id   String
 
-  submissions ExamSubmission[]
-  questions   ExamIncludesQuestion[]
+  duration_minutes       Int
+  timing_mode            TimingMode @default(OVERALL)
+
+  requires_audio         Boolean     @default(true)
+  requires_video         Boolean     @default(true)
+  requires_screen_share  Boolean     @default(true)
+
+  submissions    ExamSubmission[]
+  questions      ExamIncludesQuestion[]
+  assigned_to    AssignedExam[]
 }
+
+
+model AssignedExam {
+  id          String @id @default(uuid())
+  exam        Exam   @relation(fields: [exam_id], references: [exam_id])
+  student     User   @relation(fields: [student_id], references: [user_id])
+  exam_id     String
+  student_id  String
+
+  @@unique([exam_id, student_id])
+}
+
 
 model LearningOutcome {
   learning_outcome_id String @id @default(uuid())
@@ -216,15 +242,17 @@ model QuestionHasImage {
 }
 
 model ExamIncludesQuestion {
-  id          String   @id @default(uuid())
-  exam        Exam     @relation(fields: [exam_id], references: [exam_id])
-  question    Question @relation(fields: [question_id], references: [question_id])
-  order_index Int
-  exam_id     String
-  question_id String
+  id            String   @id @default(uuid())
+  exam          Exam     @relation(fields: [exam_id], references: [exam_id])
+  question      Question @relation(fields: [question_id], references: [question_id])
+  order_index   Int
+  time_allocation Int?   // Optional, used only if PER_QUESTION
+  exam_id       String
+  question_id   String
 
   @@unique([exam_id, question_id])
 }
+
 
 model FileUpload {
   file_id     String   @id @default(uuid())

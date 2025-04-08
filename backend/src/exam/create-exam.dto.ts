@@ -1,5 +1,12 @@
-import { IsDateString, IsEnum, IsString } from 'class-validator';
-import { ExamType } from '@prisma/client';
+import {
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsString,
+  Min,
+} from 'class-validator';
+import { ExamType, TimingMode } from '@prisma/client';
 
 export class CreateExamDto {
   @IsString()
@@ -19,4 +26,20 @@ export class CreateExamDto {
 
   @IsString()
   course_id: string;
+
+  @IsInt()
+  @Min(1)
+  duration_minutes: number;
+
+  @IsEnum(TimingMode)
+  timing_mode: TimingMode;
+
+  @IsBoolean()
+  requires_audio: boolean;
+
+  @IsBoolean()
+  requires_video: boolean;
+
+  @IsBoolean()
+  requires_screen_share: boolean;
 }

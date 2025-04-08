@@ -56,7 +56,7 @@ export default function EditExam() {
   }, [examId]);
 
   const handleSubmit = async () => {
-    if (!title || !examType || !startDate || !endDate || !examId || selectedQuestions.length === 0) {
+    if (!title || !examType || !startDate || !endDate || !examId) {
       notifications.show({
         title: 'Form Incomplete',
         message: 'Please fill in all required fields and select at least one question.',
