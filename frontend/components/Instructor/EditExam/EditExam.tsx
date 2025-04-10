@@ -93,7 +93,15 @@ export default function EditExam() {
     }
 
     try {
-      // Update exam metadata
+      
+      let computedDuration = durationMinutes;
+
+      if (timingMode === 'PER_QUESTION') {
+        computedDuration = Object.values(questionTimeMap).reduce((sum, t) => sum + (t || 1), 0);
+      }
+
+
+      
       await fetch(`http://localhost:4000/exams/${examId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -103,13 +111,14 @@ export default function EditExam() {
           type: examType,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
-          duration_mode: timingMode,
-          duration_minutes: timingMode === 'OVERALL' ? durationMinutes : null,
-          requires_audio: requiresAudio,
+          timing_mode: timingMode,
+          duration_minutes: timingMode === 'OVERALL' ? durationMinutes : computedDuration,
+          requires_audio: requiresAudio, // ✅ make sure these are here
           requires_video: requiresVideo,
           requires_screen_share: requiresScreenShare,
         }),
       });
+      
 
       // Replace questions (delete all, then add selected)
       await fetch(`http://localhost:4000/exam-question-links/${examId}`, {

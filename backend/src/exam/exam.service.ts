@@ -182,6 +182,9 @@ export class ExamService {
   async update(examId: string, data: UpdateExamDto) {
     const { questionIds, ...examData } = data;
 
+    console.log('[UpdateExam] Payload:', examData);
+
+
     return this.prisma.exam.update({
       where: { exam_id: examId },
       data: {

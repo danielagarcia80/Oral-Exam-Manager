@@ -6,6 +6,8 @@ import {
   IsArray,
   IsInt,
   Min,
+  IsBoolean,
+  IsIn,
 } from 'class-validator';
 import { ExamType } from '@prisma/client';
 
@@ -38,4 +40,20 @@ export class UpdateExamDto {
   @IsInt()
   @Min(1)
   duration_minutes?: number; // 👈 ADD THIS
+
+  @IsOptional()
+  @IsBoolean()
+  requires_audio?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  requires_video?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  requires_screen_share?: boolean;
+
+  @IsOptional()
+  @IsIn(['OVERALL', 'PER_QUESTION'])
+  timing_mode?: 'OVERALL' | 'PER_QUESTION';
 }
