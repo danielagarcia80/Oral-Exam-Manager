@@ -4,6 +4,8 @@ import {
   IsDateString,
   IsEnum,
   IsArray,
+  IsInt,
+  Min,
 } from 'class-validator';
 import { ExamType } from '@prisma/client';
 
@@ -31,4 +33,9 @@ export class UpdateExamDto {
   @IsOptional()
   @IsArray()
   questionIds?: string[];
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  duration_minutes?: number; // 👈 ADD THIS
 }

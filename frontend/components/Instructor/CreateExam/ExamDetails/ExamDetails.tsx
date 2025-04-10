@@ -108,19 +108,6 @@ export function ExamDetails({
         />
       </Group>
 
-      {timingMode === 'OVERALL' && (
-        <TextInput
-          label="Duration (in minutes)"
-          type="number"
-          value={durationMinutes}
-          onChange={(e) => setDurationMinutes(Number(e.currentTarget.value))}
-          required
-          mb="md"
-        />
-      )}
-
-
-
       <Select
         label="Timing Mode"
         value={timingMode}
@@ -132,6 +119,17 @@ export function ExamDetails({
         required
         mb="md"
       />
+
+      {timingMode === 'OVERALL' && (
+        <TextInput
+          label="Duration (in minutes)"
+          type="number"
+          value={durationMinutes}
+          onChange={(e) => setDurationMinutes(Number(e.currentTarget.value))}
+          required
+          mb="md"
+        />
+      )}
 
       <Group mt="sm">
         <Checkbox

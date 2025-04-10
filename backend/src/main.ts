@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -15,6 +16,20 @@ async function bootstrap() {
     'http://localhost:3000', // CLIENT_URL
     process.env.CLIENT_URL, // Production
   ];
+
+  // For debugging purposes
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      // 👇 This will log helpful error messages
+      exceptionFactory: (errors) => {
+        console.error('❌ Validation failed:', errors);
+        return new BadRequestException(errors);
+      },
+    }),
+  );
 
   app.enableCors({
     origin: (

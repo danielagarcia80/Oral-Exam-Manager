@@ -9,8 +9,14 @@ export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
   @Post()
-  async create(@Body() dto: CreateExamDto): Promise<ExamResponseDto> {
-    return this.examService.create(dto);
+  async create(@Body() dto: CreateExamDto) {
+    try {
+      console.log('[ExamController] DTO:', dto);
+      return await this.examService.create(dto);
+    } catch (err) {
+      console.error('❌ Create exam failed:', err);
+      throw err;
+    }
   }
 
   @Get(':id')

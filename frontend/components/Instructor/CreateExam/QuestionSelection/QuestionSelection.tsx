@@ -34,11 +34,17 @@ interface LearningOutcome {
 interface QuestionSelectionProps {
   selectedQuestions: string[];
   setSelectedQuestions: (ids: string[]) => void;
+  timingMode: string;
+  questionTimeMap: Record<string, number>;
+  setQuestionTimeMap: (map: Record<string, number>) => void;
 }
 
 export function QuestionSelection({
   selectedQuestions,
   setSelectedQuestions,
+  timingMode,
+  questionTimeMap,
+  setQuestionTimeMap,
 }: QuestionSelectionProps) {
   const { classes } = useStyles();
   const searchParams = useSearchParams();
@@ -68,10 +74,24 @@ export function QuestionSelection({
   const toggleQuestion = (id: string) => {
     if (selectedQuestions.includes(id)) {
       setSelectedQuestions(selectedQuestions.filter((q) => q !== id));
+      const updatedMap = { ...questionTimeMap };
+      delete updatedMap[id];
+      setQuestionTimeMap(updatedMap);
     } else {
       setSelectedQuestions([...selectedQuestions, id]);
+      if (timingMode === 'PER_QUESTION') {
+        setQuestionTimeMap({ ...questionTimeMap, [id]: 1 }); // default to 1 min
+      }
     }
   };
+  
+
+    const updateTimeForQuestion = (id: string, time: number) => {
+      setQuestionTimeMap({ ...questionTimeMap, [id]: time });
+    };
+    
+    const totalTime = Object.values(questionTimeMap).reduce((sum, t) => sum + t, 0);
+  
 
   const handleAddLearningOutcome = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,21 +181,35 @@ export function QuestionSelection({
             <Accordion.Item key={outcome.outcomeId} value={outcome.outcomeId}>
               <Accordion.Control>{outcome.description}</Accordion.Control>
               <Accordion.Panel>
-                <Stack gap="xs">
-                  {outcome.questions.length > 0 ? (
-                    outcome.questions.map((q) => (
+              <Stack gap="xs">
+                {outcome.questions.length > 0 ? (
+                  outcome.questions.map((q) => (
+                    <Group key={q.question_id} align="center" justify="space-between">
                       <Checkbox
-                        key={q.question_id}
                         label={`${q.text} (Type: ${q.type}, Difficulty: ${q.difficulty})`}
                         checked={selectedQuestions.includes(q.question_id)}
                         onChange={() => toggleQuestion(q.question_id)}
                       />
-                    ))
-                  ) : (
-                    <Text size="sm" c="dimmed">
-                      No questions for this outcome.
-                    </Text>
-                  )}
+                      {timingMode === 'PER_QUESTION' && selectedQuestions.includes(q.question_id) && (
+                        <TextInput
+                          label="Time (min)"
+                          type="number"
+                          size="xs"
+                          style={{ width: 100 }}
+                          value={questionTimeMap[q.question_id]?.toString() || ''}
+                          onChange={(e) =>
+                            updateTimeForQuestion(q.question_id, Number(e.currentTarget.value))
+                          }
+                          min={1}
+                        />
+                      )}
+                    </Group>
+                  ))
+                ) : (
+                  <Text size="sm" c="dimmed">
+                    No questions for this outcome.
+                  </Text>
+                )}
 
                   <Button
                     size="xs"
@@ -185,6 +219,12 @@ export function QuestionSelection({
                   >
                     + Add Question
                   </Button>
+                  {timingMode === 'PER_QUESTION' && selectedQuestions.length > 0 && (
+                    <Text mt="md" size="sm">
+                      Total Time: <b>{totalTime} minutes</b>
+                    </Text>
+                  )}
+
                 </Stack>
               </Accordion.Panel>
             </Accordion.Item>

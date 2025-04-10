@@ -196,7 +196,7 @@ model Question {
   difficulty           Int
   type                 Type
   source               String
-  max_duration_minutes Int
+  max_duration_minutes Int // REMOVE THIS LATER
 
   keywords             QuestionHasKeyword[]
   outcomes             QuestionAddressesOutcome[]

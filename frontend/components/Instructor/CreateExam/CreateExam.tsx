@@ -28,6 +28,8 @@ export default function CreateExam() {
 
   // Question selection state
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [questionTimeMap, setQuestionTimeMap] = useState<Record<string, number>>({});
+
 
   const handleSubmit = async () => {
     if (!title || !examType || !startDate || !endDate || !courseId) {
@@ -38,50 +40,61 @@ export default function CreateExam() {
       });
       return;
     }
+  
+    const res = await fetch('http://localhost:4000/exams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        description,
+        type: examType,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        course_id: courseId,
+        duration_minutes: durationMinutes,
+        timing_mode: timingMode,
+        requires_audio: requiresAudio,
+        requires_video: requiresVideo,
+        requires_screen_share: requiresScreenShare,
+      }),
+    });
 
-    try {
-      const res = await fetch('http://localhost:4000/exams', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          body: JSON.stringify({
-            title,
-            description,
-            type: examType,
-            start_date: startDate.toISOString(),
-            end_date: endDate.toISOString(),
-            course_id: courseId,
-            duration_minutes: durationMinutes,
-            timing_mode: timingMode,
-            requires_audio: requiresAudio,
-            requires_video: requiresVideo,
-            requires_screen_share: requiresScreenShare,
-          }),
-          
-        }),
-      });
+    const data = await res.json();
+    const examId = data.exam_id;
 
-      const data = await res.json();
-      const examId = data.exam_id;
+    for (let index = 0; index < selectedQuestions.length; index++) {
+      const question_id = selectedQuestions[index];
 
-      for (let index = 0; index < selectedQuestions.length; index++) {
-        const question_id = selectedQuestions[index];
-      
-        await fetch('http://localhost:4000/exam-question-links', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            exam_id: examId,
-            question_id,
-            order_index: index,
-          }),
-        });
+      const payload: any = {
+        exam_id: examId,
+        question_id,
+        order_index: index,
+      };
+
+      if (timingMode === 'PER_QUESTION') {
+        payload.time_allocation = questionTimeMap[question_id] ?? 1; // Default to 1 min if missing
       }
 
-      router.push(`/instructor/course-details?courseId=${courseId}`);
-    } catch (err) {
-      console.error('[CreateExam] Failed to submit:', err);
+      await fetch('http://localhost:4000/exam-question-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
     }
+
+
+    if (timingMode === 'PER_QUESTION') {
+      const total = Object.values(questionTimeMap).reduce((sum, t) => sum + t, 0);
+    
+      await fetch(`http://localhost:4000/exams/${examId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration_minutes: total }),
+      });
+    }
+    
+
+    router.push(`/instructor/course-details?courseId=${courseId}`);
   };
 
   return (
@@ -115,6 +128,9 @@ export default function CreateExam() {
         <QuestionSelection
           selectedQuestions={selectedQuestions}
           setSelectedQuestions={setSelectedQuestions}
+          timingMode={timingMode}
+          questionTimeMap={questionTimeMap}
+          setQuestionTimeMap={setQuestionTimeMap}
         />
 
         <Button mt="md" onClick={handleSubmit}>

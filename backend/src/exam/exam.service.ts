@@ -19,6 +19,8 @@ export class ExamService {
       throw new BadRequestException('Course not found');
     }
 
+    console.log('[CreateExam] Incoming data:', data);
+
     return this.prisma.exam.create({
       data: {
         title: data.title,

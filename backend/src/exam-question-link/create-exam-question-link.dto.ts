@@ -1,4 +1,4 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateExamQuestionLinkDto {
   @IsString()
@@ -9,4 +9,9 @@ export class CreateExamQuestionLinkDto {
 
   @IsInt()
   order_index: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  time_allocation?: number;
 }
