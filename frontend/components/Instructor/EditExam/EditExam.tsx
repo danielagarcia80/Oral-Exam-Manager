@@ -22,6 +22,17 @@ export default function EditExam() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
+  const [timingMode, setTimingMode] = useState<'OVERALL' | 'PER_QUESTION'>('OVERALL');
+  const [durationMinutes, setDurationMinutes] = useState(30);
+  const [requiresAudio, setRequiresAudio] = useState(false);
+  const [requiresVideo, setRequiresVideo] = useState(false);
+  const [requiresScreenShare, setRequiresScreenShare] = useState(false);
+  const [questionTimeMap, setQuestionTimeMap] = useState<Record<string, number>>({});
+
+
+  
+
+
   // Question selection state
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
 
@@ -39,6 +50,22 @@ export default function EditExam() {
         setStartDate(new Date(data.start_date));
         setEndDate(new Date(data.end_date));
         setCourseId(data.course_id);
+        setTimingMode(data.duration_mode || 'OVERALL');
+        setDurationMinutes(data.duration_minutes || 30);
+        setRequiresAudio(data.requires_audio);
+        setRequiresVideo(data.requires_video);
+        setRequiresScreenShare(data.requires_screen_share);
+
+        // Build time allocation map
+        const qtMap: Record<string, number> = {};
+        data.questions.forEach((entry: any) => {
+          const qid = entry.question?.question_id ?? entry.question_id;
+          if (entry.time_allocation) {
+            qtMap[qid] = entry.time_allocation;
+          }
+        });
+        setQuestionTimeMap(qtMap);
+
 
         // Handle shape: [{ question: { question_id }, ... }]
         const questionIds = data.questions.map((entry: any) =>
@@ -76,6 +103,11 @@ export default function EditExam() {
           type: examType,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
+          duration_mode: timingMode,
+          duration_minutes: timingMode === 'OVERALL' ? durationMinutes : null,
+          requires_audio: requiresAudio,
+          requires_video: requiresVideo,
+          requires_screen_share: requiresScreenShare,
         }),
       });
 
@@ -84,19 +116,28 @@ export default function EditExam() {
         method: 'DELETE',
       });
 
+
       for (let index = 0; index < selectedQuestions.length; index++) {
         const question_id = selectedQuestions[index];
+      
+        const payload: any = {
+          exam_id: examId,
+          question_id,
+          order_index: index,
+        };
+      
+        if (timingMode === 'PER_QUESTION') {
+          payload.time_allocation = questionTimeMap[question_id] ?? 1;
+        }
       
         await fetch('http://localhost:4000/exam-question-links', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            exam_id: examId,
-            question_id,
-            order_index: index,
-          }),
+          body: JSON.stringify(payload),
         });
       }
+      
+      
       
 
       notifications.show({
@@ -132,12 +173,29 @@ export default function EditExam() {
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
+          timingMode={timingMode}
+          setTimingMode={setTimingMode}
+          durationMinutes={durationMinutes}
+          setDurationMinutes={setDurationMinutes}
+          requiresAudio={requiresAudio}
+          setRequiresAudio={setRequiresAudio}
+          requiresVideo={requiresVideo}
+          setRequiresVideo={setRequiresVideo}
+          requiresScreenShare={requiresScreenShare}
+          setRequiresScreenShare={setRequiresScreenShare}
         />
+
+
 
         <QuestionSelection
           selectedQuestions={selectedQuestions}
           setSelectedQuestions={setSelectedQuestions}
+          timingMode={timingMode}
+          questionTimeMap={questionTimeMap}
+          setQuestionTimeMap={setQuestionTimeMap}
         />
+
+
 
         <Button mt="md" onClick={handleSubmit}>
           Save Changes

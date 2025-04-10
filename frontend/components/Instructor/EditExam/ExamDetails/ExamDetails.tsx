@@ -7,6 +7,7 @@ import {
   Group,
   Title,
   Paper,
+  Checkbox,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 
@@ -21,6 +22,19 @@ interface ExamDetailsProps {
   setStartDate: (date: Date | null) => void;
   endDate: Date | null;
   setEndDate: (date: Date | null) => void;
+
+  durationMinutes: number;
+  setDurationMinutes: (val: number) => void;
+  timingMode: 'OVERALL' | 'PER_QUESTION';
+  setTimingMode: (val: 'OVERALL' | 'PER_QUESTION') => void;
+
+
+  requiresAudio: boolean;
+  setRequiresAudio: (val: boolean) => void;
+  requiresVideo: boolean;
+  setRequiresVideo: (val: boolean) => void;
+  requiresScreenShare: boolean;
+  setRequiresScreenShare: (val: boolean) => void;
 }
 
 export function ExamDetails({
@@ -34,6 +48,16 @@ export function ExamDetails({
   setStartDate,
   endDate,
   setEndDate,
+  durationMinutes,
+  setDurationMinutes,
+  timingMode,
+  setTimingMode,
+  requiresAudio,
+  setRequiresAudio,
+  requiresVideo,
+  setRequiresVideo,
+  requiresScreenShare,
+  setRequiresScreenShare,
 }: ExamDetailsProps) {
   return (
     <Paper p="lg" withBorder radius="md" mb="lg">
@@ -60,9 +84,7 @@ export function ExamDetails({
         label="Exam Type"
         placeholder="Select type"
         value={examType}
-        onChange={(value) => {
-          if (value) {setExamType(value);}
-        }}
+        onChange={(value) => value && setExamType(value)}
         data={[
           { value: 'ASYNCHRONOUS', label: 'Asynchronous' },
           { value: 'SYNCHRONOUS', label: 'Synchronous' },
@@ -72,7 +94,7 @@ export function ExamDetails({
         mb="md"
       />
 
-      <Group grow>
+      <Group grow mb="md">
         <DatePickerInput
           label="Start Date"
           value={startDate}
@@ -84,6 +106,47 @@ export function ExamDetails({
           value={endDate}
           onChange={setEndDate}
           required
+        />
+      </Group>
+
+      <Select
+        label="Timing Mode"
+        value={timingMode}
+        onChange={(val) => val && setTimingMode(val as 'OVERALL' | 'PER_QUESTION')}
+        data={[
+          { value: 'OVERALL', label: 'Overall (one timer for whole exam)' },
+          { value: 'PER_QUESTION', label: 'Per Question (each question gets time)' },
+        ]}
+        required
+        mb="md"
+      />
+
+      {timingMode === 'OVERALL' && (
+        <TextInput
+          label="Duration (in minutes)"
+          type="number"
+          value={durationMinutes}
+          onChange={(e) => setDurationMinutes(Number(e.currentTarget.value))}
+          required
+          mb="md"
+        />
+      )}
+
+      <Group mt="sm">
+        <Checkbox
+          label="Requires Audio"
+          checked={requiresAudio}
+          onChange={(e) => setRequiresAudio(e.currentTarget.checked)}
+        />
+        <Checkbox
+          label="Requires Video"
+          checked={requiresVideo}
+          onChange={(e) => setRequiresVideo(e.currentTarget.checked)}
+        />
+        <Checkbox
+          label="Requires Screen Share"
+          checked={requiresScreenShare}
+          onChange={(e) => setRequiresScreenShare(e.currentTarget.checked)}
         />
       </Group>
     </Paper>
