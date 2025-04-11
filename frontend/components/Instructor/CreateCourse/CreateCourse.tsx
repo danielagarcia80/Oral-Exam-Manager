@@ -30,6 +30,8 @@ export function CreateCourseForm() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [invites, setInvites] = useState([{ email: '', role: 'STUDENT' as 'STUDENT' | 'INSTRUCTOR' }]);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+
 
   const router = useRouter();
   const { data: session } = useSession();
@@ -98,6 +100,10 @@ export function CreateCourseForm() {
       formData.append('banner', bannerFile);
     }
     formData.append('invites', JSON.stringify(invites));
+
+    if (csvFile) {
+      formData.append('csv', csvFile);
+    }
 
 
     const res = await fetch('http://localhost:4000/courses', {
@@ -174,6 +180,15 @@ export function CreateCourseForm() {
             </Group>
           ))}
           <Button variant="light" onClick={addInvite}>+ Add Another</Button>
+
+          <FileInput
+            label="Upload CSV of Invites"
+            value={csvFile}
+            onChange={setCsvFile}
+            accept=".csv"
+            placeholder="Upload a CSV file"
+          />
+
 
           <Group align="flex-start" grow>
             <DatePickerInput
