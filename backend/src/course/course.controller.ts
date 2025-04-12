@@ -11,18 +11,44 @@ import {
   Body,
   Delete,
   UseInterceptors,
-  UploadedFile,
   Req,
+  UploadedFiles,
 } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CourseResponseDto } from './course-response.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { StudentDto } from './student.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { Readable } from 'stream';
+import * as csvParser from 'csv-parser';
+import * as multer from 'multer';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+
+const typedCsvParser = csvParser as unknown as () => NodeJS.ReadWriteStream;
+
+function parseCsv(
+  buffer: Buffer,
+): Promise<{ email: string; role: 'STUDENT' | 'INSTRUCTOR' }[]> {
+  return new Promise((resolve, reject) => {
+    const results: { email: string; role: 'STUDENT' | 'INSTRUCTOR' }[] = [];
+
+    Readable.from(buffer.toString())
+      .pipe(typedCsvParser())
+      .on('data', (row: { email?: string; role?: string }) => {
+        const email = row.email?.trim();
+        const role = row.role?.trim().toUpperCase();
+        if (email && (role === 'STUDENT' || role === 'INSTRUCTOR')) {
+          results.push({ email, role });
+        }
+      })
+      .on('end', () => resolve(results))
+      .on('error', reject);
+  });
+}
 
 @Controller('courses')
 export class CourseController {
@@ -31,29 +57,69 @@ export class CourseController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(
-    FileInterceptor('banner', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueFilename = `${uuidv4()}${extname(file?.originalname || '')}`;
-          cb(null, uniqueFilename);
-        },
-      }),
-    }),
+    FileFieldsInterceptor(
+      [
+        { name: 'banner', maxCount: 1 },
+        { name: 'csv', maxCount: 1 },
+      ],
+      {
+        storage: multer.memoryStorage(), // all files in memory
+      },
+    ),
   )
   async createCourse(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles()
+    files: {
+      banner?: Express.Multer.File[];
+      csv?: Express.Multer.File[];
+    },
     @Body() body: any,
     @Req() req: any,
   ) {
+    const bannerFile = files.banner?.[0];
+    const csvFile = files.csv?.[0];
+
     const instructor_id = req.user.user_id;
 
-    const banner_url = file ? `uploads/${file.filename}` : null;
+    // Manually write banner to disk if present
+    let banner_url: string | null = null;
+    if (bannerFile) {
+      const filename = `${uuidv4()}${extname(bannerFile.originalname)}`;
+      const filePath = path.join(__dirname, '../../uploads', filename);
+      await fs.writeFile(filePath, bannerFile.buffer);
+      banner_url = `uploads/${filename}`;
+    }
 
-    const invites = JSON.parse(body.invites ?? '[]') as {
+    // Parse invites JSON
+    const invitesFromJson = JSON.parse(body.invites ?? '[]') as {
       email: string;
       role: 'STUDENT' | 'INSTRUCTOR';
     }[];
+
+    // Parse CSV invites
+    let invitesFromCsv: { email: string; role: 'STUDENT' | 'INSTRUCTOR' }[] =
+      [];
+    if (csvFile) {
+      invitesFromCsv = await parseCsv(csvFile.buffer);
+    }
+
+    const allInvites = [...invitesFromJson, ...invitesFromCsv];
+
+    const user = req.user as { user_id: string; email: string };
+    const filtered = allInvites.filter(
+      (invite) =>
+        !(
+          invite.role === 'INSTRUCTOR' &&
+          invite.email.toLowerCase() === user.email.toLowerCase()
+        ),
+    );
+
+    // Remove duplicate emails (keep first occurrence)
+    const dedupedInvites = Array.from(
+      new Map(
+        filtered.map((invite) => [invite.email.toLowerCase(), invite]),
+      ).values(),
+    );
 
     return this.courseService.create({
       title: body.title,
@@ -62,7 +128,7 @@ export class CourseController {
       end_date: new Date(body.end_date),
       banner_url,
       instructor_id,
-      invites,
+      invites: dedupedInvites,
     });
   }
 
