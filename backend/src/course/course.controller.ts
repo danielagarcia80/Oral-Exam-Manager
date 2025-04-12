@@ -28,6 +28,11 @@ import * as multer from 'multer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+type Invite = {
+  email: string;
+  role: 'STUDENT' | 'INSTRUCTOR';
+};
+
 const typedCsvParser = csvParser as unknown as () => NodeJS.ReadWriteStream;
 
 function parseCsv(
@@ -176,5 +181,66 @@ export class CourseController {
     @Param('courseId') courseId: string,
   ): Promise<StudentDto[]> {
     return this.courseService.getStudentsForCourse(courseId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':courseId/invite')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [{ name: 'csv', maxCount: 1 }],
+      { storage: multer.memoryStorage() }, // keep CSV in memory
+    ),
+  )
+  async inviteToCourse(
+    @Param('courseId') courseId: string,
+    @UploadedFiles() files: { csv?: Express.Multer.File[] },
+    @Body() body: any,
+    @Req() req: any,
+  ) {
+    const user = req.user as { email: string };
+    if (!user?.email) {
+      console.error('User not found on request');
+      throw new Error('User info missing from request');
+    }
+
+    const csvFile = files.csv?.[0];
+
+    // 1. Parse invites from JSON
+    let invitesFromJson: Invite[] = [];
+    try {
+      invitesFromJson = JSON.parse(body.invites ?? '[]');
+    } catch (err) {
+      // optional: throw BadRequestException
+    }
+
+    // 2. Parse invites from CSV
+    let invitesFromCsv: Invite[] = [];
+    if (csvFile?.buffer) {
+      invitesFromCsv = await parseCsv(csvFile.buffer);
+    }
+
+    const allInvitesRaw = [...invitesFromJson, ...invitesFromCsv];
+
+    // 3. Filter and deduplicate
+    const filtered: Invite[] = allInvitesRaw.filter(
+      (invite): invite is Invite =>
+        !!invite &&
+        typeof invite.email === 'string' &&
+        typeof invite.role === 'string' &&
+        !(
+          invite.role === 'INSTRUCTOR' &&
+          typeof user.email === 'string' &&
+          invite.email.toLowerCase() === user.email.toLowerCase()
+        ),
+    );
+
+    const dedupedInvites: Invite[] = Array.from(
+      new Map(filtered.map((i) => [i.email.toLowerCase(), i])).values(),
+    );
+
+    // 4. Delegate to service
+    await this.courseService.inviteToCourse(courseId, dedupedInvites);
+
+    return { message: 'Invites processed' };
   }
 }

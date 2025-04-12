@@ -11,6 +11,7 @@ import {
 } from '@mantine/core';
 import { useSearchParams } from 'next/navigation';
 import { useStyles } from '../CourseDetails.styles';
+import { InvitePeopleForm } from '@/components/Instructor/CourseDetails/2_Sections/InvitePeopleForm';
 
 interface Student {
   user_id: string;
@@ -26,21 +27,21 @@ export function StudentsSection() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get('courseId');
 
+  const loadStudents = async () => {
+    if (!courseId) {return;}
+
+    const res = await fetch(`http://localhost:4000/courses/${courseId}/students`);
+    if (!res.ok) {
+      console.error('Failed to fetch students');
+      return;
+    }
+
+    const data = await res.json();
+    setStudents(data);
+  };
+
   useEffect(() => {
-    const fetchStudents = async () => {
-      if (!courseId) {return;}
-
-      const res = await fetch(`http://localhost:4000/courses/${courseId}/students`);
-      if (!res.ok) {
-        console.error('Failed to fetch students');
-        return;
-      }
-
-      const data = await res.json();
-      setStudents(data);
-    };
-
-    fetchStudents();
+    loadStudents();
   }, [courseId]);
 
   const filtered = students.filter((s) =>
@@ -80,6 +81,7 @@ export function StudentsSection() {
             ))}
           </tbody>
         </Table>
+        {courseId && <InvitePeopleForm courseId={courseId} onInviteSuccess={loadStudents} />}
       </Paper>
     </Stack>
   );

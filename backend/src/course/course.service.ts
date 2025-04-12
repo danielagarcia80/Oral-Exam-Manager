@@ -209,4 +209,60 @@ export class CourseService {
       last_name: e.student.last_name,
     }));
   }
+
+  async inviteToCourse(
+    courseId: string,
+    invites: { email: string; role: 'STUDENT' | 'INSTRUCTOR' }[],
+  ) {
+    for (const invite of invites) {
+      const user = await this.prisma.user.findUnique({
+        where: { email: invite.email },
+      });
+
+      if (!user) continue;
+
+      // 🚫 User role mismatch — skip
+      if (user.role !== invite.role) {
+        console.warn(
+          `Skipped ${user.email} — account role is ${user.role}, tried to invite as ${invite.role}`,
+        );
+        continue;
+      }
+
+      if (invite.role === 'INSTRUCTOR') {
+        const alreadyTeaches = await this.prisma.teaches.findFirst({
+          where: {
+            course_id: courseId,
+            instructor_id: user.user_id,
+          },
+        });
+
+        if (!alreadyTeaches) {
+          await this.prisma.teaches.create({
+            data: {
+              course: { connect: { course_id: courseId } },
+              instructor: { connect: { user_id: user.user_id } },
+            },
+          });
+        }
+      } else {
+        const alreadyEnrolled = await this.prisma.enrollment.findFirst({
+          where: {
+            course_id: courseId,
+            student_id: user.user_id,
+          },
+        });
+
+        if (!alreadyEnrolled) {
+          await this.prisma.enrollment.create({
+            data: {
+              course: { connect: { course_id: courseId } },
+              student: { connect: { user_id: user.user_id } },
+              status: 'ENROLLED',
+            },
+          });
+        }
+      }
+    }
+  }
 }
