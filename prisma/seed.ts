@@ -162,6 +162,50 @@ async function main() {
     },
   });
 
+  const pastExam = await prisma.exam.create({
+    data: {
+      title: 'Syllabus Quiz',
+      description: 'Covers weeks 1–6 material.',
+      type: 'ASYNCHRONOUS',
+      course_id: course.course_id,
+      start_date: new Date('2025-01-01T09:00:00Z'),
+      end_date: new Date('2025-01-02T23:59:59Z'),
+      duration_minutes: 30,
+      timing_mode: 'OVERALL',
+      requires_audio: true,
+      requires_video: true,
+      requires_screen_share: true,
+    },
+  });
+
+  await prisma.assignedExam.createMany({
+    data: [
+      {
+        exam_id: pastExam.exam_id,
+        student_id: student0.user_id,
+      },
+      {
+        exam_id: pastExam.exam_id,
+        student_id: student1.user_id,
+      },
+    ],
+  });
+
+  await prisma.assignedExam.createMany({
+    data: [
+      {
+        exam_id: exam.exam_id,
+        student_id: student0.user_id,
+      },
+      {
+        exam_id: exam.exam_id,
+        student_id: student1.user_id,
+      },
+    ],
+  });
+  
+  
+
   await prisma.examIncludesQuestion.createMany({
     data: [
       {

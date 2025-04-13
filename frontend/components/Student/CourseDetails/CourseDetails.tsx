@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button, Card, Container, Flex, Stack, Text, Title } from '@mantine/core';
+import { Button, Card, Container, Flex, Stack, Text, Title, Image, Box, Divider } from '@mantine/core';
 
 type Exam = {
   exam_id: string;
@@ -17,9 +17,18 @@ type Course = {
   id: string;
   title: string;
   description: string;
-  scores: number;
-  // no exams here!
+  start_date: Date;
+  end_date: Date;
+  banner_url: string;
 };
+
+type StudentDto = {
+  user_id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+};
+
 
 export function CourseDetails() {
   const searchParams = useSearchParams();
@@ -27,12 +36,14 @@ export function CourseDetails() {
 
   const [course, setCourse] = useState<Course | null>(null);
   const [exams, setExams] = useState<Exam[]>([]);
+  const [students, setStudents] = useState<StudentDto[]>([]);
+
   const router = useRouter();
 
   useEffect(() => {
+    if (!courseId) {return;}
+  
     const fetchCourse = async () => {
-      if (!courseId) {return;}
-
       try {
         const res = await fetch(`http://localhost:4000/courses/${courseId}`);
         if (!res.ok) {
@@ -45,10 +56,8 @@ export function CourseDetails() {
         console.error('Error fetching course:', err);
       }
     };
-
+  
     const fetchExams = async () => {
-      if (!courseId) {return;}
-
       try {
         const res = await fetch(`http://localhost:4000/exams/course/${courseId}`);
         if (!res.ok) {
@@ -61,48 +70,101 @@ export function CourseDetails() {
         console.error('Error fetching exams:', err);
       }
     };
-
+  
+    const fetchStudents = async () => {
+      try {
+        const res = await fetch(`http://localhost:4000/courses/${courseId}/students`);
+        if (!res.ok) {
+          console.error('Failed to fetch students:', res.statusText);
+          return;
+        }
+        const data = await res.json();
+        setStudents(data);
+      } catch (err) {
+        console.error('Error fetching students:', err);
+      }
+    };
+  
     fetchCourse();
     fetchExams();
+    fetchStudents();
   }, [courseId]);
+  
 
   if (!course) {return <Text>Loading course...</Text>;}
 
+  const now = new Date();
+
+  const upcomingExams = exams.filter(
+    (exam) => new Date(exam.end_date) > now
+  );
+
+  const pastExams = exams.filter(
+    (exam) => new Date(exam.end_date) <= now
+  );
+
+
   return (
-    <Container>
-      <Title order={2}>{course.title}</Title>
-      <Text mb="sm">{course.description}</Text>
-      <Text>Scores: {course.scores ? course.scores : 'No scores available'}</Text>
-  
-      <Card mt="xl" shadow="sm" p="lg" radius="md" withBorder>
-        <Title order={3} mb="md">List of Exams</Title>
+    <Container size="lg" pt="xl">
+      {/* Course Banner */}
+      <Box
+        mb="lg"
+        style={{
+          position: 'relative',
+          width: '100%',
+          paddingTop: '33.33%',
+          overflow: 'hidden',
+          borderRadius: '12px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+        }}
+      >
+        <Image
+          src={`http://localhost:4000/${course.banner_url}`}
+          alt="Course banner"
+          fit="cover"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: '100%',
+            width: '100%',
+          }}
+        />
+      </Box>
+
+      {/* Course Header Info */}
+      <Title order={2} mb={4}>
+        {course.title}
+      </Title>
+      <Text size="sm" c="dimmed" mb="md">
+        {course.description || 'No description provided.'}
+      </Text>
+
+      <Text size="sm" mb="xl">
+        Scores: <strong>{course.scores || 'No scores available'}</strong>
+      </Text>
+
+      {/* Upcoming Exams */}
+      <Card shadow="md" radius="md" p="xl" withBorder mb="xl">
+        <Title order={3} mb="md">Upcoming Exams</Title>
+        <Divider mb="lg" />
         <Stack>
-          {exams.length > 0 ? (
-            exams.map((exam) => (
-              <Card key={exam.exam_id} withBorder shadow="xs" p="md">
-                <Flex justify="space-between" align="flex-start">
-                  <Stack gap={4}>
+          {upcomingExams.length > 0 ? (
+            upcomingExams.map((exam) => (
+              <Card key={exam.exam_id} withBorder shadow="xs" p="md" radius="md">
+                <Flex justify="space-between" align="flex-start" wrap="wrap">
+                  <Stack gap={4} maw="75%">
                     <Title order={5}>{exam.title}</Title>
-                    <Text size="sm" c="dimmed">
-                      {exam.description}
-                    </Text>
-                    <Text size="sm">
-                      Type: <strong>{exam.type}</strong>
-                    </Text>
-                    <Text size="sm">
-                      Start: {new Date(exam.start_date).toLocaleString()}
-                    </Text>
-                    <Text size="sm">
-                      End: {new Date(exam.end_date).toLocaleString()}
-                    </Text>
+                    <Text size="sm" c="dimmed">{exam.description}</Text>
+                    <Text size="sm"><strong>Type:</strong> {exam.type}</Text>
+                    <Text size="sm"><strong>Start:</strong> {new Date(exam.start_date).toLocaleString()}</Text>
+                    <Text size="sm"><strong>End:</strong> {new Date(exam.end_date).toLocaleString()}</Text>
                   </Stack>
-  
                   <Button
                     size="xs"
                     variant="light"
-                    onClick={() =>
-                      router.push(`/student/exam-setup?examId=${exam.exam_id}`)
-                    }
+                    mt={{ base: 'md', sm: 0 }}
+                    onClick={() => router.push(`/student/exam-setup?examId=${exam.exam_id}`)}
                   >
                     Take Exam
                   </Button>
@@ -110,10 +172,53 @@ export function CourseDetails() {
               </Card>
             ))
           ) : (
-            <Text>No exams found.</Text>
+            <Text c="dimmed" ta="center">No upcoming exams.</Text>
           )}
         </Stack>
       </Card>
+
+      {/* Past Exams */}
+      <Card shadow="md" radius="md" p="xl" withBorder>
+        <Title order={3} mb="md">Past Exams</Title>
+        <Divider mb="lg" />
+        <Stack>
+          {pastExams.length > 0 ? (
+            pastExams.map((exam) => (
+              <Card key={exam.exam_id} withBorder shadow="xs" p="md" radius="md">
+                <Stack gap={4}>
+                  <Title order={5}>{exam.title}</Title>
+                  <Text size="sm" c="dimmed">{exam.description}</Text>
+                  <Text size="sm"><strong>Type:</strong> {exam.type}</Text>
+                  <Text size="sm"><strong>Start:</strong> {new Date(exam.start_date).toLocaleString()}</Text>
+                  <Text size="sm"><strong>End:</strong> {new Date(exam.end_date).toLocaleString()}</Text>
+                </Stack>
+              </Card>
+            ))
+          ) : (
+            <Text c="dimmed" ta="center">No past exams.</Text>
+          )}
+        </Stack>
+      </Card>
+
+      <Card shadow="md" radius="md" p="xl" withBorder mt="xl">
+        <Title order={3} mb="md">Enrolled Students</Title>
+        <Divider mb="lg" />
+        <Stack>
+          {students.length > 0 ? (
+            students.map((student) => (
+              <Card key={student.user_id} withBorder p="md" radius="md" shadow="xs">
+                <Stack gap={2}>
+                  <Text fw={500}>{student.first_name} {student.last_name}</Text>
+                  <Text size="sm" c="dimmed">{student.email}</Text>
+                </Stack>
+              </Card>
+            ))
+          ) : (
+            <Text c="dimmed" ta="center">No students enrolled yet.</Text>
+          )}
+        </Stack>
+      </Card>
+
     </Container>
   );  
 }

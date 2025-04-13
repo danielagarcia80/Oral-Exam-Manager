@@ -57,63 +57,64 @@ export class ExamService {
   }
 
   async getUpcomingExamsForUser(userId: string) {
-    const enrolledCourses = await this.prisma.enrollment.findMany({
-      where: { student_id: userId },
-      select: { course_id: true },
-    });
-
-    const taughtCourses = await this.prisma.teaches.findMany({
-      where: { instructor_id: userId },
-      select: { course_id: true },
-    });
-
-    const allCourseIds = [
-      ...new Set([
-        ...enrolledCourses.map((e) => e.course_id),
-        ...taughtCourses.map((t) => t.course_id),
-      ]),
-    ];
-
-    if (allCourseIds.length === 0) return [];
-
-    const upcomingExams = await this.prisma.exam.findMany({
+    const assignments = await this.prisma.assignedExam.findMany({
       where: {
-        course_id: { in: allCourseIds },
-        end_date: { gt: new Date() },
+        student_id: userId,
+        exam: {
+          end_date: {
+            gt: new Date(), // Only upcoming exams
+          },
+        },
       },
-      orderBy: { end_date: 'asc' },
       include: {
-        course: {
-          select: { title: true },
+        exam: {
+          include: {
+            course: {
+              select: { title: true },
+            },
+          },
+        },
+      },
+      orderBy: {
+        exam: {
+          end_date: 'asc',
         },
       },
     });
 
-    return upcomingExams;
+    // Extract just the exams
+    return assignments.map((a) => a.exam);
   }
 
   async getPastExamsForUser(userId: string) {
     const now = new Date();
 
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: { student_id: userId },
+    const assignments = await this.prisma.assignedExam.findMany({
+      where: {
+        student_id: userId,
+        exam: {
+          end_date: {
+            lte: now,
+          },
+        },
+      },
       include: {
-        course: {
+        exam: {
           include: {
-            exams: {
-              where: { end_date: { lte: now } },
-              include: {
-                course: {
-                  select: { title: true },
-                },
-              },
+            course: {
+              select: { title: true },
             },
           },
         },
       },
+      orderBy: {
+        exam: {
+          end_date: 'desc',
+        },
+      },
     });
 
-    return enrollments.flatMap((enrollment) => enrollment.course.exams);
+    return assignments.map((a) => a.exam);
   }
 
   async getExamsForInstructor(userId: string) {
