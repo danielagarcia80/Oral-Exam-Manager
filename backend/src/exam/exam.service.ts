@@ -4,8 +4,6 @@ import { CreateExamDto } from './create-exam.dto';
 import { ExamResponseDto } from './exam-response.dto';
 import { UpdateExamDto } from './update-exam.dto';
 
-// ...imports stay the same
-
 @Injectable()
 export class ExamService {
   constructor(private prisma: PrismaService) {}
@@ -183,7 +181,6 @@ export class ExamService {
     const { questionIds, ...examData } = data;
 
     console.log('[UpdateExam] Payload:', examData);
-
 
     return this.prisma.exam.update({
       where: { exam_id: examId },

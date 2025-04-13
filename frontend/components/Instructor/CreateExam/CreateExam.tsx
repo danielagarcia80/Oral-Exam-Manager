@@ -18,12 +18,13 @@ export default function CreateExam() {
   const [examType, setExamType] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [timingMode, setTimingMode] = useState('OVERALL');
   const [requiresAudio, setRequiresAudio] = useState(true);
   const [requiresVideo, setRequiresVideo] = useState(true);
   const [requiresScreenShare, setRequiresScreenShare] = useState(true);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [manualAssign, setManualAssign] = useState(false);
 
 
   // Question selection state
@@ -41,6 +42,7 @@ export default function CreateExam() {
       return;
     }
   
+    // 1. Create the exam
     const res = await fetch('http://localhost:4000/exams', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -58,44 +60,58 @@ export default function CreateExam() {
         requires_screen_share: requiresScreenShare,
       }),
     });
-
+  
     const data = await res.json();
     const examId = data.exam_id;
-
+  
+    // 2. Link questions to the exam
     for (let index = 0; index < selectedQuestions.length; index++) {
       const question_id = selectedQuestions[index];
-
+  
       const payload: any = {
         exam_id: examId,
         question_id,
         order_index: index,
       };
-
+  
       if (timingMode === 'PER_QUESTION') {
         payload.time_allocation = questionTimeMap[question_id] ?? 1; // Default to 1 min if missing
       }
-
+  
       await fetch('http://localhost:4000/exam-question-links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
     }
-
-
+  
+    // 3. Adjust total duration if timing is per-question
     if (timingMode === 'PER_QUESTION') {
       const total = Object.values(questionTimeMap).reduce((sum, t) => sum + t, 0);
-    
+  
       await fetch(`http://localhost:4000/exams/${examId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ duration_minutes: total }),
       });
     }
-    
+  
+    // 4. Assign students if manual assign is enabled
+   
+    await fetch(`http://localhost:4000/exams/${examId}/assigned-students`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        studentIds: manualAssign ? selectedStudentIds : undefined,
+      }),
+    });
 
+    // 5. Redirect
     router.push(`/instructor/course-details?courseId=${courseId}`);
   };
+  
 
   return (
     <Container pt="md">
@@ -111,7 +127,6 @@ export default function CreateExam() {
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
-
           durationMinutes={durationMinutes}
           setDurationMinutes={setDurationMinutes}
           timingMode={timingMode}
@@ -122,6 +137,11 @@ export default function CreateExam() {
           setRequiresVideo={setRequiresVideo}
           requiresScreenShare={requiresScreenShare}
           setRequiresScreenShare={setRequiresScreenShare}
+          selectedStudentIds={selectedStudentIds}
+          setSelectedStudentIds={setSelectedStudentIds}
+          courseId={courseId}
+          manualAssign={manualAssign}
+          setManualAssign={setManualAssign}
         />
 
 

@@ -209,8 +209,8 @@ export class CourseController {
     let invitesFromJson: Invite[] = [];
     try {
       invitesFromJson = JSON.parse(body.invites ?? '[]');
-    } catch (err) {
-      // optional: throw BadRequestException
+    } catch {
+      console.error('Failed to parse');
     }
 
     // 2. Parse invites from CSV

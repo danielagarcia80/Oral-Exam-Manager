@@ -1,12 +1,16 @@
-import { Controller, Post, Body, Get, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Patch } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './create-exam.dto';
 import { ExamResponseDto } from './exam-response.dto';
 import { UpdateExamDto } from './update-exam.dto';
+import { AssignedExamService } from './assigned-exam.service';
 
 @Controller('exams')
 export class ExamController {
-  constructor(private readonly examService: ExamService) {}
+  constructor(
+    private readonly examService: ExamService,
+    private readonly assignedExamService: AssignedExamService,
+  ) {}
 
   @Post()
   async create(@Body() dto: CreateExamDto) {
@@ -65,5 +69,18 @@ export class ExamController {
   @Put(':id')
   updateExam(@Param('id') id: string, @Body() updateExamDto: UpdateExamDto) {
     return this.examService.update(id, updateExamDto);
+  }
+
+  @Patch(':examId/assigned-students')
+  assignStudentsToExam(
+    @Param('examId') examId: string,
+    @Body('studentIds') studentIds: string[],
+  ) {
+    return this.assignedExamService.assignStudentsToExam(examId, studentIds);
+  }
+
+  @Get(':examId/assigned-students')
+  getAssignedStudents(@Param('examId') examId: string) {
+    return this.assignedExamService.getAssignedStudents(examId);
   }
 }

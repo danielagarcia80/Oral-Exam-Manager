@@ -8,8 +8,21 @@ import {
   Title,
   Paper,
   Checkbox,
+  Button,
+  Divider,
+  Stack,
+  Text,
+  Collapse
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
+import { useEffect, useState } from 'react';
+
+type Student = {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+};
 
 interface ExamDetailsProps {
   title: string;
@@ -34,6 +47,14 @@ interface ExamDetailsProps {
   setRequiresVideo: (val: boolean) => void;
   requiresScreenShare: boolean;
   setRequiresScreenShare: (val: boolean) => void;
+
+  selectedStudentIds: string[];
+  setSelectedStudentIds: (val: string[]) => void;
+
+  courseId: string | null;
+
+  manualAssign: boolean;
+  setManualAssign: (val: boolean) => void;
 }
 
 export function ExamDetails({
@@ -57,7 +78,36 @@ export function ExamDetails({
   setRequiresVideo,
   requiresScreenShare,
   setRequiresScreenShare,
+  selectedStudentIds,
+  setSelectedStudentIds,
+  courseId,
+  manualAssign,
+  setManualAssign,
 }: ExamDetailsProps) {
+
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
+
+  useEffect(() => {
+    if (!courseId) { return };
+    const fetchStudents = async () => {
+      try {
+        setLoadingStudents(true);
+        const res = await fetch(`http://localhost:4000/courses/${courseId}/students`);
+        const data = await res.json();
+        setStudents(data);
+        setSelectedStudentIds(data.map((s: Student) => s.user_id));
+      } catch (err) {
+        console.error('Failed to fetch students:', err);
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+  
+    fetchStudents();
+  }, [courseId]);
+  
+
   return (
     <Paper p="lg" withBorder radius="md" mb="lg">
       <Title order={3} mb="md">Exam Details</Title>
@@ -148,6 +198,56 @@ export function ExamDetails({
           onChange={(e) => setRequiresScreenShare(e.currentTarget.checked)}
         />
       </Group>
+      
+      <Divider my="md" label="Assign to Students" labelPosition="center" />
+
+      <Checkbox
+        label="Manually assign this exam to specific students"
+        checked={manualAssign}
+        onChange={(e) => setManualAssign(e.currentTarget.checked)}
+        mt="md"
+      />
+
+      <Collapse in={manualAssign}>
+        {loadingStudents ? (
+          <Text mt="sm">Loading students...</Text>
+        ) : (
+          <>
+            <Button
+              size="xs"
+              mt="sm"
+              onClick={() => {
+                if (selectedStudentIds.length === students.length) {
+                  setSelectedStudentIds([]); // Deselect all
+                } else {
+                  setSelectedStudentIds(students.map((s) => s.user_id)); // Select all
+                }
+              }}
+            >
+              {selectedStudentIds.length === students.length ? 'Deselect All' : 'Select All'}
+            </Button>
+
+            <Stack mt="sm">
+              {students.map((student) => (
+                <Checkbox
+                  key={student.user_id}
+                  label={`${student.first_name} ${student.last_name} (${student.email})`}
+                  checked={selectedStudentIds.includes(student.user_id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedStudentIds([...selectedStudentIds, student.user_id]);
+                    } else {
+                      setSelectedStudentIds(
+                        selectedStudentIds.filter((id) => id !== student.user_id)
+                      );
+                    }
+                  }}
+                />
+              ))}
+            </Stack>
+          </>
+        )}
+      </Collapse>
     </Paper>
   );
 }
