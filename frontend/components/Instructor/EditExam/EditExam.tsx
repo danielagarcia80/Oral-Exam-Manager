@@ -28,9 +28,7 @@ export default function EditExam() {
   const [requiresVideo, setRequiresVideo] = useState(false);
   const [requiresScreenShare, setRequiresScreenShare] = useState(false);
   const [questionTimeMap, setQuestionTimeMap] = useState<Record<string, number>>({});
-
-
-  
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
 
   // Question selection state
@@ -55,6 +53,11 @@ export default function EditExam() {
         setRequiresAudio(data.requires_audio);
         setRequiresVideo(data.requires_video);
         setRequiresScreenShare(data.requires_screen_share);
+
+        // Fetch students who are assigned to this exam
+        const assignedRes = await fetch(`http://localhost:4000/exams/${examId}/assigned-students`);
+        const assignedData = await assignedRes.json();
+        setSelectedStudentIds(assignedData.map((a: any) => a.student.user_id));
 
         // Build time allocation map
         const qtMap: Record<string, number> = {};
@@ -146,8 +149,13 @@ export default function EditExam() {
         });
       }
       
-      
-      
+      await fetch(`http://localhost:4000/exams/${examId}/assigned-students`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ studentIds: selectedStudentIds }),
+      });
 
       notifications.show({
         title: 'Success',
@@ -192,6 +200,9 @@ export default function EditExam() {
           setRequiresVideo={setRequiresVideo}
           requiresScreenShare={requiresScreenShare}
           setRequiresScreenShare={setRequiresScreenShare}
+          courseId={courseId}
+          selectedStudentIds={selectedStudentIds}
+          setSelectedStudentIds={setSelectedStudentIds}
         />
 
 

@@ -5,14 +5,19 @@ import { PrismaService } from 'src/prisma/prisma.service'; // Adjust path if nee
 export class AssignedExamService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async assignStudentsToExam(examId: string, studentIds?: string[]) {
-    // Step 1: Delete existing assignments
+  async assignStudentsToExam(
+    examId: string,
+    studentIds?: string[],
+    forceManual = false, // 👈 new param
+  ) {
+    // Step 1: Remove all existing assignments
     await this.prisma.assignedExam.deleteMany({
       where: { exam_id: examId },
     });
 
-    // Step 2: If no studentIds are passed, assign to all enrolled students in the course
-    if (!studentIds || studentIds.length === 0) {
+    // Step 2: Decide what studentIds to assign
+    if ((!studentIds || studentIds.length === 0) && !forceManual) {
+      // Create mode fallback to all enrolled
       const exam = await this.prisma.exam.findUnique({
         where: { exam_id: examId },
         include: {
@@ -29,7 +34,10 @@ export class AssignedExamService {
       studentIds = exam.course.enrollments.map((e) => e.student_id);
     }
 
-    // Step 3: Create assignments
+    if (!studentIds || studentIds.length === 0) {
+      return { message: 'No students to assign' }; // 👈 prevents Prisma error
+    }
+
     const data = studentIds.map((studentId) => ({
       exam_id: examId,
       student_id: studentId,

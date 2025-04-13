@@ -72,11 +72,15 @@ export class ExamController {
   }
 
   @Patch(':examId/assigned-students')
-  assignStudentsToExam(
+  async assignStudentsToExam(
     @Param('examId') examId: string,
-    @Body('studentIds') studentIds: string[],
+    @Body('studentIds') studentIds?: string[],
   ) {
-    return this.assignedExamService.assignStudentsToExam(examId, studentIds);
+    return this.assignedExamService.assignStudentsToExam(
+      examId,
+      studentIds,
+      true,
+    ); // 👈 force manual for edit
   }
 
   @Get(':examId/assigned-students')

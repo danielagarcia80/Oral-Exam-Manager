@@ -8,8 +8,20 @@ import {
   Title,
   Paper,
   Checkbox,
+  Stack,
+  Divider,
+  Text,
+  Button,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
+import { useEffect, useState } from 'react';
+
+type Student = {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+};
 
 interface ExamDetailsProps {
   title: string;
@@ -35,6 +47,10 @@ interface ExamDetailsProps {
   setRequiresVideo: (val: boolean) => void;
   requiresScreenShare: boolean;
   setRequiresScreenShare: (val: boolean) => void;
+
+  courseId: string | null;
+  selectedStudentIds: string[];
+  setSelectedStudentIds: (val: string[]) => void;
 }
 
 export function ExamDetails({
@@ -58,7 +74,37 @@ export function ExamDetails({
   setRequiresVideo,
   requiresScreenShare,
   setRequiresScreenShare,
+  courseId,
+  selectedStudentIds,
+  setSelectedStudentIds,
 }: ExamDetailsProps) {
+
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
+
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      if (!courseId) {return;}
+  
+      try {
+        setLoadingStudents(true);
+        const res = await fetch(`http://localhost:4000/courses/${courseId}/students`);
+        const data = await res.json();
+        setStudents(data);
+  
+        // Optional: if this is Create mode, pre-select all students
+        // setSelectedStudentIds(data.map((s: Student) => s.user_id));
+      } catch (err) {
+        console.error('[ExamDetails] Failed to fetch students:', err);
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+  
+    fetchStudents();
+  }, [courseId]);
+  
   return (
     <Paper p="lg" withBorder radius="md" mb="lg">
       <Title order={3} mb="md">Exam Details</Title>
@@ -149,6 +195,48 @@ export function ExamDetails({
           onChange={(e) => setRequiresScreenShare(e.currentTarget.checked)}
         />
       </Group>
+
+      {/* 🧠 Student Assignment Section */}
+      <Divider my="lg" label="Assigned Students" labelPosition="center" />
+
+      {loadingStudents ? (
+        <Text mt="sm">Loading students...</Text>
+      ) : (
+        <>
+          <Button
+            size="xs"
+            mt="sm"
+            onClick={() => {
+              if (selectedStudentIds.length === students.length) {
+                setSelectedStudentIds([]);
+              } else {
+                setSelectedStudentIds(students.map((s) => s.user_id));
+              }
+            }}
+          >
+            {selectedStudentIds.length === students.length ? 'Deselect All' : 'Select All'}
+          </Button>
+
+          <Stack mt="sm">
+            {students.map((student) => (
+              <Checkbox
+                key={student.user_id}
+                label={`${student.first_name} ${student.last_name} (${student.email})`}
+                checked={selectedStudentIds.includes(student.user_id)}
+                onChange={(e) => {
+                  if (e.currentTarget.checked) {
+                    setSelectedStudentIds([...selectedStudentIds, student.user_id]);
+                  } else {
+                    setSelectedStudentIds(
+                      selectedStudentIds.filter((id) => id !== student.user_id)
+                    );
+                  }
+                }}
+              />
+            ))}
+          </Stack>
+        </>
+      )}
     </Paper>
   );
 }
