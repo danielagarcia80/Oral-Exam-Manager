@@ -21,6 +21,7 @@ import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
 import { AuthModule } from './auth/auth.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { RecordingUploadModule } from './recording-upload/recording-upload.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { diskStorage } from 'multer';
         },
       }),
     }),
+    RecordingUploadModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

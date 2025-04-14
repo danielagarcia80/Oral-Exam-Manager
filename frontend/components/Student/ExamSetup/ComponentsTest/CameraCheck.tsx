@@ -2,10 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button, Stack, Text } from '@mantine/core';
+import { useStreamContext } from '../StreamContext'; // adjust path as needed
 
 export function CameraCheck({ onSuccess }: { onSuccess?: () => void }) {
   const [success, setSuccess] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const { setCameraStream } = useStreamContext();
+
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -15,6 +18,7 @@ export function CameraCheck({ onSuccess }: { onSuccess?: () => void }) {
       const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
       console.log('[CameraCheck] Got stream:', newStream);
       setStream(newStream);
+      setCameraStream(newStream);
       setSuccess(true);
       
       onSuccess?.();

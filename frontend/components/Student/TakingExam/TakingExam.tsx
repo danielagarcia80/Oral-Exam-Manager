@@ -12,84 +12,75 @@ import {
   Textarea,
   Title,
 } from '@mantine/core';
-import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useStreamContext } from '@/components/Student/ExamSetup/StreamContext';
+import { useSession } from 'next-auth/react';
 
 type Question = {
   id: string;
   text: string;
   type: 'multiple_choice' | 'checkbox' | 'short_answer';
   options?: string[];
-};
-
-type Answer = {
-  question_id: string;
-  answer: string | string[];
+  images: {
+    image_id: string;
+    url: string;
+    filename: string;
+  }[];
 };
 
 export default function TakingExam() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const examId = searchParams.get('examId');
-  const { data: session } = useSession();
-  const student_id = session?.user?.id;
 
+  const { data: session } = useSession();
+  
+  const duration = Number(searchParams.get('duration') || 10);
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Answer[]>([]);
-  const [duration, setDuration] = useState<number>(1);
-  const [timeLeft, setTimeLeft] = useState<number>(1);
-  const [loading, setLoading] = useState(true);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [timeLeft, setTimeLeft] = useState(duration * 60);
+  const router = useRouter();
 
-  const currentQuestion = questions[currentIndex];
+  const { screenStream, micStream, cameraStream } = useStreamContext();
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [recordingChunks, setRecordingChunks] = useState<Blob[]>([]);
 
-  useEffect(() => {
-    const blockEvent = (e: Event) => e.preventDefault();
-    document.addEventListener('contextmenu', blockEvent);
-    document.addEventListener('copy', blockEvent);
-    document.addEventListener('cut', blockEvent);
-    document.addEventListener('paste', blockEvent);
-    return () => {
-      document.removeEventListener('contextmenu', blockEvent);
-      document.removeEventListener('copy', blockEvent);
-      document.removeEventListener('cut', blockEvent);
-      document.removeEventListener('paste', blockEvent);
-    };
-  }, []);
+
+  const student_id = session?.user?.id;
+
 
   useEffect(() => {
-    if (!examId) return;
+    if (!examId) {return;}
 
-    const fetchExam = async () => {
-      try {
-        const res = await fetch(`http://localhost:4000/exams/${examId}`);
-        const data = await res.json();
-        const sorted = data.questions.sort((a: any, b: any) => a.order_index - b.order_index);
+    const fetchQuestions = async () => {
+      const res = await fetch(`http://localhost:4000/exams/${examId}`);
+      const data = await res.json();
 
-        setQuestions(
-          sorted.map((q: any) => ({
-            id: q.question.id,
-            text: q.question.text,
-            type: q.question.type,
-            options: q.question.options,
-          }))
-        );
-        setDuration(data.duration_minutes);
-        console.log(data.duration_minutes)
-        console.log(duration)
-        setTimeLeft(data.duration_minutes * 60);
-        console.log(timeLeft)
-        setLoading(false);
-      } catch (err) {
-        console.error('Failed to load exam:', err);
-      }
+      const sorted = data.questions.sort(
+        (a: any, b: any) => a.order_index - b.order_index
+      );
+
+      setQuestions(
+        sorted.map((q: any) => ({
+          id: q.question.id,
+          text: q.question.text,
+          type: q.question.type,
+          options: q.question.options,
+          images: q.question.images?.map((imgObj: any) => ({
+            image_id: imgObj.image.image_id,
+            url: `http://localhost:4000${imgObj.image.image_data}`,
+            filename: imgObj.image.original_filename,
+          })) ?? [],
+        }))
+      );
     };
 
-    fetchExam();
+    fetchQuestions();
   }, [examId]);
 
+  // Timer countdown
   useEffect(() => {
     if (timeLeft <= 0) {
       submitExam();
@@ -100,34 +91,105 @@ export default function TakingExam() {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  const handleAnswerChange = (value: string | string[]) => {
-    setAnswers((prev) => {
-      const updated = [...prev];
-      const index = updated.findIndex((a) => a.question_id === currentQuestion.id);
-      if (index >= 0) {
-        updated[index].answer = value;
-      } else {
-        updated.push({ question_id: currentQuestion.id, answer: value });
-      }
-      return updated;
-    });
+  // Start MediaRecorder
+  useEffect(() => {
+    if (!screenStream || !micStream) {return;}
+
+    const videoTrack = screenStream.getVideoTracks()[0];
+    const audioTrack = micStream.getAudioTracks()[0];
+
+    if (!videoTrack || !audioTrack) {
+      console.warn('Missing screen or mic track');
+      return;
+    }
+
+    const combined = new MediaStream([videoTrack, audioTrack]);
+    let recorder: MediaRecorder;
+
+    try {
+      recorder = new MediaRecorder(combined, { mimeType: 'video/webm' });
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          setRecordingChunks((prev) => [...prev, e.data]);
+        }
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      console.log('🎥 MediaRecorder started');
+    } catch (err) {
+      console.error('Error initializing MediaRecorder:', err);
+    }
+
+    return () => {
+      recorder?.stop();
+      combined.getTracks().forEach((t) => t.stop());
+      console.log('🛑 MediaRecorder stopped');
+    };
+  }, [screenStream, micStream]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
   };
 
-  const nextQuestion = () => setCurrentIndex((prev) => prev + 1);
+  const handleAnswerChange = (val: any) => {
+    const questionId = questions[currentIndex].id;
+    setAnswers((prev) => ({ ...prev, [questionId]: val }));
+  };
+
+  const nextQuestion = () => {
+    setCurrentIndex((i) => i + 1);
+  };
 
   const submitExam = async () => {
     try {
+
+      if (!student_id || !examId) {
+        console.error('Missing student_id or examId');
+        return;
+      }
+      
+      if (mediaRecorder) {
+        mediaRecorder.stop();
+
+        // Wait for data to be flushed
+        await new Promise<void>((resolve) => {
+          const checkReady = () => {
+            if (recordingChunks.length > 0) {resolve();}
+            else {setTimeout(checkReady, 100);}
+          };
+          checkReady();
+        });
+      }
+
+      const blob = new Blob(recordingChunks, { type: 'video/webm' });
+      const formData = new FormData();
+      formData.append('file', blob, 'recording.webm');
+
+      const uploadRes = await fetch('http://localhost:4000/recordings', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+      const recordingUrl = uploadData.url;
+
       const payload = {
-        student_id: student_id,       // 🔁 Replace with actual value dynamically if needed
+        student_id: student_id,
         exam_id: examId,
         attempt_number: 1,
-        recording_url: '',                   // Or a real URL if recording is implemented
+        recording_url: recordingUrl,
         duration_minutes: duration,
         grade_percentage: 0,
         feedback: '',
       };
+      console.log('Payload:', payload);
 
-      console.log('Submitting payload:', payload);
 
       const res = await fetch('http://localhost:4000/exam-submissions', {
         method: 'POST',
@@ -140,50 +202,95 @@ export default function TakingExam() {
         console.error('Submission failed:', errorData);
         return;
       }
-
+      
+      screenStream?.getTracks().forEach((t) => t.stop());
+      micStream?.getTracks().forEach((t) => t.stop());
+      cameraStream?.getTracks().forEach((t) => t.stop());
+      
       router.push('/dashboard');
     } catch (err) {
-      console.error('Network error during submission:', err);
+      console.error('Error during exam submission:', err);
     }
   };
 
-
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
-
-  useEffect(() => {
-    console.log('Duration updated:', duration);
-  }, [duration]);
-
-  useEffect(() => {
-    console.log('Time left updated:', timeLeft);
-  }, [timeLeft]);
-
-
-  if (loading || !currentQuestion) return <Text>Loading exam...</Text>;
-
+  const currentQuestion = questions[currentIndex];
 
   return (
-
     <Container size="md" py="lg">
-      <Group position="apart" mb="lg">
+      {/* Optional banner */}
+      <Text
+        c="red"
+        ta="center"
+        fw={700}
+        mt="sm"
+        style={{
+          position: 'fixed',
+          top: 0,
+          width: '100%',
+          backgroundColor: '#ffeaea',
+          padding: '8px 0',
+          zIndex: 999,
+        }}
+      >
+        🔴 Recording in progress...
+      </Text>
+
+      {/* Camera preview */}
+      {cameraStream && (
+        <video
+          autoPlay
+          muted
+          ref={(ref) => {
+            if (ref && cameraStream && ref.srcObject !== cameraStream) {
+              ref.srcObject = cameraStream;
+            }
+          }}
+          style={{
+            position: 'fixed',
+            bottom: 16,
+            right: 16,
+            width: 200,
+            height: 150,
+            borderRadius: 8,
+            border: '2px solid #ccc',
+            zIndex: 999,
+            backgroundColor: '#000',
+          }}
+        />
+      )}
+
+      <Group gap="apart" mb="lg">
         <Title order={3}>
           Time Left:{' '}
           <Text span c={timeLeft <= 300 ? 'red' : 'blue'}>
             {formatTime(timeLeft)}
           </Text>
         </Title>
-        <Progress value={(timeLeft / (duration * 60)) * 100} color={timeLeft <= 300 ? 'red' : 'blue'} />
+        <Progress
+          value={(timeLeft / (duration * 60)) * 100}
+          color={timeLeft <= 300 ? 'red' : 'blue'}
+        />
       </Group>
 
-      <Stack spacing="md">
+      <Stack gap="md">
         <Title order={4}>Question {currentIndex + 1}</Title>
-        <Text>{currentQuestion.text}</Text>
 
-        {currentQuestion.type === 'multiple_choice' && (
+        {currentQuestion?.images?.length > 0 && (
+          <Stack gap="xs">
+            {currentQuestion.images.map((img) => (
+              <img
+                key={img.image_id}
+                src={img.url}
+                alt={img.filename}
+                style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8 }}
+              />
+            ))}
+          </Stack>
+        )}
+
+        <Text>{currentQuestion?.text}</Text>
+
+        {currentQuestion?.type === 'multiple_choice' && (
           <Radio.Group onChange={handleAnswerChange}>
             {currentQuestion.options?.map((opt, i) => (
               <Radio key={i} value={opt} label={opt} />
@@ -191,7 +298,7 @@ export default function TakingExam() {
           </Radio.Group>
         )}
 
-        {currentQuestion.type === 'checkbox' && (
+        {currentQuestion?.type === 'checkbox' && (
           <Checkbox.Group onChange={handleAnswerChange}>
             {currentQuestion.options?.map((opt, i) => (
               <Checkbox key={i} value={opt} label={opt} />
@@ -199,14 +306,14 @@ export default function TakingExam() {
           </Checkbox.Group>
         )}
 
-        {currentQuestion.type === 'short_answer' && (
+        {currentQuestion?.type === 'short_answer' && (
           <Textarea
             placeholder="Type your answer..."
             onChange={(e) => handleAnswerChange(e.currentTarget.value)}
           />
         )}
 
-        <Group position="right" mt="lg">
+        <Group justify="flex-end" mt="lg">
           {currentIndex === questions.length - 1 ? (
             <Button onClick={submitExam}>Submit Exam</Button>
           ) : (
