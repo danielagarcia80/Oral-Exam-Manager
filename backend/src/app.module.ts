@@ -20,7 +20,7 @@ import { FileUploadModule } from './file-upload/file-upload.module';
 import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
 import { AuthModule } from './auth/auth.module';
 import { MulterModule } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [
@@ -42,7 +42,14 @@ import { memoryStorage } from 'multer';
     ExamSubmissionModule,
     AuthModule,
     MulterModule.register({
-      storage: memoryStorage(),
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now();
+          const cleanedName = file.originalname.replace(/\s+/g, '-'); // replace spaces with dashes
+          cb(null, `${uniqueSuffix}-${cleanedName}`);
+        },
+      }),
     }),
   ],
   controllers: [AppController],

@@ -108,6 +108,7 @@ model Course {
   enrollments Enrollment[]
   exams       Exam[]
   outcomes    CourseLearningOutcome[]
+  images      QuestionImages[]
 }
 
 model Teaches {
@@ -206,10 +207,16 @@ model Question {
 }
 
 model QuestionImages {
-  image_id   String   @id @default(uuid())
-  image_data String @db.LongText
-  questions  QuestionHasImage[]
+  image_id    String   @id @default(uuid())
+  image_data  String
+  original_filename String
+
+  course_id   String
+  course      Course  @relation(fields: [course_id], references: [course_id])
+
+  questions   QuestionHasImage[]
 }
+
 
 model QuestionHasKeyword {
   id          String   @id @default(uuid())
