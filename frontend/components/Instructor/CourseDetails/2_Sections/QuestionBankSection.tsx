@@ -344,36 +344,29 @@ export function QuestionBankSection() {
                         mt="sm"
                       />
 
-
-
-                      <Text size="sm" mt="md" mb="xs">Or select an existing image:</Text>
-
-                      <Group wrap="wrap" gap="xs">
-                        {existingImages.map((img) => (
+                      {selectedImageId && (
+                        <>
+                          <Text size="sm" mt="md" mb="xs">Selected Image Preview:</Text>
                           <Paper
-                            key={img.image_id}
-                            onClick={() => {
-                              setSelectedImageId(img.image_id);
-                              setNewImageFile(null); // Clear uploaded file if selecting
-                            }}
-                            shadow={selectedImageId === img.image_id ? 'md' : 'xs'}
                             withBorder
+                            p="xs"
                             style={{
-                              borderColor: selectedImageId === img.image_id ? '#228be6' : '#ccc',
-                              cursor: 'pointer',
-                              padding: 4,
+                              display: 'inline-block',
+                              borderColor: '#228be6',
                               borderWidth: 2,
+                              borderRadius: 8,
                             }}
                           >
                             <img
-                              src={`http://localhost:4000${img.path}`}
-                              alt="Question"
+                              src={`http://localhost:4000${
+                                existingImages.find((img) => img.image_id === selectedImageId)?.path || ''
+                              }`}
+                              alt="Selected"
                               style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }}
                             />
                           </Paper>
-                        ))}
-                      </Group>
-
+                        </>
+                      )}
 
                       <Button type="submit" mt="md">
                         Submit
