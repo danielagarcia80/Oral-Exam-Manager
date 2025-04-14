@@ -5,6 +5,8 @@ import {
   Body,
   UseInterceptors,
   UploadedFile,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { QuestionImageService } from './question-image.service';
 import { CreateQuestionImageDto } from './create-question-image.dto';
@@ -23,15 +25,21 @@ export class QuestionImageController {
   }
 
   @Get()
-  async findAll(): Promise<QuestionImageResponseDto[]> {
-    return this.imageService.findAll();
+  getCourseImages(@Query('courseId') courseId: string) {
+    console.log('GET /question-images?courseId=', courseId); // ✅
+    if (!courseId) throw new BadRequestException('Missing courseId');
+    return this.imageService.findByCourse(courseId);
   }
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  uploadImage(@UploadedFile() file: Express.Multer.File) {
-    // file.buffer or file.path depending on storage
-    console.log('file received:', file);
-    return this.imageService.saveImage(file);
+  uploadImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('courseId') courseId: string, // ✅ or @Body('courseId') if you're using body
+  ) {
+    if (!courseId) {
+      throw new BadRequestException('Missing courseId');
+    }
+    return this.imageService.saveImage(file, courseId);
   }
 }
