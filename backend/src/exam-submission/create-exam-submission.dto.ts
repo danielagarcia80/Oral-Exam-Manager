@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsDateString } from 'class-validator';
+import { IsString, IsNumber, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateExamSubmissionDto {
   @IsString()
@@ -16,9 +16,11 @@ export class CreateExamSubmissionDto {
   @IsNumber()
   duration_minutes: number;
 
+  @IsOptional()
   @IsNumber()
   grade_percentage: number;
 
+  @IsOptional()
   @IsString()
   feedback: string;
 }
