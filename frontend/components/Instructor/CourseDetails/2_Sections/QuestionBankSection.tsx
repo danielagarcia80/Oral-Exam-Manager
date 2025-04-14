@@ -21,6 +21,12 @@ interface Question {
   text: string;
   difficulty: number;
   type: string;
+  images?: {
+    image: {
+      image_id: string;
+      image_data: string;
+    };
+  }[];
 }
 
 interface OutcomeBlock {
@@ -28,6 +34,16 @@ interface OutcomeBlock {
   description: string;
   questions: Question[];
 }
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 
 export function QuestionBankSection() {
   const { classes } = useStyles();
@@ -45,6 +61,11 @@ export function QuestionBankSection() {
   const [questionText, setQuestionText] = useState('');
   const [difficulty, setDifficulty] = useState<number>(1);
   const [type, setType] = useState(''); // or 'multiple-choice'
+
+  const [newImageFile, setNewImageFile] = useState<File | null>(null); // for uploading new
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null); // for reusing existing
+
+  const [existingImages, setExistingImages] = useState<{ image_id: string; image_data: string }[]>([]);
 
   const handleAddLearningOutcome = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,6 +122,8 @@ export function QuestionBankSection() {
       });
   
       const questionData = await questionRes.json();
+      const questionId = questionData.question_id;
+
   
       // Step 2: Link to outcome
       await fetch('http://localhost:4000/question-outcomes', {
@@ -111,10 +134,42 @@ export function QuestionBankSection() {
           learning_outcome_id: targetOutcomeId,
         }),
       });
-  
+
+      // Step 3: Handle image
+      let imageId = null;
+
+      if (newImageFile) {
+        const formData = new FormData();
+        formData.append('file', newImageFile);
+      
+        const imageRes = await fetch('http://localhost:4000/question-images/upload', {
+          method: 'POST',
+          body: formData,
+          // ❌ DO NOT set Content-Type header manually
+          // headers: { 'Content-Type': 'multipart/form-data' }, ← this will break it!
+        });
+      
+        const imageData = await imageRes.json();
+        imageId = imageData.image_id;
+
+      } else if (selectedImageId) {
+        imageId = selectedImageId;
+      }
+
+      // Step 4: Link image to question if applicable
+      if (imageId) {
+        await fetch('http://localhost:4000/question-image-links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_id: questionId, image_id: imageId }),
+        });
+      }
+
       setShowQuestionModal(false);
       setQuestionText('');
       setTargetOutcomeId(null);
+      setNewImageFile(null);
+      setSelectedImageId(null);
   
       // Refresh
       const res = await fetch(`http://localhost:4000/courses/${courseId}/question-bank`);
@@ -136,7 +191,21 @@ export function QuestionBankSection() {
     };
 
     fetchData();
-  }, [courseId]);
+
+    if (!showQuestionModal) {return;}
+
+    const fetchImages = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/question-images');
+        const images = await res.json();
+        setExistingImages(images);
+      } catch (err) {
+        console.error('Failed to fetch images:', err);
+      }
+    };
+
+  fetchImages();
+  }, [courseId, showQuestionModal]);
 
   return (
     <Stack className={classes.section}>
@@ -181,6 +250,15 @@ export function QuestionBankSection() {
                         <Text size="xs" c="dimmed">
                           Type: {q.type}, Difficulty: {q.difficulty}
                         </Text>
+                        {q.images?.map((imgLink) => (
+                          <img
+                            key={imgLink.image.image_id}
+                            src={`http://localhost:4000${imgLink.image.image_data}`} // ✅ full URL
+                            alt="Question"
+                            style={{ maxWidth: '100%', maxHeight: 200, marginTop: 8, borderRadius: 8 }}
+                          />
+                        ))}
+
                       </Paper>
                     ))
                   ) : (
@@ -239,6 +317,66 @@ export function QuestionBankSection() {
                         ]}
                         mb="sm"
                       />
+
+                      {/* Upload new image */}
+                      <TextInput
+                        label="Upload New Image"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.currentTarget.files?.[0]) {
+                            setNewImageFile(e.currentTarget.files[0]);
+                            setSelectedImageId(null); // disable selection if uploading
+                          }
+                        }}
+                        mt="sm"
+                      />
+
+                      {/* OR select an existing image */}
+                      <Select
+                        label="Select Existing Image"
+                        placeholder="(Optional)"
+                        data={existingImages.map((img) => ({
+                          value: img.image_id,
+                          label: `Image ${img.image_id.substring(0, 6)}...`,
+                        }))}
+                        value={selectedImageId}
+                        onChange={(val) => {
+                          setSelectedImageId(val);
+                          setNewImageFile(null); // disable upload if selecting
+                        }}
+                        mt="sm"
+                      />
+
+                      <Text size="sm" mt="md" mb="xs">Or select an existing image:</Text>
+
+                      <Group wrap="wrap" gap="xs">
+                        {existingImages.map((img) => (
+                          <Paper
+                            key={img.image_id}
+                            onClick={() => {
+                              setSelectedImageId(img.image_id);
+                              setNewImageFile(null); // Clear uploaded file if selecting
+                            }}
+                            shadow={selectedImageId === img.image_id ? 'md' : 'xs'}
+                            withBorder
+                            style={{
+                              borderColor: selectedImageId === img.image_id ? '#228be6' : '#ccc',
+                              cursor: 'pointer',
+                              padding: 4,
+                              borderWidth: 2,
+                            }}
+                          >
+                            <img
+                              src={`http://localhost:4000${img.image_data}`}
+                              alt="Question"
+                              style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }}
+                            />
+
+                          </Paper>
+                        ))}
+                      </Group>
+
 
                       <Button type="submit" mt="md">
                         Submit

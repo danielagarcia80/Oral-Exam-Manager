@@ -179,7 +179,15 @@ export class CourseService {
           include: {
             questions: {
               include: {
-                question: true,
+                question: {
+                  include: {
+                    images: {
+                      include: {
+                        image: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },

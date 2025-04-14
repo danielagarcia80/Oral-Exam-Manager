@@ -23,6 +23,7 @@ async function main() {
   await prisma.exam.deleteMany();
   await prisma.question.deleteMany();
   await prisma.learningOutcome.deleteMany();
+  await prisma.questionImages.deleteMany();
   await prisma.course.deleteMany();
   await prisma.user.deleteMany();
 

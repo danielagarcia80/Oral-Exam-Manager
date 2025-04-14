@@ -19,6 +19,8 @@ import { ExamQuestionLinkModule } from './exam-question-link/exam-question-link.
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { ExamSubmissionModule } from './exam-submission/exam-submission.module';
 import { AuthModule } from './auth/auth.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 @Module({
   imports: [
@@ -39,6 +41,9 @@ import { AuthModule } from './auth/auth.module';
     FileUploadModule,
     ExamSubmissionModule,
     AuthModule,
+    MulterModule.register({
+      storage: memoryStorage(),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

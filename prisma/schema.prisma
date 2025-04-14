@@ -207,7 +207,7 @@ model Question {
 
 model QuestionImages {
   image_id   String   @id @default(uuid())
-  image_data String
+  image_data String @db.LongText
   questions  QuestionHasImage[]
 }
 
