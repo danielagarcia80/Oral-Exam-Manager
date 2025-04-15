@@ -118,10 +118,10 @@ export default function TakingExam() {
   const submitExam = async () => {
     try {
       const payload = {
-        student_id: student_id,       // 🔁 Replace with actual value dynamically if needed
+        student_id: student_id,       
         exam_id: examId,
         attempt_number: 1,
-        recording_url: '',                   // Or a real URL if recording is implemented
+        recording_url: '',                  
         duration_minutes: duration,
         grade_percentage: 0,
         feedback: '',
