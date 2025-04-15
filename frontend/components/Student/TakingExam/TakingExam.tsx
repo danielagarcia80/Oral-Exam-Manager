@@ -35,21 +35,21 @@ export default function TakingExam() {
 
   const { data: session } = useSession();
   
-  const duration = Number(searchParams.get('duration') || 10);
-
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [, setAnswers] = useState<Record<string, any>>({});
-  const [timeLeft, setTimeLeft] = useState(duration * 60);
+  const [duration, setDuration] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(10);
   const router = useRouter();
 
   const { screenStream, micStream, cameraStream } = useStreamContext();
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  //const [recordingChunks, setRecordingChunks] = useState<Blob[]>([]);
 
+  const [timingMode, setTimingMode] = useState<'OVERALL' | 'PER_QUESTION'>('OVERALL');
+  const [questionTimes, setQuestionTimes] = useState<number[]>([]); // e.g., [60, 90, 120]
+  const [questionTimeLeft, setQuestionTimeLeft] = useState(0);
 
   const studentID = session?.user?.id;
-
 
   useEffect(() => {
     if (!examId) {return;}
@@ -57,10 +57,22 @@ export default function TakingExam() {
     const fetchQuestions = async () => {
       const res = await fetch(`http://localhost:4000/exams/${examId}`);
       const data = await res.json();
+      setTimingMode(data.timing_mode);
+      const fetchedDuration = data.duration_minutes * 60; // Convert to seconds
+      setDuration(fetchedDuration);
+      setTimeLeft(fetchedDuration);
 
       const sorted = data.questions.sort(
         (a: any, b: any) => a.order_index - b.order_index
       );
+
+      const times = sorted.map((q) => (Number(q.time_allocation) || 1));
+      setQuestionTimes(times);
+      setQuestionTimeLeft(times[0]);
+
+      console.log('Question Times (seconds):', times);
+      console.log('Initial question time left:', times[0]);
+
 
       setQuestions(
         sorted.map((q: any) => ({
@@ -86,10 +98,38 @@ export default function TakingExam() {
       submitExam();
       return;
     }
+  
+    const interval = setInterval(() => {
+      setTimeLeft((t) => t - 1);
+  
+      if (timingMode === 'PER_QUESTION') {
+        setQuestionTimeLeft((qt) => {
+          if (qt <= 1) {
+            if (currentIndex === questions.length - 1) {
+              clearInterval(interval);
+              submitExam();
+            } else {
+              setCurrentIndex((i) => i + 1);
+              return questionTimes[currentIndex + 1];
+            }
+          }
+          return qt - 1;
+        });
+      }
+  
+    }, 1000);
+  
+    return () => clearInterval(interval);
+  }, [timeLeft, timingMode, currentIndex, questionTimes, questions.length]);
+  
 
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+  useEffect(() => {
+    if (timingMode !== 'PER_QUESTION') {return;}
+  
+    setQuestionTimeLeft(questionTimes[currentIndex] * 60);
+  
+  }, [currentIndex, timingMode, questionTimes]);
+  
 
   // Start MediaRecorder
   useEffect(() => {
@@ -217,26 +257,26 @@ export default function TakingExam() {
 
   const currentQuestion = questions[currentIndex];
 
+  const currentQuestionTime = questionTimes[currentIndex] * 60 || 1; // prevent divide-by-zero
+  const questionRatio = questionTimeLeft / currentQuestionTime;
+
+  const isRed =
+  timingMode === 'OVERALL'
+    ? timeLeft / duration < 0.2
+    : questionRatio < 0.2;
+
+  console.log({
+    mode: timingMode,
+    timeLeft,
+    duration,
+    questionTimeLeft,
+    currentQuestionTime,
+    questionRatio,
+    isRed,
+  });
+
   return (
     <Container size="md" py="lg">
-      {/* Optional banner */}
-      <Text
-        c="red"
-        ta="center"
-        fw={700}
-        mt="sm"
-        style={{
-          position: 'fixed',
-          top: 0,
-          width: '100%',
-          backgroundColor: '#ffeaea',
-          padding: '8px 0',
-          zIndex: 999,
-        }}
-      >
-        🔴 Recording in progress...
-      </Text>
-
       {/* Camera preview */}
       {cameraStream && (
         <video
@@ -264,16 +304,23 @@ export default function TakingExam() {
       <Group gap="apart" mb="lg">
         <Title order={3}>
           Time Left:{' '}
-          <Text span c={timeLeft <= 300 ? 'red' : 'blue'}>
-            {formatTime(timeLeft)}
+          <Text span c={isRed ? 'red' : 'blue'}>
+            {timingMode === 'OVERALL'
+              ? formatTime(timeLeft)
+              : formatTime(questionTimeLeft)}
           </Text>
-        </Title>
-        <Progress
-          value={(timeLeft / (duration * 60)) * 100}
-          color={timeLeft <= 300 ? 'red' : 'blue'}
-        />
-      </Group>
 
+          <Progress
+            value={
+              timingMode === 'OVERALL'
+                ? (timeLeft / duration) * 100
+                : (questionTimeLeft / currentQuestionTime) * 100
+            }
+            color={isRed ? 'red' : 'blue'}
+          />
+        </Title>
+
+      </Group>
       <Stack gap="md">
         <Title order={4}>Question {currentIndex + 1}</Title>
 
