@@ -2,11 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Progress, Text } from '@mantine/core';
+import { useStreamContext } from '../StreamContext'
 
 export function AudioCheck({ onSuccess }: { onSuccess?: () => void }) {
     const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'fail'>('idle');
     const [volume, setVolume] = useState(0);
     const animationRef = useRef<number | null>(null);
+    const { setMicStream } = useStreamContext();
+
 
     useEffect(() => {
         let audioContext: AudioContext | null = null;
@@ -19,6 +22,7 @@ export function AudioCheck({ onSuccess }: { onSuccess?: () => void }) {
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                setMicStream(stream);
                 audioContext = new AudioContext();
                 source = audioContext.createMediaStreamSource(stream);
                 analyser = audioContext.createAnalyser();

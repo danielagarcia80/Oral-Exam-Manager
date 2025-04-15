@@ -43,10 +43,18 @@ export class ExamService {
       where: { exam_id: examId },
       include: {
         questions: {
+          orderBy: { order_index: 'asc' }, // ✅ move it out of `include`
           include: {
-            question: true,
+            question: {
+              include: {
+                images: {
+                  include: {
+                    image: true,
+                  },
+                },
+              },
+            },
           },
-          orderBy: { order_index: 'asc' },
         },
       },
     });

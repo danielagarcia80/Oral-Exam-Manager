@@ -2,38 +2,39 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button, Stack, Text } from '@mantine/core';
+import { useStreamContext } from '../StreamContext';
+
 
 export function ScreenShareCheck({ onSuccess }: { onSuccess?: () => void }) {
   const [success, setSuccess] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const { setScreenStream } = useStreamContext();
+
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleScreenShare = async () => {
-    console.log('[ScreenShare] Requesting screen share...');
     try {
       const newStream = await (navigator.mediaDevices as any).getDisplayMedia({
         video: true,
       });
-      console.log('[ScreenShare] Got stream:', newStream);
+
       setStream(newStream);
+      setScreenStream(newStream);
       setSuccess(true);
 
       onSuccess?.();
     } catch (err) {
-      console.error('[ScreenShare] Screen share error:', err);
       setSuccess(false);
     }
   };
   
   useEffect(() => {
     if (videoRef.current && stream) {
-      console.log('[ScreenShare] Attaching stream to video...');
       videoRef.current.srcObject = stream;
   
       videoRef.current.onloadedmetadata = () => {
         videoRef.current?.play().then(() => {
-          console.log('[ScreenShare] Video is playing!');
         }).catch((err) => {
           console.error('[ScreenShare] play() error:', err);
         });
