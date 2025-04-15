@@ -39,16 +39,16 @@ export default function TakingExam() {
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [, setAnswers] = useState<Record<string, any>>({});
   const [timeLeft, setTimeLeft] = useState(duration * 60);
   const router = useRouter();
 
   const { screenStream, micStream, cameraStream } = useStreamContext();
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [recordingChunks, setRecordingChunks] = useState<Blob[]>([]);
+  //const [recordingChunks, setRecordingChunks] = useState<Blob[]>([]);
 
 
-  const student_id = session?.user?.id;
+  const studentID = session?.user?.id;
 
 
   useEffect(() => {
@@ -108,13 +108,6 @@ export default function TakingExam() {
 
     try {
       recorder = new MediaRecorder(combined, { mimeType: 'video/webm' });
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          setRecordingChunks((prev) => [...prev, e.data]);
-        }
-      };
-
       recorder.start();
       setMediaRecorder(recorder);
       console.log('🎥 MediaRecorder started');
@@ -148,39 +141,46 @@ export default function TakingExam() {
 
   const submitExam = async () => {
     try {
-
-      if (!student_id || !examId) {
+      if (!studentID || !examId) {
         console.error('Missing student_id or examId');
         return;
       }
-      
+  
+      let recordingUrl = '';
+  
       if (mediaRecorder) {
-        mediaRecorder.stop();
-
-        // Wait for data to be flushed
-        await new Promise<void>((resolve) => {
-          const checkReady = () => {
-            if (recordingChunks.length > 0) {resolve();}
-            else {setTimeout(checkReady, 100);}
+        const recordedChunks: Blob[] = [];
+  
+        // Prepare to collect data
+        const recordingBlob = await new Promise<Blob>((resolve) => {
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunks.push(event.data);
+            }
           };
-          checkReady();
+  
+          mediaRecorder.onstop = () => {
+            const finalBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            resolve(finalBlob);
+          };
+  
+          mediaRecorder.stop();
         });
+  
+        const formData = new FormData();
+        formData.append('file', recordingBlob, 'recording.webm');
+  
+        const uploadRes = await fetch('http://localhost:4000/recordings', {
+          method: 'POST',
+          body: formData,
+        });
+  
+        const uploadData = await uploadRes.json();
+        recordingUrl = uploadData.url;
       }
-
-      const blob = new Blob(recordingChunks, { type: 'video/webm' });
-      const formData = new FormData();
-      formData.append('file', blob, 'recording.webm');
-
-      const uploadRes = await fetch('http://localhost:4000/recordings', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const uploadData = await uploadRes.json();
-      const recordingUrl = uploadData.url;
-
+  
       const payload = {
-        student_id: student_id,
+        student_id: studentID,
         exam_id: examId,
         attempt_number: 1,
         recording_url: recordingUrl,
@@ -188,30 +188,32 @@ export default function TakingExam() {
         grade_percentage: 0,
         feedback: '',
       };
+  
       console.log('Payload:', payload);
-
-
+  
       const res = await fetch('http://localhost:4000/exam-submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+  
       if (!res.ok) {
         const errorData = await res.json();
         console.error('Submission failed:', errorData);
         return;
       }
-      
+  
+      // Stop all media streams
       screenStream?.getTracks().forEach((t) => t.stop());
       micStream?.getTracks().forEach((t) => t.stop());
       cameraStream?.getTracks().forEach((t) => t.stop());
-      
+  
       router.push('/dashboard');
     } catch (err) {
       console.error('Error during exam submission:', err);
     }
   };
+  
 
   const currentQuestion = questions[currentIndex];
 
