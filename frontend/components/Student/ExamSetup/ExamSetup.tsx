@@ -15,7 +15,7 @@ type Exam = {
   exam_id: string;
   title: string;
   description: string;
-  duration: number;
+  duration_minutes: number;
   course_id: string;
 };
 
@@ -91,7 +91,7 @@ export default function ExamSetup() {
 
                     <Stack gap="xs">
                         <Text fw={500}><IconClock size={16} style={{ marginRight: 6 }} /> Exam Timer</Text>
-                        <Text size="sm">You will have {exam.duration ?? 'ERROR'} minutes once you begin.</Text>
+                        <Text size="sm">You will have {exam.duration_minutes ?? 'ERROR'} minutes once you begin.</Text>
                     </Stack>
                 </Stack>
 
