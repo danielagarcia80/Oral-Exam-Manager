@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { ExamSubmissionService } from './exam-submission.service';
 import { CreateExamSubmissionDto } from './create-exam-submission.dto';
 import { ExamSubmissionResponseDto } from './exam-submission-response.dto';
@@ -17,5 +17,10 @@ export class ExamSubmissionController {
   @Get()
   async findAll(): Promise<ExamSubmissionResponseDto[]> {
     return this.service.findAll();
+  }
+
+  @Get('exam/:examId')
+  getSubmissionsByExam(@Param('examId') examId: string) {
+    return this.service.findByExamId(examId);
   }
 }

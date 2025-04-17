@@ -32,4 +32,10 @@ export class ExamSubmissionService {
   async findAll(): Promise<ExamSubmissionResponseDto[]> {
     return this.prisma.examSubmission.findMany();
   }
+
+  async findByExamId(examId: string) {
+    return this.prisma.examSubmission.findMany({
+      where: { exam_id: examId },
+    });
+  }
 }
