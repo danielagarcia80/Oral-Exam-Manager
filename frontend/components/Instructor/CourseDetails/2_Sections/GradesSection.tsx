@@ -45,6 +45,7 @@ export function GradesSection() {
         const [studentsRes, submissionsRes] = await Promise.all([
   fetch(`http://localhost:4000/exams/${examId}/assigned-students`),
   fetch(`http://localhost:4000/exam-submissions/exam/${examId}`),
+  
 ]);
 
 
@@ -87,6 +88,7 @@ export function GradesSection() {
               <th style={{ textAlign: 'left' }}>Student Name</th>
               <th style={{ textAlign: 'left' }}>Email</th>
               <th style={{ textAlign: 'left' }}>Status</th>
+              <th style={{ textAlign: 'left' }}>Grade</th> 
               <th style={{ textAlign: 'left' }}>Action</th>
             </tr>
           </thead>
@@ -107,6 +109,15 @@ export function GradesSection() {
                       <Text c="red">Not Submitted</Text>
                     )}
                   </td>
+
+                  <td>
+                    {submitted && submission?.grade_percentage !== undefined
+                      ? `${submission.grade_percentage}%`
+                      : '—'}
+                  </td>
+
+
+
                   <td>
                     <Button
                       size="xs"
