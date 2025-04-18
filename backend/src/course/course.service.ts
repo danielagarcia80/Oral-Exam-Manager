@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './create-course.dto';
 import { CourseResponseDto } from './course-response.dto';
 import { StudentDto } from './student.dto';
+import { CourseRole } from '@prisma/client';
 
 @Injectable()
 export class CourseService {
@@ -14,71 +15,48 @@ export class CourseService {
       invites?: { email: string; role: 'STUDENT' | 'INSTRUCTOR' }[];
     },
   ): Promise<CourseResponseDto> {
-    // Destructure instructor_id and invites
     const { instructor_id, invites, ...courseData } = data;
 
-    // Create the course
-    const course = await this.prisma.course.create({
-      data: courseData,
-    });
+    const course = await this.prisma.course.create({ data: courseData });
 
-    // Link the creating instructor
-    await this.prisma.teaches.create({
+    await this.prisma.courseMembership.create({
       data: {
-        instructor_id,
-        course_id: course.course_id,
+        userId: instructor_id,
+        courseId: course.course_id,
+        role: 'INSTRUCTOR',
       },
     });
 
-    // 👇 Handle additional invites if provided
     if (invites?.length) {
       for (const invite of invites) {
-        // console.log('[CreateCourse] Processing invite:', invite);
         const user = await this.prisma.user.findUnique({
           where: { email: invite.email },
         });
 
-        if (!user) {
-          // console.warn(`[CourseService] User not found: ${invite.email}`);
-          continue;
-        }
+        if (!user || user.role !== invite.role) continue;
 
-        if (invite.role === 'STUDENT') {
-          if (user.role !== 'STUDENT') {
-            // console.warn(
-            //   `[CourseService] Role mismatch: ${invite.email} is not a STUDENT`,
-            // );
-            continue;
-          }
-
-          // console.log(`[CreateCourse] Enrolling student: ${invite.email}`);
-          await this.prisma.enrollment.create({
-            data: {
-              student_id: user.user_id,
-              course_id: course.course_id,
-              status: 'ACTIVE',
+        const existingMembership =
+          await this.prisma.courseMembership.findUnique({
+            where: {
+              userId_courseId: {
+                userId: user.user_id,
+                courseId: course.course_id,
+              },
             },
           });
-        } else if (invite.role === 'INSTRUCTOR') {
-          if (user.role !== 'INSTRUCTOR') {
-            // console.warn(
-            //   `[CourseService] Role mismatch: ${invite.email} is not an INSTRUCTOR`,
-            // );
-            continue;
-          }
 
-          // console.log(`[CreateCourse] Adding instructor: ${invite.email}`);
-          await this.prisma.teaches.create({
+        if (!existingMembership) {
+          await this.prisma.courseMembership.create({
             data: {
-              instructor_id: user.user_id,
-              course_id: course.course_id,
+              userId: user.user_id,
+              courseId: course.course_id,
+              role: invite.role,
             },
           });
         }
       }
     }
 
-    // ✅ Return the course as a DTO
     return this.toCourseResponse(course);
   }
 
@@ -102,45 +80,43 @@ export class CourseService {
   }
 
   async getCoursesForStudent(userId: string): Promise<CourseResponseDto[]> {
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: { student_id: userId },
+    const memberships = await this.prisma.courseMembership.findMany({
+      where: { userId, role: 'STUDENT' },
       include: { course: true },
     });
 
-    return enrollments.map((enrollment) =>
-      this.toCourseResponse(enrollment.course),
-    );
+    return memberships.map((m) => this.toCourseResponse(m.course));
   }
 
   async getCoursesForInstructor(userId: string): Promise<CourseResponseDto[]> {
-    const teaches = await this.prisma.teaches.findMany({
-      where: { instructor_id: userId },
+    const memberships = await this.prisma.courseMembership.findMany({
+      where: { userId, role: 'INSTRUCTOR' },
       include: { course: true },
     });
 
-    return teaches.map((teaching) => this.toCourseResponse(teaching.course));
+    return memberships.map((m) => this.toCourseResponse(m.course));
   }
 
   async getCourseDetails(courseId: string) {
     const course = await this.prisma.course.findUnique({
       where: { course_id: courseId },
       include: {
-        teaches: {
-          include: { instructor: true }, // user relation
+        roles: {
+          include: { user: true },
         },
-        enrollments: true,
       },
     });
 
     if (!course) throw new NotFoundException('Course not found');
 
-    const instructorNames = course.teaches.map((t) => {
-      const first = t.instructor?.first_name || '';
-      const last = t.instructor?.last_name || '';
-      return `${first} ${last}`.trim();
-    });
+    const instructors = course.roles.filter((m) => m.role === 'INSTRUCTOR');
 
-    const numStudents = course.enrollments.length;
+    const students = course.roles.filter((m) => m.role === 'STUDENT');
+
+    const instructorNames = instructors.map((i) => {
+      const { first_name = '', last_name = '' } = i.user;
+      return `${first_name} ${last_name}`.trim();
+    });
 
     return {
       title: course.title,
@@ -148,25 +124,7 @@ export class CourseService {
       start_date: course.start_date,
       end_date: course.end_date,
       instructors: instructorNames,
-      numStudents,
-      banner_url: course.banner_url,
-    };
-  }
-
-  private toCourseResponse(course: {
-    course_id: string;
-    title: string;
-    description: string;
-    start_date: Date;
-    end_date: Date;
-    banner_url: string;
-  }): CourseResponseDto {
-    return {
-      course_id: course.course_id,
-      title: course.title,
-      description: course.description,
-      start_date: course.start_date,
-      end_date: course.end_date,
+      numStudents: students.length,
       banner_url: course.banner_url,
     };
   }
@@ -182,9 +140,7 @@ export class CourseService {
                 question: {
                   include: {
                     images: {
-                      include: {
-                        image: true,
-                      },
+                      include: { image: true },
                     },
                   },
                 },
@@ -203,18 +159,16 @@ export class CourseService {
   }
 
   async getStudentsForCourse(courseId: string): Promise<StudentDto[]> {
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: { course_id: courseId },
-      include: {
-        student: true,
-      },
+    const students = await this.prisma.courseMembership.findMany({
+      where: { courseId, role: 'STUDENT' },
+      include: { user: true },
     });
 
-    return enrollments.map((e) => ({
-      user_id: e.student.user_id,
-      email: e.student.email,
-      first_name: e.student.first_name,
-      last_name: e.student.last_name,
+    return students.map((s) => ({
+      user_id: s.user.user_id,
+      email: s.user.email,
+      first_name: s.user.first_name,
+      last_name: s.user.last_name,
     }));
   }
 
@@ -227,50 +181,49 @@ export class CourseService {
         where: { email: invite.email },
       });
 
-      if (!user) continue;
-
-      // 🚫 User role mismatch — skip
-      if (user.role !== invite.role) {
+      if (!user || user.role !== invite.role) {
         console.warn(
-          `Skipped ${user.email} — account role is ${user.role}, tried to invite as ${invite.role}`,
+          `Skipped ${invite.email} — user not found or role mismatch`,
         );
         continue;
       }
 
-      if (invite.role === 'INSTRUCTOR') {
-        const alreadyTeaches = await this.prisma.teaches.findFirst({
-          where: {
-            course_id: courseId,
-            instructor_id: user.user_id,
+      const existing = await this.prisma.courseMembership.findUnique({
+        where: {
+          userId_courseId: {
+            userId: user.user_id,
+            courseId,
+          },
+        },
+      });
+
+      if (!existing) {
+        await this.prisma.courseMembership.create({
+          data: {
+            userId: user.user_id,
+            courseId,
+            role: invite.role as CourseRole,
           },
         });
-
-        if (!alreadyTeaches) {
-          await this.prisma.teaches.create({
-            data: {
-              course: { connect: { course_id: courseId } },
-              instructor: { connect: { user_id: user.user_id } },
-            },
-          });
-        }
-      } else {
-        const alreadyEnrolled = await this.prisma.enrollment.findFirst({
-          where: {
-            course_id: courseId,
-            student_id: user.user_id,
-          },
-        });
-
-        if (!alreadyEnrolled) {
-          await this.prisma.enrollment.create({
-            data: {
-              course: { connect: { course_id: courseId } },
-              student: { connect: { user_id: user.user_id } },
-              status: 'ENROLLED',
-            },
-          });
-        }
       }
     }
+  }
+
+  private toCourseResponse(course: {
+    course_id: string;
+    title: string;
+    description: string;
+    start_date: Date;
+    end_date: Date;
+    banner_url: string;
+  }): CourseResponseDto {
+    return {
+      course_id: course.course_id,
+      title: course.title,
+      description: course.description,
+      start_date: course.start_date,
+      end_date: course.end_date,
+      banner_url: course.banner_url,
+    };
   }
 }

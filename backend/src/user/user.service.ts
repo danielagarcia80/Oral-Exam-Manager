@@ -23,25 +23,31 @@ export class UserService {
   async getStudentsForInstructor(
     instructorId: string,
   ): Promise<UserResponseDto[]> {
-    // Get courses the instructor teaches
-    const teaches = await this.prisma.teaches.findMany({
-      where: { instructor_id: instructorId },
-      select: { course_id: true },
+    // Step 1: Get courseIds the instructor teaches
+    const instructorCourses = await this.prisma.courseMembership.findMany({
+      where: {
+        userId: instructorId,
+        role: 'INSTRUCTOR',
+      },
+      select: { courseId: true },
     });
 
-    const courseIds = teaches.map((t) => t.course_id);
+    const courseIds = instructorCourses.map((c) => c.courseId);
     if (courseIds.length === 0) return [];
 
-    // Get enrollments for those courses
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: { course_id: { in: courseIds } },
-      select: { student_id: true },
+    // Step 2: Get all students in those courses
+    const studentMemberships = await this.prisma.courseMembership.findMany({
+      where: {
+        courseId: { in: courseIds },
+        role: 'STUDENT',
+      },
+      select: { userId: true },
     });
 
-    const studentIds = [...new Set(enrollments.map((e) => e.student_id))];
+    const studentIds = [...new Set(studentMemberships.map((s) => s.userId))];
     if (studentIds.length === 0) return [];
 
-    // Get student user data
+    // Step 3: Fetch user data
     const students = await this.prisma.user.findMany({
       where: { user_id: { in: studentIds } },
       select: {
