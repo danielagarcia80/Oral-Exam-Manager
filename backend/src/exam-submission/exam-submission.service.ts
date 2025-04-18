@@ -36,6 +36,27 @@ export class ExamSubmissionService {
   async findByExamId(examId: string) {
     return this.prisma.examSubmission.findMany({
       where: { exam_id: examId },
+      include: {
+        student: true,
+      },
+    });
+  }
+
+  async updateGrade(
+    studentId: string,
+    examId: string,
+    grade: number,
+    feedback: string,
+  ) {
+    return this.prisma.examSubmission.updateMany({
+      where: {
+        student_id: studentId,
+        exam_id: examId,
+      },
+      data: {
+        grade_percentage: grade,
+        feedback: feedback,
+      },
     });
   }
 }

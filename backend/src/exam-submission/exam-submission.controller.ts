@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Patch } from '@nestjs/common';
 import { ExamSubmissionService } from './exam-submission.service';
 import { CreateExamSubmissionDto } from './create-exam-submission.dto';
 import { ExamSubmissionResponseDto } from './exam-submission-response.dto';
@@ -22,5 +22,22 @@ export class ExamSubmissionController {
   @Get('exam/:examId')
   getSubmissionsByExam(@Param('examId') examId: string) {
     return this.service.findByExamId(examId);
+  }
+  @Patch('grade')
+  async submitGrade(
+    @Body()
+    body: {
+      student_id: string;
+      exam_id: string;
+      grade_percentage: number;
+      feedback: string;
+    },
+  ) {
+    return this.service.updateGrade(
+      body.student_id,
+      body.exam_id,
+      body.grade_percentage,
+      body.feedback,
+    );
   }
 }
