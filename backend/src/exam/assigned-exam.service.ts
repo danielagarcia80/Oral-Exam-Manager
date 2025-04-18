@@ -59,7 +59,8 @@ export class AssignedExamService {
         student: {
           select: {
             user_id: true,
-            name: true,
+            first_name: true,
+            last_name: true,
             email: true,
           },
         },

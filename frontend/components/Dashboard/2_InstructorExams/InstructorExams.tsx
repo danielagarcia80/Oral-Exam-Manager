@@ -66,6 +66,7 @@ export function InstructorExams() {
               <th style={{ textAlign: 'left' }}>Course</th>
               <th style={{ textAlign: 'left', width: '240px' }}>Due Date</th>
               <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
+              <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +84,16 @@ export function InstructorExams() {
                     variant="light"
                     onClick={() => router.push(`/instructor/edit-exam?examId=${exam.exam_id}&courseId=${exam.course_id}`)}
                   >
-                    View
+                    Edit
+                  </Button>
+                </td>
+                <td>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    onClick={() => router.push(`/instructor/grades-section?examId=${exam.exam_id}&courseId=${exam.course_id}`)}
+                  >
+                    Grade
                   </Button>
                 </td>
               </tr>
