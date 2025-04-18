@@ -34,6 +34,13 @@ enum Type {
   FREE_RESPONSE
 }
 
+enum CourseRole {
+  INSTRUCTOR
+  STUDENT
+  TA
+  OBSERVER
+}
+
 model User {
   user_id              String   @id @default(uuid())
   email                String   @unique
@@ -58,6 +65,7 @@ model User {
   enrollments          Enrollment[]
   submissions          ExamSubmission[]
   assigned_exams       AssignedExam[]
+  course_roles        CourseMembership[]
 }
 
 model Account {
@@ -109,6 +117,18 @@ model Course {
   exams       Exam[]
   outcomes    CourseLearningOutcome[]
   images      QuestionImages[]
+  roles       CourseMembership[]
+}
+
+model CourseMembership {
+  id        String      @id @default(cuid())
+  user      User        @relation(fields: [userId], references: [user_id])
+  userId    String
+  course    Course      @relation(fields: [courseId], references: [course_id])
+  courseId  String
+  role      CourseRole
+
+  @@unique([userId, courseId])
 }
 
 model Teaches {

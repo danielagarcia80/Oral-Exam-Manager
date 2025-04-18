@@ -1,7 +1,6 @@
 // Lint was being incredibly frustrating with this file
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // TODO: fix lint issues
 import {
   Controller,

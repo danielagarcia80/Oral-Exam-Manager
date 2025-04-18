@@ -15,6 +15,7 @@ async function main() {
   await prisma.assignedExam.deleteMany();
   await prisma.enrollment.deleteMany();
   await prisma.teaches.deleteMany();
+  await prisma.courseMembership.deleteMany();
   await prisma.examIncludesQuestion.deleteMany();
   await prisma.questionHasKeyword.deleteMany();
   await prisma.questionHasImage.deleteMany();
@@ -72,6 +73,17 @@ async function main() {
     },
   });
 
+  const ta = await prisma.user.create({
+    data: {
+      email: 'ta@email.com',
+      password: await hashPassword('password'),
+      first_name: 'TA',
+      last_name: 'Jones',
+      role: 'STUDENT',
+      account_creation_date: new Date(),
+    },
+  });
+
   console.log('🌱 Creating course...');
   const course = await prisma.course.create({
     data: {
@@ -94,6 +106,37 @@ async function main() {
       },
     },
   });
+
+  await prisma.courseMembership.createMany({
+    data: [
+      {
+        userId: instructor0.user_id,
+        courseId: course.course_id,
+        role: 'INSTRUCTOR',
+      },
+      {
+        userId: instructor1.user_id,
+        courseId: course.course_id,
+        role: 'INSTRUCTOR',
+      },
+      {
+        userId: student0.user_id,
+        courseId: course.course_id,
+        role: 'STUDENT',
+      },
+      {
+        userId: student1.user_id,
+        courseId: course.course_id,
+        role: 'STUDENT',
+      },
+      {
+        userId: ta.user_id,
+        courseId: course.course_id,
+        role: 'TA',
+      },
+    ],
+  });
+  
 
   console.log('🌱 Creating learning outcomes...');
   const outcome0 = await prisma.learningOutcome.create({
