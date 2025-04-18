@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import 'dotenv/config';
 
+
 const prisma = new PrismaClient();
 
 async function hashPassword(password: string) {
@@ -178,14 +179,30 @@ async function main() {
   console.log('🌱 Creating exams...');
   const exam = await prisma.exam.create({
     data: {
-      title: 'Midterm Exam',
+      title: 'Overall Time Exam',
       description: 'Covers weeks 1–6 material.',
       type: 'ASYNCHRONOUS',
       course_id: course.course_id,
       start_date: new Date('2025-05-01T09:00:00Z'),
       end_date: new Date('2025-05-07T23:59:59Z'),
-      duration_minutes: 30,
+      duration_minutes: 2,
       timing_mode: 'OVERALL',
+      requires_audio: true,
+      requires_video: true,
+      requires_screen_share: true,
+    },
+  });
+
+  const per_question = await prisma.exam.create({
+    data: {
+      title: 'Per Question Time Exam',
+      description: 'Covers weeks 1–6 material.',
+      type: 'ASYNCHRONOUS',
+      course_id: course.course_id,
+      start_date: new Date('2025-01-01T09:00:00Z'),
+      end_date: new Date('2025-08-02T23:59:59Z'),
+      duration_minutes: 3,
+      timing_mode: 'PER_QUESTION',
       requires_audio: true,
       requires_video: true,
       requires_screen_share: true,
@@ -194,7 +211,7 @@ async function main() {
 
   const pastExam = await prisma.exam.create({
     data: {
-      title: 'Syllabus Quiz',
+      title: 'Old Quiz',
       description: 'Covers weeks 1–6 material.',
       type: 'ASYNCHRONOUS',
       course_id: course.course_id,
@@ -234,7 +251,19 @@ async function main() {
     ],
   });
   
-  
+  await prisma.assignedExam.createMany({
+    data: [
+      {
+        exam_id: per_question.exam_id,
+        student_id: student0.user_id,
+      },
+      {
+        exam_id: per_question.exam_id,
+        student_id: student1.user_id,
+      },
+    ],
+  });
+
 
   await prisma.examIncludesQuestion.createMany({
     data: [
@@ -247,6 +276,23 @@ async function main() {
         exam_id: exam.exam_id,
         question_id: question1.question_id,
         order_index: 1,
+      },
+    ],
+  });
+
+  await prisma.examIncludesQuestion.createMany({
+    data: [
+      {
+        exam_id: per_question.exam_id,
+        question_id: question0.question_id,
+        order_index: 0,
+        time_allocation: 2,
+      },
+      {
+        exam_id: per_question.exam_id,
+        question_id: question1.question_id,
+        order_index: 1,
+        time_allocation: 1,
       },
     ],
   });

@@ -23,7 +23,7 @@
     "backend:start": "yarn workspace @oem/backend start",
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:migrate": "infisical run --env=dev -- prisma migrate dev --schema=./prisma/schema.prisma",
-    "prisma:seed": "infisical run --env=dev -- prisma db seed --schema=./prisma/schema.prisma",
+    "prisma:seed": "rimraf backend/uploads/* backend/recordings/* && infisical run --env=dev -- prisma db seed --schema=./prisma/schema.prisma",
     "prisma:prod-seed": "infisical run --env=dev -- prisma db seed --schema=./prisma/schema.prisma",
     "prisma:reset": "infisical run --env=dev -- prisma migrate reset --schema=./prisma/schema.prisma",
     "prisma:dev-skip": "infisical run --env=dev -- prisma migrate dev --skip-generate --schema=./prisma/schema.prisma",
@@ -51,6 +51,5 @@
     "@types/node": "^22.13.5",
     "concurrently": "^9.1.2",
     "ts-node": "^10.9.2"
-  },
-  "packageManager": "yarn@4.7.0+sha512.5a0afa1d4c1d844b3447ee3319633797bcd6385d9a44be07993ae52ff4facabccafb4af5dcd1c2f9a94ac113e5e9ff56f6130431905884414229e284e37bb7c9"
+  }
 }
