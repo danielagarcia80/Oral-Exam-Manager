@@ -61,8 +61,6 @@ model User {
   sessions             Session[]
 
   // App-specific relations
-  teaches              Teaches[]
-  enrollments          Enrollment[]
   submissions          ExamSubmission[]
   assigned_exams       AssignedExam[]
   course_roles        CourseMembership[]
@@ -112,8 +110,6 @@ model Course {
   end_date    DateTime
   banner_url  String?
 
-  teaches     Teaches[]
-  enrollments Enrollment[]
   exams       Exam[]
   outcomes    CourseLearningOutcome[]
   images      QuestionImages[]
@@ -129,27 +125,6 @@ model CourseMembership {
   role      CourseRole
 
   @@unique([userId, courseId])
-}
-
-model Teaches {
-  id            String @id @default(uuid())
-  course        Course @relation(fields: [course_id], references: [course_id])
-  instructor    User   @relation(fields: [instructor_id], references: [user_id])
-  course_id     String
-  instructor_id String
-
-  @@unique([course_id, instructor_id])
-}
-
-model Enrollment {
-  enrollment_id String @id @default(uuid())
-  student       User   @relation(fields: [student_id], references: [user_id])
-  course        Course @relation(fields: [course_id], references: [course_id])
-  student_id    String
-  course_id     String
-  status        String @db.VarChar(16)
-
-  @@unique([student_id, course_id])
 }
 
 model Exam {
@@ -217,7 +192,7 @@ model Question {
   difficulty           Int
   type                 Type
   source               String
-  max_duration_minutes Int // REMOVE THIS LATER
+  max_duration_minutes Int // We didn't end up using this, but removing it would require editing the dtos and I'm lazy so TODO
 
   keywords             QuestionHasKeyword[]
   outcomes             QuestionAddressesOutcome[]

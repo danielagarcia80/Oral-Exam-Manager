@@ -13,8 +13,6 @@ async function main() {
   console.log('🌱 Clearing old data...');
   await prisma.examSubmission.deleteMany();
   await prisma.assignedExam.deleteMany();
-  await prisma.enrollment.deleteMany();
-  await prisma.teaches.deleteMany();
   await prisma.courseMembership.deleteMany();
   await prisma.examIncludesQuestion.deleteMany();
   await prisma.questionHasKeyword.deleteMany();
@@ -92,18 +90,6 @@ async function main() {
       start_date: new Date('2025-04-01'),
       end_date: new Date('2025-07-01'),
       banner_url: 'uploads/sample-banner.png',
-      teaches: {
-        create: [
-          { instructor_id: instructor0.user_id },
-          { instructor_id: instructor1.user_id },
-        ],
-      },
-      enrollments: {
-        create: [
-          { student_id: student0.user_id, status: 'ENROLLED' },
-          { student_id: student1.user_id, status: 'ENROLLED' },
-        ],
-      },
     },
   });
 

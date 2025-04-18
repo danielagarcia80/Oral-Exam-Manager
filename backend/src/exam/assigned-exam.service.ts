@@ -17,21 +17,26 @@ export class AssignedExamService {
 
     // Step 2: Decide what studentIds to assign
     if ((!studentIds || studentIds.length === 0) && !forceManual) {
-      // Create mode fallback to all enrolled
       const exam = await this.prisma.exam.findUnique({
         where: { exam_id: examId },
-        include: {
-          course: {
-            include: {
-              enrollments: true,
-            },
-          },
+        select: {
+          course_id: true,
         },
       });
 
       if (!exam) throw new Error('Exam not found');
 
-      studentIds = exam.course.enrollments.map((e) => e.student_id);
+      const memberships = await this.prisma.courseMembership.findMany({
+        where: {
+          courseId: exam.course_id,
+          role: 'STUDENT',
+        },
+        select: {
+          userId: true,
+        },
+      });
+
+      studentIds = memberships.map((m) => m.userId);
     }
 
     if (!studentIds || studentIds.length === 0) {
