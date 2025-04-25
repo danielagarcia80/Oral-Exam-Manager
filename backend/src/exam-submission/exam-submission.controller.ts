@@ -1,7 +1,17 @@
-import { Controller, Post, Get, Body, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Patch,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ExamSubmissionService } from './exam-submission.service';
 import { CreateExamSubmissionDto } from './create-exam-submission.dto';
 import { ExamSubmissionResponseDto } from './exam-submission-response.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('exam-submissions')
 export class ExamSubmissionController {
@@ -12,6 +22,19 @@ export class ExamSubmissionController {
     @Body() dto: CreateExamSubmissionDto,
   ): Promise<ExamSubmissionResponseDto> {
     return this.service.create(dto);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAndTranscribe(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: { student_id: string; exam_id: string },
+  ) {
+    return this.service.uploadAndTranscribe(
+      file,
+      body.student_id,
+      body.exam_id,
+    );
   }
 
   @Get()
