@@ -28,12 +28,14 @@ export class ExamSubmissionController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadAndTranscribe(
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: { student_id: string; exam_id: string },
+    @Body()
+    body: { student_id: string; exam_id: string; recording_url: string },
   ) {
     return this.service.uploadAndTranscribe(
       file,
       body.student_id,
       body.exam_id,
+      body.recording_url,
     );
   }
 

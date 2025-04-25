@@ -208,14 +208,28 @@ export default function TakingExam() {
         mediaRecorder.stop();
       });
   
-      const formData = new FormData();
-      formData.append('file', recordingBlob, 'recording.webm');
-      formData.append('student_id', studentID);
-      formData.append('exam_id', examId);
+      // FIRST: upload to /recordings
+      const formDataRecording = new FormData();
+      formDataRecording.append('file', recordingBlob, 'recording.webm');
+  
+      const recordingUploadRes = await fetch('http://localhost:4000/recordings', {
+        method: 'POST',
+        body: formDataRecording,
+      });
+  
+      const recordingData = await recordingUploadRes.json();
+      const recordingUrl = recordingData.url; // e.g., /recordings/uuid.webm
+  
+      // THEN: send file + metadata to /exam-submissions/upload
+      const formDataSubmission = new FormData();
+      formDataSubmission.append('file', recordingBlob, 'recording.webm');
+      formDataSubmission.append('student_id', studentID);
+      formDataSubmission.append('exam_id', examId);
+      formDataSubmission.append('recording_url', recordingUrl);
   
       const uploadRes = await fetch('http://localhost:4000/exam-submissions/upload', {
         method: 'POST',
-        body: formData,
+        body: formDataSubmission,
       });
   
       if (!uploadRes.ok) {
@@ -226,7 +240,6 @@ export default function TakingExam() {
   
       console.log('Submission successful');
   
-      // Stop all media streams
       screenStream?.getTracks().forEach((t) => t.stop());
       micStream?.getTracks().forEach((t) => t.stop());
       cameraStream?.getTracks().forEach((t) => t.stop());
@@ -236,6 +249,7 @@ export default function TakingExam() {
       console.error('Error during exam submission:', err);
     }
   };
+  
   
   
 

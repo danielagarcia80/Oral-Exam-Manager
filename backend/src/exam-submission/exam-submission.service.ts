@@ -36,6 +36,7 @@ export class ExamSubmissionService {
     file: Express.Multer.File,
     studentId: string,
     examId: string,
+    recordingUrl: string, // <- add this
   ) {
     // Step 1: Save file temporarily
     const tempPath = `./transcript-tmp/${file.originalname}`;
@@ -60,7 +61,6 @@ export class ExamSubmissionService {
 
       const transcription = response.data.text;
 
-      // Step 3: Create ExamSubmission
       const submission = await this.prisma.examSubmission.create({
         data: {
           student: {
@@ -71,11 +71,11 @@ export class ExamSubmissionService {
           },
           transcript: transcription,
           submitted_at: new Date(),
-          attempt_number: 1, // or whatever logic you want
-          recording_url: '', // you'll fill this later
-          duration_minutes: 0.0, // set to 0 for now
-          grade_percentage: 0.0, // set to 0 initially
-          feedback: '', // empty string initially
+          attempt_number: 1,
+          recording_url: recordingUrl, // 🎯 SAVE the recording URL passed in
+          duration_minutes: 0,
+          grade_percentage: 0,
+          feedback: '',
         },
       });
 
