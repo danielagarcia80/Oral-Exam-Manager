@@ -23,7 +23,14 @@ interface Question {
   text: string;
   type: string;
   difficulty: number;
+  images?: {
+    image: {
+      image_id: string;
+      image_data: string;
+    };
+  }[];
 }
+
 
 interface LearningOutcome {
   outcomeId: string;
@@ -61,6 +68,18 @@ export function QuestionSelection({
   const [newQuestionType, setNewQuestionType] = useState('SIMPLE');
   const [newDifficulty, setNewDifficulty] = useState(1);
 
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [existingImages, setExistingImages] = useState<{
+    image_id: string;
+    image_data: string;
+    filename: string;
+    path: string;
+  }[]>([]);
+  const [showEditImageModal, setShowEditImageModal] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+
+
   useEffect(() => {
     const fetchOutcomes = async () => {
       if (!courseId) {return;}
@@ -69,7 +88,22 @@ export function QuestionSelection({
       setOutcomes(data);
     };
     fetchOutcomes();
-  }, [courseId]);
+  
+    if (!questionModalOpen && !showEditImageModal) {return;}
+  
+    const fetchImages = async () => {
+      try {
+        const res = await fetch(`http://localhost:4000/question-images?courseId=${courseId}`);
+        const images = await res.json();
+        setExistingImages(images);
+      } catch (err) {
+        console.error('Failed to fetch images:', err);
+      }
+    };
+  
+    fetchImages();
+  }, [courseId, questionModalOpen, showEditImageModal]);
+  
 
   const toggleQuestion = (id: string) => {
     if (selectedQuestions.includes(id)) {
@@ -80,18 +114,16 @@ export function QuestionSelection({
     } else {
       setSelectedQuestions([...selectedQuestions, id]);
       if (timingMode === 'PER_QUESTION') {
-        setQuestionTimeMap({ ...questionTimeMap, [id]: 1 }); // default to 1 min
+        setQuestionTimeMap({ ...questionTimeMap, [id]: 1 }); // default 1 min
       }
     }
   };
-  
 
-    const updateTimeForQuestion = (id: string, time: number) => {
-      setQuestionTimeMap({ ...questionTimeMap, [id]: time });
-    };
-    
-    const totalTime = Object.values(questionTimeMap).reduce((sum, t) => sum + t, 0);
-  
+  const updateTimeForQuestion = (id: string, time: number) => {
+    setQuestionTimeMap({ ...questionTimeMap, [id]: time });
+  };
+
+  const totalTime = Object.values(questionTimeMap).reduce((sum, t) => sum + t, 0);
 
   const handleAddLearningOutcome = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +160,53 @@ export function QuestionSelection({
     setQuestionModalOpen(true);
   };
 
+  const handleUpdateQuestionImage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuestionId) {return;}
+  
+    try {
+      let imageId = null;
+  
+      if (newImageFile) {
+        const formData = new FormData();
+        formData.append('file', newImageFile);
+  
+        const imageRes = await fetch(`http://localhost:4000/question-images/upload?courseId=${courseId}`, {
+          method: 'POST',
+          body: formData,
+        });
+  
+        const imageData = await imageRes.json();
+        imageId = imageData.image_id;
+      } else if (selectedImageId) {
+        imageId = selectedImageId;
+      }
+  
+      if (imageId) {
+        await fetch(`http://localhost:4000/question-image-links/${editingQuestionId}`, {
+          method: 'DELETE',
+        });
+  
+        await fetch('http://localhost:4000/question-image-links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_id: editingQuestionId, image_id: imageId }),
+        });
+      }
+  
+      setShowEditImageModal(false);
+      setEditingQuestionId(null);
+      setNewImageFile(null);
+      setSelectedImageId(null);
+  
+      const res = await fetch(`http://localhost:4000/courses/${courseId}/question-bank`);
+      const updated = await res.json();
+      setOutcomes(updated);
+    } catch (err) {
+      console.error('Error updating question image:', err);
+    }
+  };  
+
   const handleSubmitQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!questionOutcomeId) {return;}
@@ -156,9 +235,36 @@ export function QuestionSelection({
       }),
     });
 
+    // Handle image upload or selection
+    let imageId = null;
+    if (newImageFile) {
+      const formData = new FormData();
+      formData.append('file', newImageFile);
+
+      const imageRes = await fetch(`http://localhost:4000/question-images/upload?courseId=${courseId}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const imageData = await imageRes.json();
+      imageId = imageData.image_id;
+    } else if (selectedImageId) {
+      imageId = selectedImageId;
+    }
+
+    if (imageId) {
+      await fetch('http://localhost:4000/question-image-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: questionId, image_id: imageId }),
+      });
+    }
+
     setNewQuestionText('');
     setNewQuestionType('SIMPLE');
     setNewDifficulty(1);
+    setNewImageFile(null);
+    setSelectedImageId(null);
     setQuestionModalOpen(false);
 
     const res = await fetch(`http://localhost:4000/courses/${courseId}/question-bank`);
@@ -181,35 +287,54 @@ export function QuestionSelection({
             <Accordion.Item key={outcome.outcomeId} value={outcome.outcomeId}>
               <Accordion.Control>{outcome.description}</Accordion.Control>
               <Accordion.Panel>
-              <Stack gap="xs">
-                {outcome.questions.length > 0 ? (
-                  outcome.questions.map((q) => (
-                    <Group key={q.question_id} align="center" justify="space-between">
-                      <Checkbox
-                        label={`${q.text} (Type: ${q.type}, Difficulty: ${q.difficulty})`}
-                        checked={selectedQuestions.includes(q.question_id)}
-                        onChange={() => toggleQuestion(q.question_id)}
-                      />
-                      {timingMode === 'PER_QUESTION' && selectedQuestions.includes(q.question_id) && (
-                        <TextInput
-                          label="Time (min)"
-                          type="number"
-                          size="xs"
-                          style={{ width: 100 }}
-                          value={questionTimeMap[q.question_id]?.toString() || ''}
-                          onChange={(e) =>
-                            updateTimeForQuestion(q.question_id, Number(e.currentTarget.value))
-                          }
-                          min={1}
+                <Stack gap="xs">
+                  {outcome.questions.length > 0 ? (
+                    outcome.questions.map((q) => (
+                      <Group key={q.question_id} align="center" justify="space-between">
+                        <Checkbox
+                          label={`${q.text} (Type: ${q.type}, Difficulty: ${q.difficulty})`}
+                          checked={selectedQuestions.includes(q.question_id)}
+                          onChange={() => toggleQuestion(q.question_id)}
                         />
-                      )}
-                    </Group>
-                  ))
-                ) : (
-                  <Text size="sm" c="dimmed">
-                    No questions for this outcome.
-                  </Text>
-                )}
+                        {q.images?.map((imgLink) => (
+                          <img
+                            key={imgLink.image.image_id}
+                            src={`http://localhost:4000${imgLink.image.image_data}`}
+                            alt="Question"
+                            style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, marginTop: 8 }}
+                          />
+                        ))}
+                        <Button
+                          size="xs"
+                          variant="default"
+                          onClick={() => {
+                            setEditingQuestionId(q.question_id);
+                            setShowEditImageModal(true);
+                          }}
+                        >
+                          Edit Image
+                        </Button>
+
+                        {timingMode === 'PER_QUESTION' && selectedQuestions.includes(q.question_id) && (
+                          <TextInput
+                            label="Time (min)"
+                            type="number"
+                            size="xs"
+                            style={{ width: 100 }}
+                            value={questionTimeMap[q.question_id]?.toString() || ''}
+                            onChange={(e) =>
+                              updateTimeForQuestion(q.question_id, Number(e.currentTarget.value))
+                            }
+                            min={1}
+                          />
+                        )}
+                      </Group>
+                    ))
+                  ) : (
+                    <Text size="sm" c="dimmed">
+                      No questions for this outcome.
+                    </Text>
+                  )}
 
                   <Button
                     size="xs"
@@ -219,12 +344,12 @@ export function QuestionSelection({
                   >
                     + Add Question
                   </Button>
+
                   {timingMode === 'PER_QUESTION' && selectedQuestions.length > 0 && (
                     <Text mt="md" size="sm">
                       Total Time: <b>{totalTime} minutes</b>
                     </Text>
                   )}
-
                 </Stack>
               </Accordion.Panel>
             </Accordion.Item>
@@ -284,8 +409,125 @@ export function QuestionSelection({
             ]}
             mb="sm"
           />
-          <Button type="submit" mt="sm">
+
+          <TextInput
+            label="Upload New Image"
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              if (e.currentTarget.files?.[0]) {
+                setNewImageFile(e.currentTarget.files[0]);
+                setSelectedImageId(null);
+              }
+            }}
+            mt="sm"
+          />
+
+          <Select
+            label="Select Existing Image"
+            placeholder="Choose image"
+            value={selectedImageId}
+            onChange={(val) => {
+              setSelectedImageId(val);
+              setNewImageFile(null);
+            }}
+            data={existingImages.map((img) => ({
+              value: img.image_id,
+              label: img.filename,
+            }))}
+            mt="sm"
+          />
+
+          {selectedImageId && (
+            <>
+              <Text size="sm" mt="md" mb="xs">Selected Image Preview:</Text>
+              <Paper
+                withBorder
+                p="xs"
+                style={{
+                  display: 'inline-block',
+                  borderColor: '#228be6',
+                  borderWidth: 2,
+                  borderRadius: 8,
+                }}
+              >
+                <img
+                  src={`http://localhost:4000${
+                    existingImages.find((img) => img.image_id === selectedImageId)?.path || ''
+                  }`}
+                  alt="Selected"
+                  style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }}
+                />
+              </Paper>
+            </>
+          )}
+
+          <Button type="submit" mt="md">
             Add Question
+          </Button>
+        </form>
+      </Modal>
+
+      <Modal
+        opened={showEditImageModal}
+        onClose={() => setShowEditImageModal(false)}
+        title="Edit Question Image"
+      >
+        <form onSubmit={handleUpdateQuestionImage}>
+          <TextInput
+            label="Upload New Image"
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              if (e.currentTarget.files?.[0]) {
+                setNewImageFile(e.currentTarget.files[0]);
+                setSelectedImageId(null);
+              }
+            }}
+            mt="sm"
+          />
+
+          <Select
+            label="Select Existing Image"
+            placeholder="Choose image"
+            value={selectedImageId}
+            onChange={(val) => {
+              setSelectedImageId(val);
+              setNewImageFile(null);
+            }}
+            data={existingImages.map((img) => ({
+              value: img.image_id,
+              label: img.filename,
+            }))}
+            mt="sm"
+          />
+
+          {selectedImageId && (
+            <>
+              <Text size="sm" mt="md" mb="xs">Selected Image Preview:</Text>
+              <Paper
+                withBorder
+                p="xs"
+                style={{
+                  display: 'inline-block',
+                  borderColor: '#228be6',
+                  borderWidth: 2,
+                  borderRadius: 8,
+                }}
+              >
+                <img
+                  src={`http://localhost:4000${
+                    existingImages.find((img) => img.image_id === selectedImageId)?.path || ''
+                  }`}
+                  alt="Selected"
+                  style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }}
+                />
+              </Paper>
+            </>
+          )}
+
+          <Button type="submit" mt="md">
+            Save Image
           </Button>
         </form>
       </Modal>

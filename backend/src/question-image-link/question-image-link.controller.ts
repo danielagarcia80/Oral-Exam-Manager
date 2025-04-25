@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, Delete, Param } from '@nestjs/common';
 import { QuestionImageLinkService } from './question-image-link.service';
 import { CreateQuestionImageLinkDto } from './create-question-image-link.dto';
 import { QuestionImageLinkResponseDto } from './question-image-link-response.dto';
@@ -17,5 +17,10 @@ export class QuestionImageLinkController {
   @Get()
   async findAll(): Promise<QuestionImageLinkResponseDto[]> {
     return this.service.findAll();
+  }
+
+  @Delete(':question_id')
+  async deleteAllLinksForQuestion(@Param('question_id') questionId: string) {
+    return this.service.deleteAllForQuestion(questionId);
   }
 }

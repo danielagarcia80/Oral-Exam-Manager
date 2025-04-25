@@ -34,7 +34,7 @@ async function main() {
       password: await hashPassword('password'),
       first_name: 'Instructor',
       last_name: 'Zero',
-      role: 'INSTRUCTOR',
+      role: 'FACULTY',
       account_creation_date: new Date(),
     },
   });
@@ -45,7 +45,7 @@ async function main() {
       password: await hashPassword('password'),
       first_name: 'Instructor',
       last_name: 'One',
-      role: 'INSTRUCTOR',
+      role: 'FACULTY',
       account_creation_date: new Date(),
     },
   });
