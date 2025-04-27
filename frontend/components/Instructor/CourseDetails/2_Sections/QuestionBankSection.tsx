@@ -62,6 +62,10 @@ export function QuestionBankSection() {
     path: string;
   }[]>([]);
 
+  const [showEditImageModal, setShowEditImageModal] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+
+
   const handleAddLearningOutcome = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!courseId || !newOutcome.trim()) {return;}
@@ -174,21 +178,72 @@ export function QuestionBankSection() {
       console.error('Error adding question:', err);
     }
   };
+
+  const handleUpdateQuestionImage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuestionId) {return;}
+  
+    try {
+      let imageId = null;
+  
+      if (newImageFile) {
+        const formData = new FormData();
+        formData.append('file', newImageFile);
+  
+        const imageRes = await fetch(`http://localhost:4000/question-images/upload?courseId=${courseId}`, {
+          method: 'POST',
+          body: formData,
+        });
+  
+        const imageData = await imageRes.json();
+        imageId = imageData.image_id;
+      } else if (selectedImageId) {
+        imageId = selectedImageId;
+      }
+  
+      if (imageId) {
+        // Remove old links first
+        await fetch(`http://localhost:4000/question-image-links/${editingQuestionId}`, {
+          method: 'DELETE',
+        });
+
+        await fetch('http://localhost:4000/question-image-links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_id: editingQuestionId, image_id: imageId }),
+        });
+      }
+  
+      setShowEditImageModal(false);
+      setEditingQuestionId(null);
+      setNewImageFile(null);
+      setSelectedImageId(null);
+  
+      // Refresh data
+      const res = await fetch(`http://localhost:4000/courses/${courseId}/question-bank`);
+      const updated = await res.json();
+      setData(updated);
+    } catch (err) {
+      console.error('Error updating question image:', err);
+    }
+  };
+  
   
 
   useEffect(() => {
     const fetchData = async () => {
       if (!courseId) {return;}
-
+  
       const res = await fetch(`http://localhost:4000/courses/${courseId}/question-bank`);
       const data = await res.json();
       setData(data);
     };
-
+  
     fetchData();
-
-    if (!showQuestionModal) {return;}
-
+  
+    // Fetch images if either modal is open
+    if (!showQuestionModal && !showEditImageModal) {return;}
+  
     const fetchImages = async () => {
       try {
         const res = await fetch(`http://localhost:4000/question-images?courseId=${courseId}`);
@@ -198,10 +253,10 @@ export function QuestionBankSection() {
         console.error('Failed to fetch images:', err);
       }
     };
-
-  fetchImages();
-  }, [courseId, showQuestionModal]);
-
+  
+    fetchImages();
+  }, [courseId, showQuestionModal, showEditImageModal]);
+  
   // console.log('existingImages in dropdown:', existingImages);
   return (
     <Stack className={classes.section}>
@@ -230,6 +285,72 @@ export function QuestionBankSection() {
           </form>
         </Modal>
 
+        <Modal
+          opened={showEditImageModal}
+          onClose={() => setShowEditImageModal(false)}
+          title="Edit Question Image"
+        >
+          <form onSubmit={handleUpdateQuestionImage}>
+            {/* Upload new image */}
+            <TextInput
+              label="Upload New Image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                if (e.currentTarget.files?.[0]) {
+                  setNewImageFile(e.currentTarget.files[0]);
+                  setSelectedImageId(null);
+                }
+              }}
+              mt="sm"
+            />
+
+            {/* Select existing image */}
+            <Select
+              label="Select Existing Image"
+              placeholder="Choose image"
+              value={selectedImageId}
+              onChange={(val) => {
+                setSelectedImageId(val);
+                setNewImageFile(null);
+              }}
+              data={existingImages.map((img) => ({
+                value: img.image_id,
+                label: img.filename,
+              }))}
+              mt="sm"
+            />
+
+            {selectedImageId && (
+              <>
+                <Text size="sm" mt="md" mb="xs">Selected Image Preview:</Text>
+                <Paper
+                  withBorder
+                  p="xs"
+                  style={{
+                    display: 'inline-block',
+                    borderColor: '#228be6',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                  }}
+                >
+                  <img
+                    src={`http://localhost:4000${
+                      existingImages.find((img) => img.image_id === selectedImageId)?.path || ''
+                    }`}
+                    alt="Selected"
+                    style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }}
+                  />
+                </Paper>
+              </>
+            )}
+
+            <Button type="submit" mt="md">
+              Save Image
+            </Button>
+          </form>
+        </Modal>
+
       </Group>
 
       <Paper className={classes.tableWrapper}>
@@ -254,7 +375,16 @@ export function QuestionBankSection() {
                             style={{ maxWidth: '100%', maxHeight: 200, marginTop: 8, borderRadius: 8 }}
                           />
                         ))}
-
+                        <Button
+                          size="xs"
+                          variant="default"
+                          onClick={() => {
+                            setEditingQuestionId(q.question_id);
+                            setShowEditImageModal(true);
+                          }}
+                        >
+                          Edit Image
+                        </Button>
                       </Paper>
                     ))
                   ) : (

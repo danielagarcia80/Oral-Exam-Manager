@@ -14,7 +14,7 @@ type Course = {
   banner_url: string;
 };
 
-export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
+export function CourseCards({ isFaculty }: { isFaculty: boolean }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -28,7 +28,7 @@ export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
 
       if (!userId) {return;}
 
-      const endpoint = isInstructor
+      const endpoint = isFaculty
         ? `http://localhost:4000/courses/instructor/${userId}`
         : `http://localhost:4000/courses/student/${userId}`;
 
@@ -38,7 +38,7 @@ export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
     };
 
     fetchCourses();
-  }, [isInstructor, session?.user?.id]);
+  }, [isFaculty, session?.user?.id]);
 
   // Filtered course list based on search term
   const filteredCourses = courses.filter((course) =>
@@ -62,7 +62,7 @@ export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
             <Card
               className={classes.courseCard}
               onClick={() => {
-                const basePath = isInstructor
+                const basePath = isFaculty
                   ? '/instructor/course-details'
                   : '/student/course-details';
                 router.push(`${basePath}?courseId=${course.course_id}`);
@@ -89,7 +89,7 @@ export function CourseCards({ isInstructor }: { isInstructor: boolean }) {
           </Grid.Col>
         ))}
 
-        {isInstructor && (
+        {isFaculty && (
           <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
             <AddCourseCard />
           </Grid.Col>

@@ -4,8 +4,6 @@ import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
 import { UserModule } from './user/user.module';
 import { CourseModule } from './course/course.module';
-import { TeachesModule } from './teaches/teaches.module';
-import { EnrollmentModule } from './enrollment/enrollment.module';
 import { ExamModule } from './exam/exam.module';
 import { QuestionModule } from './question/question.module';
 import { LearningOutcomeModule } from './learning-outcome/learning-outcome.module';
@@ -22,13 +20,12 @@ import { AuthModule } from './auth/auth.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { RecordingUploadModule } from './recording-upload/recording-upload.module';
+import { CourseMembershipModule } from './course-membership/course-membership.module';
 
 @Module({
   imports: [
     UserModule,
     CourseModule,
-    TeachesModule,
-    EnrollmentModule,
     ExamModule,
     QuestionModule,
     LearningOutcomeModule,
@@ -53,6 +50,7 @@ import { RecordingUploadModule } from './recording-upload/recording-upload.modul
       }),
     }),
     RecordingUploadModule,
+    CourseMembershipModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

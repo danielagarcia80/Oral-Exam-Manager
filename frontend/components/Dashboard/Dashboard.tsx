@@ -26,14 +26,14 @@ export default function Dashboard() {
     return <p>Loading...</p>;
   }
 
-  const isInstructor = session!.user!.role === 'INSTRUCTOR';
+  const isFaculty = session!.user!.role === 'FACULTY';
 
   return (
     <Container pt="md">
       <Stack gap="lg">
         <Header />
-        <CourseCards isInstructor={isInstructor} />
-        {isInstructor ? (
+        <CourseCards isFaculty={isFaculty} />
+        {isFaculty ? (
           <>
             <InstructorExams />
             <EnrolledStudents />

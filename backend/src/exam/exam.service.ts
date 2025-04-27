@@ -126,12 +126,17 @@ export class ExamService {
   }
 
   async getExamsForInstructor(userId: string) {
-    const teaches = await this.prisma.teaches.findMany({
-      where: { instructor_id: userId },
-      select: { course_id: true },
+    const memberships = await this.prisma.courseMembership.findMany({
+      where: {
+        userId,
+        role: 'INSTRUCTOR',
+      },
+      select: {
+        courseId: true,
+      },
     });
 
-    const courseIds = teaches.map((t) => t.course_id);
+    const courseIds = memberships.map((m) => m.courseId);
 
     if (courseIds.length === 0) return [];
 
@@ -149,8 +154,11 @@ export class ExamService {
   }
 
   async getAllExamsForStudent(userId: string) {
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: { student_id: userId },
+    const memberships = await this.prisma.courseMembership.findMany({
+      where: {
+        userId,
+        role: 'STUDENT',
+      },
       include: {
         course: {
           include: {
@@ -166,7 +174,7 @@ export class ExamService {
       },
     });
 
-    return enrollments.flatMap((enrollment) => enrollment.course.exams);
+    return memberships.flatMap((m) => m.course.exams);
   }
 
   async getExamsForCourse(courseId: string): Promise<ExamResponseDto[]> {

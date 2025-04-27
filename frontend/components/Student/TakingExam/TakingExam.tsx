@@ -186,64 +186,60 @@ export default function TakingExam() {
         return;
       }
   
-      let recordingUrl = '';
-  
-      if (mediaRecorder) {
-        const recordedChunks: Blob[] = [];
-  
-        // Prepare to collect data
-        const recordingBlob = await new Promise<Blob>((resolve) => {
-          mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-              recordedChunks.push(event.data);
-            }
-          };
-  
-          mediaRecorder.onstop = () => {
-            const finalBlob = new Blob(recordedChunks, { type: 'video/webm' });
-            resolve(finalBlob);
-          };
-  
-          mediaRecorder.stop();
-        });
-  
-        const formData = new FormData();
-        formData.append('file', recordingBlob, 'recording.webm');
-  
-        const uploadRes = await fetch('http://localhost:4000/recordings', {
-          method: 'POST',
-          body: formData,
-        });
-  
-        const uploadData = await uploadRes.json();
-        recordingUrl = uploadData.url;
+      if (!mediaRecorder) {
+        console.error('No recording available');
+        return;
       }
   
-      const payload = {
-        student_id: studentID,
-        exam_id: examId,
-        attempt_number: 1,
-        recording_url: recordingUrl,
-        duration_minutes: duration,
-        grade_percentage: 0,
-        feedback: '',
-      };
+      const recordedChunks: Blob[] = [];
   
-      console.log('Payload:', payload);
+      const recordingBlob = await new Promise<Blob>((resolve) => {
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
   
-      const res = await fetch('http://localhost:4000/exam-submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        mediaRecorder.onstop = () => {
+          const finalBlob = new Blob(recordedChunks, { type: 'video/webm' });
+          resolve(finalBlob);
+        };
+  
+        mediaRecorder.stop();
       });
   
-      if (!res.ok) {
-        const errorData = await res.json();
+      // FIRST: upload to /recordings
+      const formDataRecording = new FormData();
+      formDataRecording.append('file', recordingBlob, 'recording.webm');
+  
+      const recordingUploadRes = await fetch('http://localhost:4000/recordings', {
+        method: 'POST',
+        body: formDataRecording,
+      });
+  
+      const recordingData = await recordingUploadRes.json();
+      const recordingUrl = recordingData.url; // e.g., /recordings/uuid.webm
+  
+      // THEN: send file + metadata to /exam-submissions/upload
+      const formDataSubmission = new FormData();
+      formDataSubmission.append('file', recordingBlob, 'recording.webm');
+      formDataSubmission.append('student_id', studentID);
+      formDataSubmission.append('exam_id', examId);
+      formDataSubmission.append('recording_url', recordingUrl);
+  
+      const uploadRes = await fetch('http://localhost:4000/exam-submissions/upload', {
+        method: 'POST',
+        body: formDataSubmission,
+      });
+  
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json();
         console.error('Submission failed:', errorData);
         return;
       }
   
-      // Stop all media streams
+      console.log('Submission successful');
+  
       screenStream?.getTracks().forEach((t) => t.stop());
       micStream?.getTracks().forEach((t) => t.stop());
       cameraStream?.getTracks().forEach((t) => t.stop());
@@ -253,6 +249,8 @@ export default function TakingExam() {
       console.error('Error during exam submission:', err);
     }
   };
+  
+  
   
 
   const currentQuestion = questions[currentIndex];

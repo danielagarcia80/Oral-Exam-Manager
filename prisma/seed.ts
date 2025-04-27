@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import 'dotenv/config';
 
+
 const prisma = new PrismaClient();
 
 async function hashPassword(password: string) {
@@ -13,8 +14,7 @@ async function main() {
   console.log('🌱 Clearing old data...');
   await prisma.examSubmission.deleteMany();
   await prisma.assignedExam.deleteMany();
-  await prisma.enrollment.deleteMany();
-  await prisma.teaches.deleteMany();
+  await prisma.courseMembership.deleteMany();
   await prisma.examIncludesQuestion.deleteMany();
   await prisma.questionHasKeyword.deleteMany();
   await prisma.questionHasImage.deleteMany();
@@ -34,7 +34,7 @@ async function main() {
       password: await hashPassword('password'),
       first_name: 'Instructor',
       last_name: 'Zero',
-      role: 'INSTRUCTOR',
+      role: 'FACULTY',
       account_creation_date: new Date(),
     },
   });
@@ -45,7 +45,7 @@ async function main() {
       password: await hashPassword('password'),
       first_name: 'Instructor',
       last_name: 'One',
-      role: 'INSTRUCTOR',
+      role: 'FACULTY',
       account_creation_date: new Date(),
     },
   });
@@ -72,6 +72,17 @@ async function main() {
     },
   });
 
+  const ta = await prisma.user.create({
+    data: {
+      email: 'ta@email.com',
+      password: await hashPassword('password'),
+      first_name: 'TA',
+      last_name: 'Jones',
+      role: 'STUDENT',
+      account_creation_date: new Date(),
+    },
+  });
+
   console.log('🌱 Creating course...');
   const course = await prisma.course.create({
     data: {
@@ -80,20 +91,39 @@ async function main() {
       start_date: new Date('2025-04-01'),
       end_date: new Date('2025-07-01'),
       banner_url: 'uploads/sample-banner.png',
-      teaches: {
-        create: [
-          { instructor_id: instructor0.user_id },
-          { instructor_id: instructor1.user_id },
-        ],
-      },
-      enrollments: {
-        create: [
-          { student_id: student0.user_id, status: 'ENROLLED' },
-          { student_id: student1.user_id, status: 'ENROLLED' },
-        ],
-      },
     },
   });
+
+  await prisma.courseMembership.createMany({
+    data: [
+      {
+        userId: instructor0.user_id,
+        courseId: course.course_id,
+        role: 'INSTRUCTOR',
+      },
+      {
+        userId: instructor1.user_id,
+        courseId: course.course_id,
+        role: 'INSTRUCTOR',
+      },
+      {
+        userId: student0.user_id,
+        courseId: course.course_id,
+        role: 'STUDENT',
+      },
+      {
+        userId: student1.user_id,
+        courseId: course.course_id,
+        role: 'STUDENT',
+      },
+      {
+        userId: ta.user_id,
+        courseId: course.course_id,
+        role: 'TA',
+      },
+    ],
+  });
+  
 
   console.log('🌱 Creating learning outcomes...');
   const outcome0 = await prisma.learningOutcome.create({
@@ -149,14 +179,30 @@ async function main() {
   console.log('🌱 Creating exams...');
   const exam = await prisma.exam.create({
     data: {
-      title: 'Midterm Exam',
+      title: 'Overall Time Exam',
       description: 'Covers weeks 1–6 material.',
       type: 'ASYNCHRONOUS',
       course_id: course.course_id,
       start_date: new Date('2025-05-01T09:00:00Z'),
       end_date: new Date('2025-05-07T23:59:59Z'),
-      duration_minutes: 30,
+      duration_minutes: 2,
       timing_mode: 'OVERALL',
+      requires_audio: true,
+      requires_video: true,
+      requires_screen_share: true,
+    },
+  });
+
+  const per_question = await prisma.exam.create({
+    data: {
+      title: 'Per Question Time Exam',
+      description: 'Covers weeks 1–6 material.',
+      type: 'ASYNCHRONOUS',
+      course_id: course.course_id,
+      start_date: new Date('2025-01-01T09:00:00Z'),
+      end_date: new Date('2025-08-02T23:59:59Z'),
+      duration_minutes: 3,
+      timing_mode: 'PER_QUESTION',
       requires_audio: true,
       requires_video: true,
       requires_screen_share: true,
@@ -165,7 +211,7 @@ async function main() {
 
   const pastExam = await prisma.exam.create({
     data: {
-      title: 'Syllabus Quiz',
+      title: 'Old Quiz',
       description: 'Covers weeks 1–6 material.',
       type: 'ASYNCHRONOUS',
       course_id: course.course_id,
@@ -205,7 +251,19 @@ async function main() {
     ],
   });
   
-  
+  await prisma.assignedExam.createMany({
+    data: [
+      {
+        exam_id: per_question.exam_id,
+        student_id: student0.user_id,
+      },
+      {
+        exam_id: per_question.exam_id,
+        student_id: student1.user_id,
+      },
+    ],
+  });
+
 
   await prisma.examIncludesQuestion.createMany({
     data: [
@@ -218,6 +276,23 @@ async function main() {
         exam_id: exam.exam_id,
         question_id: question1.question_id,
         order_index: 1,
+      },
+    ],
+  });
+
+  await prisma.examIncludesQuestion.createMany({
+    data: [
+      {
+        exam_id: per_question.exam_id,
+        question_id: question0.question_id,
+        order_index: 0,
+        time_allocation: 2,
+      },
+      {
+        exam_id: per_question.exam_id,
+        question_id: question1.question_id,
+        order_index: 1,
+        time_allocation: 1,
       },
     ],
   });

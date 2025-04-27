@@ -40,6 +40,26 @@ export function CourseDetails() {
 
   const router = useRouter();
 
+  const BannerImage = ({ bannerUrl }: { bannerUrl: string }) => {
+    const [src, setSrc] = useState(`http://localhost:4000/${bannerUrl}`);
+  
+    return (
+      <Image
+        src={src}
+        alt="Course banner"
+        fit="cover"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: '100%',
+          width: '100%',
+        }}
+        onError={() => setSrc('/default-banner.png')}
+      />
+    );
+  };
+
   useEffect(() => {
     if (!courseId) {return;}
   
@@ -118,18 +138,7 @@ export function CourseDetails() {
           boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
         }}
       >
-        <Image
-          src={`http://localhost:4000/${course.banner_url}`}
-          alt="Course banner"
-          fit="cover"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            height: '100%',
-            width: '100%',
-          }}
-        />
+        <BannerImage bannerUrl={course.banner_url} />
       </Box>
 
       {/* Course Header Info */}

@@ -88,10 +88,10 @@ export default function SignIn(props: PaperProps) {
         const session = await getSession(); // fetch updated session
         const role = session?.user?.role;
 
-        if (role === 'STUDENT' || role === 'INSTRUCTOR') {
+        if (role === 'STUDENT' || role === 'FACULTY') {
           router.push('/dashboard');
         } else {
-          router.push('/'); // fallback
+          router.push('/'); // fallbacks
         }
       } else {
         setError('Invalid email or password');

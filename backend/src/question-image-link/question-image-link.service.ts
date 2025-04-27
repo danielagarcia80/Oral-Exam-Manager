@@ -27,4 +27,12 @@ export class QuestionImageLinkService {
   async findAll(): Promise<QuestionImageLinkResponseDto[]> {
     return this.prisma.questionHasImage.findMany();
   }
+
+  async deleteAllForQuestion(questionId: string) {
+    return this.prisma.questionHasImage.deleteMany({
+      where: {
+        question_id: questionId,
+      },
+    });
+  }
 }
