@@ -210,6 +210,7 @@ export default function TakingExam() {
   
       // FIRST: upload to /recordings
       const formDataRecording = new FormData();
+      console.log('Recording Blob type:', recordingBlob.type);
       formDataRecording.append('file', recordingBlob, 'recording.webm');
   
       const recordingUploadRes = await fetch('http://localhost:4000/recordings', {
@@ -263,15 +264,6 @@ export default function TakingExam() {
     ? timeLeft / duration < 0.2
     : questionRatio < 0.2;
 
-  console.log({
-    mode: timingMode,
-    timeLeft,
-    duration,
-    questionTimeLeft,
-    currentQuestionTime,
-    questionRatio,
-    isRed,
-  });
 
   return (
     <Container size="md" py="lg">
