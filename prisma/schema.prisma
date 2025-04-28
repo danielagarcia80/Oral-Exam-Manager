@@ -283,5 +283,5 @@ model ExamSubmission {
   duration_minutes  Float
   grade_percentage  Float
   feedback          String
-  transcript        String?
+  transcript        String? @db.Text
 }

@@ -5,6 +5,7 @@ import {
   Checkbox,
   Container,
   Group,
+  Loader,
   Progress,
   Radio,
   Stack,
@@ -12,7 +13,7 @@ import {
   Textarea,
   Title,
 } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useStreamContext } from '@/components/Student/ExamSetup/StreamContext';
 import { useSession } from 'next-auth/react';
@@ -49,6 +50,9 @@ export default function TakingExam() {
   const [questionTimes, setQuestionTimes] = useState<number[]>([]); // e.g., [60, 90, 120]
   const [questionTimeLeft, setQuestionTimeLeft] = useState(0);
 
+  const [submitting, setSubmitting] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const studentID = session?.user?.id;
 
   useEffect(() => {
@@ -66,7 +70,7 @@ export default function TakingExam() {
         (a: any, b: any) => a.order_index - b.order_index
       );
 
-      const times = sorted.map((q) => (Number(q.time_allocation) || 1));
+      const times = sorted.map((q: { time_allocation: any; }) => (Number(q.time_allocation) || 1));
       setQuestionTimes(times);
       setQuestionTimeLeft(times[0]);
 
@@ -95,14 +99,14 @@ export default function TakingExam() {
       return;
     }
   
-    const interval = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setTimeLeft((t) => t - 1);
   
       if (timingMode === 'PER_QUESTION') {
         setQuestionTimeLeft((qt) => {
           if (qt <= 1) {
             if (currentIndex === questions.length - 1) {
-              clearInterval(interval);
+              if (timerRef.current) {clearInterval(timerRef.current);}
               submitExam();
             } else {
               setCurrentIndex((i) => i + 1);
@@ -112,10 +116,11 @@ export default function TakingExam() {
           return qt - 1;
         });
       }
-  
     }, 1000);
   
-    return () => clearInterval(interval);
+    return () => {
+      if (timerRef.current) {clearInterval(timerRef.current);}
+    };
   }, [timeLeft, timingMode, currentIndex, questionTimes, questions.length]);
   
 
@@ -177,6 +182,11 @@ export default function TakingExam() {
 
   const submitExam = async () => {
     try {
+      setSubmitting(true);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+
       if (!studentID || !examId) {
         console.error('Missing student_id or examId');
         return;
@@ -243,6 +253,8 @@ export default function TakingExam() {
       router.push('/dashboard');
     } catch (err) {
       console.error('Error during exam submission:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
   
@@ -259,6 +271,17 @@ export default function TakingExam() {
     ? timeLeft / duration < 0.2
     : questionRatio < 0.2;
 
+  if (submitting) {
+    return (
+      <Group justify="center" mt="xl">
+        <Stack align="center">
+          <Loader size="lg" />
+          <Text>Submitting your exam, please wait...</Text>
+        </Stack>
+      </Group>
+    );
+  }
+  
   return (
     <Container size="md" py="lg">
       {/* Camera preview */}
