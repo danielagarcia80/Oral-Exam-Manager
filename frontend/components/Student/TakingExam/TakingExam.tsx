@@ -70,10 +70,6 @@ export default function TakingExam() {
       setQuestionTimes(times);
       setQuestionTimeLeft(times[0]);
 
-      console.log('Question Times (seconds):', times);
-      console.log('Initial question time left:', times[0]);
-
-
       setQuestions(
         sorted.map((q: any) => ({
           id: q.question.id,
@@ -262,16 +258,6 @@ export default function TakingExam() {
   timingMode === 'OVERALL'
     ? timeLeft / duration < 0.2
     : questionRatio < 0.2;
-
-  console.log({
-    mode: timingMode,
-    timeLeft,
-    duration,
-    questionTimeLeft,
-    currentQuestionTime,
-    questionRatio,
-    isRed,
-  });
 
   return (
     <Container size="md" py="lg">
