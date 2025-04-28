@@ -66,6 +66,8 @@ model User {
   course_roles        CourseMembership[]
 }
 
+// The below three tables are not currentlky used, but may likely be used for Google and Github autherntication in the future
+// Not used
 model Account {
   id                 String  @id @default(cuid())
   userId             String
@@ -85,6 +87,7 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+// Not used
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -94,6 +97,7 @@ model Session {
   user User @relation(fields: [userId], references: [user_id])
 }
 
+// Not used
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -101,6 +105,7 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+//
 
 model Course {
   course_id   String     @id @default(uuid())
@@ -278,5 +283,6 @@ model ExamSubmission {
   duration_minutes  Float
   grade_percentage  Float
   feedback          String
-  transcript        String?
+  transcript        String? @db.Text
+  summary           String? @db.Text
 }
