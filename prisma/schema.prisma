@@ -284,4 +284,5 @@ model ExamSubmission {
   grade_percentage  Float
   feedback          String
   transcript        String? @db.Text
+  summary           String? @db.Text
 }

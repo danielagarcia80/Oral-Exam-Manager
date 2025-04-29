@@ -15,6 +15,7 @@ import { writeFile, unlink, mkdir, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { Readable } from 'stream';
+import OpenAI from 'openai';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import ffmpeg = require('fluent-ffmpeg');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -22,6 +23,40 @@ const ffmpegStatic = require('ffmpeg-static');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const FormData = require('form-data');
 console.log('ffmpegStatic path:', ffmpegStatic);
+
+// Helper functions
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+async function summarizeTranscript(transcript: string): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo',
+    messages: [
+      {
+        role: 'system',
+        content: `You are an AI that summarizes student exam answers. 
+Focus on extracting the key ideas the student mentions. 
+Ignore filler words or off-topic remarks. 
+Summarize clearly in a few bullet points if possible.`,
+      },
+      {
+        role: 'user',
+        content: `Here is the student's full transcript:\n\n${transcript}`,
+      },
+    ],
+    temperature: 0.2,
+    max_tokens: 500,
+  });
+
+  const summary = response.choices[0].message?.content;
+  if (!summary) {
+    throw new Error('Failed to get summary from OpenAI');
+  }
+
+  return summary.trim();
+}
+
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
@@ -128,11 +163,13 @@ export class ExamSubmissionService {
       // Step 3: Read audio file
       const audioBuffer = await readFile(tempAudioPath);
 
-      // Step 4: Transcribe audio chunks
+      // Step 4: Transcribe audio chunks and summary
       const transcription = await transcribeInChunks(
         audioBuffer,
         `${file.originalname}.wav`,
       );
+
+      const summary = await summarizeTranscript(transcription);
 
       // Step 5: Save ExamSubmission
       const submission = await this.prisma.examSubmission.create({
@@ -144,6 +181,7 @@ export class ExamSubmissionService {
             connect: { exam_id: examId },
           },
           transcript: transcription,
+          summary: summary,
           submitted_at: new Date(),
           attempt_number: 1,
           recording_url: recordingUrl,

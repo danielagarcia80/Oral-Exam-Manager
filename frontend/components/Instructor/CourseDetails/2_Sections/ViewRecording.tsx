@@ -114,6 +114,13 @@ export default function ViewRecordingPage() {
                           </>
                         )}
 
+                        {submission.summary && (
+                        <>
+                            <Title order={4}>Summary</Title>
+                            <Text>{submission.summary}</Text>
+                        </>
+                        )}
+
 
                         <TextInput
                             label="Grade (%)"
