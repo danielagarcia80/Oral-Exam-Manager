@@ -176,17 +176,28 @@ export class ExamSubmissionService {
     const tempAudioPath = join(tmpDir, `${file.originalname}.wav`);
   
     await writeFile(tempWebmPath, file.buffer);
+
+    // DEBUG: Save the uploaded webm file for manual inspection
+    const debugOutPath = join(tmpDir, `DEBUG_${file.originalname}`);
+    await writeFile(debugOutPath, file.buffer);
+    console.log('Saved debug webm at:', debugOutPath);
+
   
     try {
       // Step 1: Convert to audio
       await convertToAudio(tempWebmPath, tempAudioPath);
       const audioBuffer = await readFile(tempAudioPath);
   
-      // Step 2: Transcribe audio + get segments
+      // Step 2: Transcribe audio + get segm-tments
       const { fullText, segments } = await transcribeInChunks(
         audioBuffer,
         `${file.originalname}.wav`,
       );
+      // DEBUG: Save a copy of the converted WAV file too
+      const debugWavOutPath = join(tmpDir, `DEBUG_${file.originalname}.wav`);
+      await writeFile(debugWavOutPath, await readFile(tempAudioPath));
+      console.log('Saved debug wav at:', debugWavOutPath);
+
   
       const summary = await summarizeTranscript(fullText);
   
