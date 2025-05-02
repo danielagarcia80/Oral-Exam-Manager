@@ -285,4 +285,17 @@ model ExamSubmission {
   feedback          String
   transcript        String? @db.Text
   summary           String? @db.Text
+
+  transcriptSegments TranscriptSegment[] // 👈 Add this
+}
+
+model TranscriptSegment {
+  segment_id        String          @id @default(uuid())
+  examSubmission    ExamSubmission  @relation(fields: [submission_id], references: [submission_id], onDelete: Cascade)
+  submission_id     String
+  start_seconds     Float           // e.g., 12.34
+  end_seconds       Float           // e.g., 15.67
+  text              String
+
+  @@index([submission_id])
 }

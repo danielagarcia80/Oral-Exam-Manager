@@ -11,8 +11,14 @@ import {
     Group,
     Loader,
 } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+
+function formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}  
 
 export default function ViewRecordingPage() {
     const router = useRouter();
@@ -26,6 +32,9 @@ export default function ViewRecordingPage() {
     const [submission, setSubmission] = useState<any>(null);
     const [grade, setGrade] = useState('');
     const [feedback, setFeedback] = useState('');
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [showTranscript, setShowTranscript] = useState(false);
+
 
     useEffect(() => {
         const fetchSubmission = async () => {
@@ -94,6 +103,7 @@ export default function ViewRecordingPage() {
                         <Text>Email: {submission.student?.email}</Text>
 
                         <video
+                            ref={videoRef}
                             controls
                             src={`http://localhost:4000${submission.recording_url}`}
                             style={{ width: '100%', borderRadius: '8px', border: '1px solid #ccc' }}
@@ -107,11 +117,42 @@ export default function ViewRecordingPage() {
                             />
                         </video>
                         
-                        {submission.transcript && (
-                          <>
-                            <Title order={4}>Transcript</Title>
-                            <Text>{submission.transcript}</Text>
-                          </>
+                        {submission.transcriptSegments?.length > 0 && (
+                            <>
+                                <Button
+                                variant="light"
+                                onClick={() => setShowTranscript((prev) => !prev)}
+                                mt="md"
+                                >
+                                {showTranscript ? 'Hide Full Transcript' : 'Show Full Transcript'}
+                                </Button>
+
+                                {showTranscript && (
+                                <>
+                                    <Title order={4} mt="md">Transcript</Title>
+                                    <Stack gap="xs">
+                                    {submission.transcriptSegments.map((segment: any, index: number) => (
+                                        <Text key={index} size="sm">
+                                        <Button
+                                            variant="subtle"
+                                            size="xs"
+                                            onClick={() => {
+                                            if (videoRef.current) {
+                                                videoRef.current.currentTime = segment.start_seconds;
+                                                videoRef.current.play();
+                                            }
+                                            }}
+                                            style={{ marginRight: '8px' }}
+                                        >
+                                            [{formatTime(segment.start_seconds)}]
+                                        </Button>
+                                        {segment.text}
+                                        </Text>
+                                    ))}
+                                    </Stack>
+                                </>
+                                )}
+                            </>
                         )}
 
                         {submission.summary && (

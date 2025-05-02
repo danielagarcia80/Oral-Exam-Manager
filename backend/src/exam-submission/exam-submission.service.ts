@@ -25,6 +25,11 @@ const FormData = require('form-data');
 console.log('ffmpegStatic path:', ffmpegStatic);
 
 // Helper functions
+type TranscriptSegment = {
+  start: number;
+  end: number;
+  text: string;
+};
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -82,9 +87,10 @@ async function convertToAudio(
 async function transcribeInChunks(
   fileBuffer: Buffer,
   filename: string,
-): Promise<string> {
-  const MAX_CHUNK_SIZE = 24 * 1024 * 1024; // 24MB safe margin
-  const partialTranscripts: string[] = [];
+): Promise<{ fullText: string; segments: TranscriptSegment[] }> {
+  const MAX_CHUNK_SIZE = 24 * 1024 * 1024;
+  const allSegments: TranscriptSegment[] = [];
+  const fullTextParts: string[] = [];
 
   let start = 0;
   while (start < fileBuffer.length) {
@@ -94,6 +100,7 @@ async function transcribeInChunks(
     const formData = new FormData();
     formData.append('file', Readable.from(chunk) as any, { filename });
     formData.append('model', 'whisper-1');
+    formData.append('response_format', 'verbose_json');
 
     const response = await axios.post(
       'https://api.openai.com/v1/audio/transcriptions',
@@ -106,12 +113,27 @@ async function transcribeInChunks(
       },
     );
 
-    partialTranscripts.push(response.data.text);
+    const { text, segments } = response.data;
+
+    fullTextParts.push(text);
+    allSegments.push(
+      ...segments.map((seg: any) => ({
+        start: seg.start,
+        end: seg.end,
+        text: seg.text.trim(),
+      })),
+    );
+
     start = end;
   }
 
-  return partialTranscripts.join(' ');
+  return {
+    fullText: fullTextParts.join(' '),
+    segments: allSegments,
+  };
 }
+
+
 
 @Injectable()
 export class ExamSubmissionService {
@@ -149,39 +171,32 @@ export class ExamSubmissionService {
     if (!existsSync(tmpDir)) {
       await mkdir(tmpDir);
     }
-
+  
     const tempWebmPath = join(tmpDir, file.originalname);
     const tempAudioPath = join(tmpDir, `${file.originalname}.wav`);
-
-    // Step 1: Save uploaded video file
+  
     await writeFile(tempWebmPath, file.buffer);
-
+  
     try {
-      // Step 2: Convert video to audio
+      // Step 1: Convert to audio
       await convertToAudio(tempWebmPath, tempAudioPath);
-
-      // Step 3: Read audio file
       const audioBuffer = await readFile(tempAudioPath);
-
-      // Step 4: Transcribe audio chunks and summary
-      const transcription = await transcribeInChunks(
+  
+      // Step 2: Transcribe audio + get segments
+      const { fullText, segments } = await transcribeInChunks(
         audioBuffer,
         `${file.originalname}.wav`,
       );
-
-      const summary = await summarizeTranscript(transcription);
-
-      // Step 5: Save ExamSubmission
+  
+      const summary = await summarizeTranscript(fullText);
+  
+      // Step 3: Save ExamSubmission
       const submission = await this.prisma.examSubmission.create({
         data: {
-          student: {
-            connect: { user_id: studentId },
-          },
-          exam: {
-            connect: { exam_id: examId },
-          },
-          transcript: transcription,
-          summary: summary,
+          student: { connect: { user_id: studentId } },
+          exam: { connect: { exam_id: examId } },
+          transcript: fullText,
+          summary,
           submitted_at: new Date(),
           attempt_number: 1,
           recording_url: recordingUrl,
@@ -190,14 +205,24 @@ export class ExamSubmissionService {
           feedback: '',
         },
       });
-
+  
+      // Step 4: Insert transcript segments
+      await this.prisma.transcriptSegment.createMany({
+        data: segments.map((seg) => ({
+          submission_id: submission.submission_id,
+          start_seconds: seg.start,
+          end_seconds: seg.end,
+          text: seg.text,
+        })),
+      });
+  
       return submission;
     } finally {
-      // Step 6: Cleanup temp files
       await unlink(tempWebmPath).catch(() => {});
       await unlink(tempAudioPath).catch(() => {});
     }
   }
+  
 
   async findAll(): Promise<ExamSubmissionResponseDto[]> {
     return this.prisma.examSubmission.findMany();
@@ -208,9 +233,13 @@ export class ExamSubmissionService {
       where: { exam_id: examId },
       include: {
         student: true,
+        transcriptSegments: {
+          orderBy: { start_seconds: 'asc' },
+        },
       },
     });
   }
+  
 
   async updateGrade(
     studentId: string,
