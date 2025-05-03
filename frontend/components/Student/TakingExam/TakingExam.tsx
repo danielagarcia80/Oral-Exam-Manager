@@ -283,8 +283,7 @@ export default function TakingExam() {
   }
   
   return (
-    <Container size="md" py="lg">
-      {/* Camera preview */}
+    <Container size="md" py="lg" style={{ position: 'relative' }}>
       {cameraStream && (
         <video
           autoPlay
@@ -295,14 +294,14 @@ export default function TakingExam() {
             }
           }}
           style={{
-            position: 'fixed',
-            bottom: 16,
+            position: 'absolute',
+            top: 16,
             right: 16,
             width: 200,
             height: 150,
             borderRadius: 8,
             border: '2px solid #ccc',
-            zIndex: 999,
+            zIndex: 10,
             backgroundColor: '#000',
           }}
         />

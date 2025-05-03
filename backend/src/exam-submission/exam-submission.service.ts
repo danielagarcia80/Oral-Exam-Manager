@@ -62,7 +62,6 @@ Summarize clearly in a few bullet points if possible.`,
   return summary.trim();
 }
 
-
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
 async function convertToAudio(
@@ -133,8 +132,6 @@ async function transcribeInChunks(
   };
 }
 
-
-
 @Injectable()
 export class ExamSubmissionService {
   constructor(private prisma: PrismaService) {}
@@ -171,10 +168,10 @@ export class ExamSubmissionService {
     if (!existsSync(tmpDir)) {
       await mkdir(tmpDir);
     }
-  
+
     const tempWebmPath = join(tmpDir, file.originalname);
     const tempAudioPath = join(tmpDir, `${file.originalname}.wav`);
-  
+
     await writeFile(tempWebmPath, file.buffer);
 
     // DEBUG: Save the uploaded webm file for manual inspection
@@ -182,12 +179,11 @@ export class ExamSubmissionService {
     await writeFile(debugOutPath, file.buffer);
     console.log('Saved debug webm at:', debugOutPath);
 
-  
     try {
       // Step 1: Convert to audio
       await convertToAudio(tempWebmPath, tempAudioPath);
       const audioBuffer = await readFile(tempAudioPath);
-  
+
       // Step 2: Transcribe audio + get segm-tments
       const { fullText, segments } = await transcribeInChunks(
         audioBuffer,
@@ -198,9 +194,8 @@ export class ExamSubmissionService {
       await writeFile(debugWavOutPath, await readFile(tempAudioPath));
       console.log('Saved debug wav at:', debugWavOutPath);
 
-  
       const summary = await summarizeTranscript(fullText);
-  
+
       // Step 3: Save ExamSubmission
       const submission = await this.prisma.examSubmission.create({
         data: {
@@ -216,7 +211,7 @@ export class ExamSubmissionService {
           feedback: '',
         },
       });
-  
+
       // Step 4: Insert transcript segments
       await this.prisma.transcriptSegment.createMany({
         data: segments.map((seg) => ({
@@ -226,14 +221,13 @@ export class ExamSubmissionService {
           text: seg.text,
         })),
       });
-  
+
       return submission;
     } finally {
       await unlink(tempWebmPath).catch(() => {});
       await unlink(tempAudioPath).catch(() => {});
     }
   }
-  
 
   async findAll(): Promise<ExamSubmissionResponseDto[]> {
     return this.prisma.examSubmission.findMany();
@@ -250,7 +244,6 @@ export class ExamSubmissionService {
       },
     });
   }
-  
 
   async updateGrade(
     studentId: string,
