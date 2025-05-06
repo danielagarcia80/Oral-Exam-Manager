@@ -37,7 +37,7 @@ export function GradesSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!examId) return;
+    if (!examId) {return;}
 
     const fetchData = async () => {
       setLoading(true);
