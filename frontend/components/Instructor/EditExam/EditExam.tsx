@@ -33,6 +33,8 @@ export default function EditExam() {
 
   // Question selection state
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [questionKeywordsMap, setQuestionKeywordsMap] = useState<Record<string, string[]>>({});
+
 
   useEffect(() => {
     const fetchExam = async () => {
@@ -213,7 +215,10 @@ export default function EditExam() {
           timingMode={timingMode}
           questionTimeMap={questionTimeMap}
           setQuestionTimeMap={setQuestionTimeMap}
+          questionKeywordsMap={questionKeywordsMap}
+          setQuestionKeywordsMap={setQuestionKeywordsMap}
         />
+
 
 
 

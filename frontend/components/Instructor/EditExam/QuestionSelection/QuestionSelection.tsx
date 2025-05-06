@@ -44,7 +44,11 @@ interface QuestionSelectionProps {
   timingMode: string;
   questionTimeMap: Record<string, number>;
   setQuestionTimeMap: (map: Record<string, number>) => void;
+  questionKeywordsMap: Record<string, string[]>;
+  setQuestionKeywordsMap: (map: Record<string, string[]>) => void;
 }
+
+
 
 export function QuestionSelection({
   selectedQuestions,
@@ -52,12 +56,20 @@ export function QuestionSelection({
   timingMode,
   questionTimeMap,
   setQuestionTimeMap,
+  questionKeywordsMap,
+  setQuestionKeywordsMap,
 }: QuestionSelectionProps) {
+
+
+
+
   const { classes } = useStyles();
   const searchParams = useSearchParams();
   const courseId = searchParams.get('courseId');
 
   const [outcomes, setOutcomes] = useState<LearningOutcome[]>([]);
+  const [newQuestionKeywords, setNewQuestionKeywords] = useState('');
+
 
   const [newOutcomeModalOpen, setNewOutcomeModalOpen] = useState(false);
   const [newOutcome, setNewOutcome] = useState('');
@@ -121,6 +133,15 @@ export function QuestionSelection({
 
   const updateTimeForQuestion = (id: string, time: number) => {
     setQuestionTimeMap({ ...questionTimeMap, [id]: time });
+  };
+
+  const updateKeywordsForQuestion = (questionId: string, input: string) => {
+    const keywords = input
+      .split(',')
+      .map(k => k.trim())
+      .filter(k => k.length > 0);
+
+    setQuestionKeywordsMap({ ...questionKeywordsMap, [questionId]: keywords });
   };
 
   const totalTime = Object.values(questionTimeMap).reduce((sum, t) => sum + t, 0);
@@ -226,6 +247,23 @@ export function QuestionSelection({
     const questionData = await questionRes.json();
     const questionId = questionData.question_id;
 
+    const keywords = newQuestionKeywords
+      .split(',')
+      .map(k => k.trim())
+      .filter(k => k.length > 0);
+
+    for (const keywordText of keywords) {
+      await fetch('http://localhost:4000/question-keywords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_id: questionId,
+          keyword_text: keywordText,
+        }),
+      });
+    }
+
+
     await fetch('http://localhost:4000/question-outcomes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -266,6 +304,8 @@ export function QuestionSelection({
     setNewImageFile(null);
     setSelectedImageId(null);
     setQuestionModalOpen(false);
+    setNewQuestionKeywords('');
+
 
     const res = await fetch(`http://localhost:4000/courses/${courseId}/question-bank`);
     const updated = await res.json();
@@ -290,45 +330,54 @@ export function QuestionSelection({
                 <Stack gap="xs">
                   {outcome.questions.length > 0 ? (
                     outcome.questions.map((q) => (
-                      <Group key={q.question_id} align="center" justify="space-between">
-                        <Checkbox
-                          label={`${q.text} (Type: ${q.type}, Difficulty: ${q.difficulty})`}
-                          checked={selectedQuestions.includes(q.question_id)}
-                          onChange={() => toggleQuestion(q.question_id)}
-                        />
-                        {q.images?.map((imgLink) => (
-                          <img
-                            key={imgLink.image.image_id}
-                            src={`http://localhost:4000${imgLink.image.image_data}`}
-                            alt="Question"
-                            style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, marginTop: 8 }}
+                      <Paper key={q.question_id} p="sm" withBorder>
+                        <Stack gap="xs">
+                          <Checkbox
+                            label={`${q.text} (Type: ${q.type}, Difficulty: ${q.difficulty})`}
+                            checked={selectedQuestions.includes(q.question_id)}
+                            onChange={() => toggleQuestion(q.question_id)}
                           />
-                        ))}
-                        <Button
-                          size="xs"
-                          variant="default"
-                          onClick={() => {
-                            setEditingQuestionId(q.question_id);
-                            setShowEditImageModal(true);
-                          }}
-                        >
-                          Edit Image
-                        </Button>
 
-                        {timingMode === 'PER_QUESTION' && selectedQuestions.includes(q.question_id) && (
-                          <TextInput
-                            label="Time (min)"
-                            type="number"
-                            size="xs"
-                            style={{ width: 100 }}
-                            value={questionTimeMap[q.question_id]?.toString() || ''}
-                            onChange={(e) =>
-                              updateTimeForQuestion(q.question_id, Number(e.currentTarget.value))
-                            }
-                            min={1}
-                          />
-                        )}
-                      </Group>
+                          {q.images?.map((imgLink) => (
+                            <img
+                              key={imgLink.image.image_id}
+                              src={`http://localhost:4000${imgLink.image.image_data}`}
+                              alt="Question"
+                              style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, marginTop: 8 }}
+                            />
+                          ))}
+
+                          <Group gap="sm">
+                            <Button
+                              size="xs"
+                              variant="default"
+                              onClick={() => {
+                                setEditingQuestionId(q.question_id);
+                                setShowEditImageModal(true);
+                              }}
+                            >
+                              Edit Image
+                            </Button>
+
+                            {timingMode === 'PER_QUESTION' && selectedQuestions.includes(q.question_id) && (
+                              <TextInput
+                                label="Time (min)"
+                                type="number"
+                                size="xs"
+                                style={{ width: 100 }}
+                                value={questionTimeMap[q.question_id]?.toString() || ''}
+                                onChange={(e) =>
+                                  updateTimeForQuestion(q.question_id, Number(e.currentTarget.value))
+                                }
+                                min={1}
+                              />
+                            )}
+                          </Group>
+
+                          
+                        </Stack>
+                      </Paper>
+
                     ))
                   ) : (
                     <Text size="sm" c="dimmed">
@@ -407,6 +456,14 @@ export function QuestionSelection({
               { value: '2', label: '2' },
               { value: '3', label: '3' },
             ]}
+            mb="sm"
+          />
+
+          <TextInput
+            label="Keywords"
+            placeholder="e.g., loop, function, return"
+            value={newQuestionKeywords}
+            onChange={(e) => setNewQuestionKeywords(e.currentTarget.value)}
             mb="sm"
           />
 

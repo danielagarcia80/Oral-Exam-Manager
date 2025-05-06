@@ -74,7 +74,7 @@ export function ExamsSection() {
             <tr>
               <th style={{ textAlign: 'left' }}>Exam Title</th>
               <th style={{ textAlign: 'left' }}>Date Range</th>
-              <th style={{ textAlign: 'left' }}>Actions</th>
+              {/* <th style={{ textAlign: 'left' }}>Actions</th> */}
             </tr>
           </thead>
           <tbody>
@@ -85,13 +85,24 @@ export function ExamsSection() {
                   {new Date(exam.start_date).toLocaleDateString()} →{' '}
                   {new Date(exam.end_date).toLocaleDateString()}
                 </td>
+              
                 <td>
                   <Button 
                     size="xs" 
                     variant="light"
                     onClick={() => router.push(`/instructor/edit-exam?examId=${exam.exam_id}&courseId=${courseId}`)}
                   >
-                    View
+                    Edit
+                  </Button>
+                </td>
+
+                <td>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    onClick={() => router.push(`/instructor/grades-section?examId=${exam.exam_id}&courseId=${exam.course_id}`)}
+                  >
+                    Grade
                   </Button>
                 </td>
               </tr>

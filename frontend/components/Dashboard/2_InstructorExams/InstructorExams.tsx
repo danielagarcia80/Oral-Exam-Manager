@@ -65,8 +65,8 @@ export function InstructorExams() {
               <th style={{ textAlign: 'left' }}>Exam Name</th>
               <th style={{ textAlign: 'left' }}>Course</th>
               <th style={{ textAlign: 'left', width: '240px' }}>Due Date</th>
-              <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
-              <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
+              {/* <th style={{ textAlign: 'left', width: '120px' }}>Actions</th> */}
+              {/* <th style={{ textAlign: 'left', width: '120px' }}>Actions</th> */}
             </tr>
           </thead>
           <tbody>
