@@ -31,7 +31,7 @@ export default function SignIn(props: PaperProps) {
 
   useEffect(() => {
     if (session) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [session]);
 
@@ -72,7 +72,7 @@ export default function SignIn(props: PaperProps) {
           password: form.values.password,
           redirect: false,
         });
-        router.push('/');
+        router.push('/dashboard');
       } else {
         const json = await res.json();
         setError(json.error || 'Registration failed');
@@ -169,7 +169,7 @@ export default function SignIn(props: PaperProps) {
                 placeholder="Select role"
                 data={[
                   { value: 'STUDENT', label: 'Student' },
-                  { value: 'INSTRUCTOR', label: 'Instructor' },
+                  { value: 'FACULTY', label: 'Faculty' },
                 ]}
                 value={form.values.roleType}
                 onChange={(event) => {
