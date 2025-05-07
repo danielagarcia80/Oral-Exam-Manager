@@ -26,18 +26,6 @@ export function Header({ studentName = 'Student' }: HeaderProps) {
           </Text>
         )}
       </div>
-
-      <Flex align="center" gap="sm">
-        {isLoggedIn && (
-          <Button
-            variant="outline"
-            color="red"
-            onClick={() => signOut({ callbackUrl: '/auth/signin' })}
-          >
-            Logout
-          </Button>
-        )}
-      </Flex>
     </Flex>
   );
 }
