@@ -44,11 +44,23 @@ export default function SignIn(props: PaperProps) {
       last_name: '',
       roleType: 'STUDENT',
     },
-    validate: {
-      email: (val) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email'),
-      password: (val) => (val.length <= 6 ? 'Password must be at least 6 characters' : null),
-      confirmPassword: (val, values) => val !== values.password ? 'Passwords do not match' : null,
-    },
+    validate: (values) => {git
+      const errors: Record<string, string | null> = {};
+    
+      if (!/^\S+@\S+$/.test(values.email)) {
+        errors.email = 'Invalid email';
+      }
+    
+      if (values.password.length <= 6) {
+        errors.password = 'Password must be at least 6 characters';
+      }
+    
+      if (type === 'register' && values.confirmPassword !== values.password) {
+        errors.confirmPassword = 'Passwords do not match';
+      }
+    
+      return errors;
+    }
   });
 
   const handleSubmit = async () => {
