@@ -179,13 +179,29 @@ async function main() {
   console.log('🌱 Creating exams...');
   const exam = await prisma.exam.create({
     data: {
-      title: 'Overall Time Exam',
+      title: 'Overall Time Exam 2 Minutes',
       description: 'Covers weeks 1–6 material.',
       type: 'ASYNCHRONOUS',
       course_id: course.course_id,
       start_date: new Date('2025-05-01T09:00:00Z'),
-      end_date: new Date('2025-05-07T23:59:59Z'),
+      end_date: new Date('2025-06-07T23:59:59Z'),
       duration_minutes: 2,
+      timing_mode: 'OVERALL',
+      requires_audio: true,
+      requires_video: true,
+      requires_screen_share: true,
+    },
+  });
+
+  const exam2 = await prisma.exam.create({
+    data: {
+      title: 'Overall Time Exam 5 Minutes',
+      description: 'Covers weeks 1–6 material.',
+      type: 'ASYNCHRONOUS',
+      course_id: course.course_id,
+      start_date: new Date('2025-05-01T09:00:00Z'),
+      end_date: new Date('2025-06-07T23:59:59Z'),
+      duration_minutes: 5,
       timing_mode: 'OVERALL',
       requires_audio: true,
       requires_video: true,
@@ -264,6 +280,19 @@ async function main() {
     ],
   });
 
+  await prisma.assignedExam.createMany({
+    data: [
+      {
+        exam_id: exam2.exam_id,
+        student_id: student0.user_id,
+      },
+      {
+        exam_id: exam2.exam_id,
+        student_id: student1.user_id,
+      },
+    ],
+  });
+
 
   await prisma.examIncludesQuestion.createMany({
     data: [
@@ -279,6 +308,22 @@ async function main() {
       },
     ],
   });
+
+  await prisma.examIncludesQuestion.createMany({
+    data: [
+      {
+        exam_id: exam2.exam_id,
+        question_id: question0.question_id,
+        order_index: 0,
+      },
+      {
+        exam_id: exam2.exam_id,
+        question_id: question1.question_id,
+        order_index: 1,
+      },
+    ],
+  });
+
 
   await prisma.examIncludesQuestion.createMany({
     data: [

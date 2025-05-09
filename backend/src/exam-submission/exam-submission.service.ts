@@ -11,8 +11,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateExamSubmissionDto } from './create-exam-submission.dto';
 import { ExamSubmissionResponseDto } from './exam-submission-response.dto';
 import axios from 'axios';
-import { writeFile, unlink, mkdir, readFile } from 'fs/promises';
-import { existsSync } from 'fs';
+import { writeFile, unlink, mkdir, readFile, readdir, rm } from 'fs/promises';
+import { createReadStream, existsSync } from 'fs';
 import { join } from 'path';
 import { Readable } from 'stream';
 import OpenAI from 'openai';
@@ -23,6 +23,8 @@ const ffmpegStatic = require('ffmpeg-static');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const FormData = require('form-data');
 console.log('ffmpegStatic path:', ffmpegStatic);
+import * as path from 'path';
+
 
 // Helper functions
 type TranscriptSegment = {
@@ -69,9 +71,9 @@ async function convertToAudio(
   outputPath: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const command = ffmpeg(inputPath);
-
-    command
+    ffmpeg(inputPath)
+      .audioChannels(1)
+      .audioFrequency(16000)
       .toFormat('wav')
       .output(outputPath)
       .on('end', () => resolve())
@@ -83,21 +85,45 @@ async function convertToAudio(
   });
 }
 
-async function transcribeInChunks(
-  fileBuffer: Buffer,
-  filename: string,
+async function splitAudioByTime(
+  inputPath: string,
+  outputDir: string,
+  chunkSeconds = 300, // default: 5 minutes
+): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    const outputPattern = join(outputDir, 'chunk_%03d.wav');
+    ffmpeg(inputPath)
+      .audioChannels(1)
+      .audioFrequency(16000)
+      .toFormat('wav')
+      .outputOptions([
+        '-f', 'segment',
+        '-segment_time', String(chunkSeconds),
+      ])
+      .output(outputPattern)
+      .on('end', async () => {
+        const files = await readdir(outputDir);
+        const chunkPaths = files
+          .filter(f => f.startsWith('chunk_') && f.endsWith('.wav'))
+          .map(f => join(outputDir, f));
+        resolve(chunkPaths);
+      })
+      .on('error', reject)
+      .run();
+  });
+}
+
+async function transcribeChunksSequentially(
+  paths: string[],
 ): Promise<{ fullText: string; segments: TranscriptSegment[] }> {
-  const MAX_CHUNK_SIZE = 24 * 1024 * 1024;
   const allSegments: TranscriptSegment[] = [];
   const fullTextParts: string[] = [];
 
-  let start = 0;
-  while (start < fileBuffer.length) {
-    const end = Math.min(start + MAX_CHUNK_SIZE, fileBuffer.length);
-    const chunk = Buffer.from(fileBuffer.subarray(start, end));
-
+  for (const filePath of paths) {
     const formData = new FormData();
-    formData.append('file', Readable.from(chunk) as any, { filename });
+    formData.append('file', createReadStream(filePath), {
+      filename: path.basename(filePath),
+    });
     formData.append('model', 'whisper-1');
     formData.append('response_format', 'verbose_json');
 
@@ -122,8 +148,6 @@ async function transcribeInChunks(
         text: seg.text.trim(),
       })),
     );
-
-    start = end;
   }
 
   return {
@@ -168,35 +192,28 @@ export class ExamSubmissionService {
     if (!existsSync(tmpDir)) {
       await mkdir(tmpDir);
     }
-
+  
     const tempWebmPath = join(tmpDir, file.originalname);
-    const tempAudioPath = join(tmpDir, `${file.originalname}.wav`);
-
+    const tempWavPath = join(tmpDir, `${file.originalname}.wav`);
+    const chunkDir = join(tmpDir, `chunks_${Date.now()}`);
+    await mkdir(chunkDir);
+  
     await writeFile(tempWebmPath, file.buffer);
-
-    // DEBUG: Save the uploaded webm file for manual inspection
-    const debugOutPath = join(tmpDir, `DEBUG_${file.originalname}`);
-    await writeFile(debugOutPath, file.buffer);
-    console.log('Saved debug webm at:', debugOutPath);
-
+  
     try {
-      // Step 1: Convert to audio
-      await convertToAudio(tempWebmPath, tempAudioPath);
-      const audioBuffer = await readFile(tempAudioPath);
-
-      // Step 2: Transcribe audio + get segm-tments
-      const { fullText, segments } = await transcribeInChunks(
-        audioBuffer,
-        `${file.originalname}.wav`,
-      );
-      // DEBUG: Save a copy of the converted WAV file too
-      const debugWavOutPath = join(tmpDir, `DEBUG_${file.originalname}.wav`);
-      await writeFile(debugWavOutPath, await readFile(tempAudioPath));
-      console.log('Saved debug wav at:', debugWavOutPath);
-
+      // Step 1: WebM → WAV
+      await convertToAudio(tempWebmPath, tempWavPath);
+  
+      // Step 2: Split WAV into chunks
+      const chunkPaths = await splitAudioByTime(tempWavPath, chunkDir);
+  
+      // Step 3: Transcribe each chunk
+      const { fullText, segments } = await transcribeChunksSequentially(chunkPaths);
+  
+      // Step 4: Summarize
       const summary = await summarizeTranscript(fullText);
-
-      // Step 3: Save ExamSubmission
+  
+      // Step 5: Save ExamSubmission
       const submission = await this.prisma.examSubmission.create({
         data: {
           student: { connect: { user_id: studentId } },
@@ -211,8 +228,7 @@ export class ExamSubmissionService {
           feedback: '',
         },
       });
-
-      // Step 4: Insert transcript segments
+  
       await this.prisma.transcriptSegment.createMany({
         data: segments.map((seg) => ({
           submission_id: submission.submission_id,
@@ -221,13 +237,15 @@ export class ExamSubmissionService {
           text: seg.text,
         })),
       });
-
+  
       return submission;
     } finally {
       await unlink(tempWebmPath).catch(() => {});
-      await unlink(tempAudioPath).catch(() => {});
+      await unlink(tempWavPath).catch(() => {});
+      await rm(chunkDir, { recursive: true, force: true }).catch(() => {});
     }
   }
+  
 
   async findAll(): Promise<ExamSubmissionResponseDto[]> {
     return this.prisma.examSubmission.findMany();
