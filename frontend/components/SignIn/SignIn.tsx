@@ -39,6 +39,7 @@ export default function SignIn(props: PaperProps) {
     initialValues: {
       email: '',
       password: '',
+      confirmPassword: '',
       first_name: '',
       last_name: '',
       roleType: 'STUDENT',
@@ -46,6 +47,7 @@ export default function SignIn(props: PaperProps) {
     validate: {
       email: (val) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email'),
       password: (val) => (val.length <= 6 ? 'Password must be at least 6 characters' : null),
+      confirmPassword: (val, values) => val !== values.password ? 'Passwords do not match' : null,
     },
   });
 
@@ -162,6 +164,20 @@ export default function SignIn(props: PaperProps) {
               error={form.errors.password}
               radius="md"
             />
+
+            {type === 'register' && (
+              <PasswordInput
+                required
+                label="Confirm Password"
+                placeholder="Re-enter your password"
+                value={form.values.confirmPassword}
+                onChange={(event) =>
+                  form.setFieldValue('confirmPassword', event.currentTarget.value)
+                }
+                error={form.errors.confirmPassword}
+                radius="md"
+              />
+            )}
 
             {type === 'register' && (
               <Select
