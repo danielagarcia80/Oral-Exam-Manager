@@ -44,7 +44,7 @@ export default function SignIn(props: PaperProps) {
       last_name: '',
       roleType: 'STUDENT',
     },
-    validate: (values) => {git
+    validate: (values) => {
       const errors: Record<string, string | null> = {};
     
       if (!/^\S+@\S+$/.test(values.email)) {
