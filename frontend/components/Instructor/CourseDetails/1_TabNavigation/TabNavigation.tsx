@@ -15,7 +15,6 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
         { label: 'Exams', value: 'exams' },
         { label: 'Question Bank', value: 'question_bank' },
         { label: 'Students', value: 'students' },
-        { label: 'Grades', value: 'grades' },
       ]}
       mt="md"
       mb="lg"

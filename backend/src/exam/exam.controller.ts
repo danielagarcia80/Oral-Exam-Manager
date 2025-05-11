@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Get, Param, Put, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Put,
+  Patch,
+  Req,
+} from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './create-exam.dto';
 import { ExamResponseDto } from './exam-response.dto';
@@ -47,6 +56,13 @@ export class ExamController {
     return this.examService.getExamsForInstructor(userId);
   }
 
+  @Get('course/:courseId')
+  getExamsForCourse(
+    @Param('courseId') courseId: string,
+  ): Promise<ExamResponseDto[]> {
+    return this.examService.getExamsForCourse(courseId);
+  }
+
   @Get('student/past/:userId')
   getPastExams(@Param('userId') userId: string): Promise<ExamResponseDto[]> {
     return this.examService.getPastExamsForUser(userId);
@@ -59,11 +75,12 @@ export class ExamController {
     return this.examService.getAllExamsForStudent(userId);
   }
 
-  @Get('course/:courseId')
-  getExamsForCourse(
+  @Get('course/:courseId/student/:studentId')
+  getExamsForCourseForStudent(
     @Param('courseId') courseId: string,
+    @Param('studentId') studentId: string,
   ): Promise<ExamResponseDto[]> {
-    return this.examService.getExamsForCourse(courseId);
+    return this.examService.getExamsForCourseForStudent(courseId, studentId);
   }
 
   @Put(':id')

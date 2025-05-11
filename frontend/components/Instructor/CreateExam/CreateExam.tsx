@@ -25,6 +25,7 @@ export default function CreateExam() {
   const [requiresScreenShare, setRequiresScreenShare] = useState(true);
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [manualAssign, setManualAssign] = useState(false);
+  const [allowedAttempts, setAllowedAttempts] = useState(1);
 
 
   // Question selection state
@@ -58,6 +59,7 @@ export default function CreateExam() {
         requires_audio: requiresAudio,
         requires_video: requiresVideo,
         requires_screen_share: requiresScreenShare,
+        allowed_attempts: allowedAttempts,
       }),
     });
   
@@ -142,6 +144,8 @@ export default function CreateExam() {
           courseId={courseId}
           manualAssign={manualAssign}
           setManualAssign={setManualAssign}
+          allowedAttempts={allowedAttempts}
+          setAllowedAttempts={setAllowedAttempts}
         />
 
 

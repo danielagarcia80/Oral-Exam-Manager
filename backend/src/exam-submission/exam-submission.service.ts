@@ -6,7 +6,11 @@
  * the duplicate words will just get ignored.
  */
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateExamSubmissionDto } from './create-exam-submission.dto';
 import { ExamSubmissionResponseDto } from './exam-submission-response.dto';
@@ -24,7 +28,6 @@ const ffmpegStatic = require('ffmpeg-static');
 const FormData = require('form-data');
 console.log('ffmpegStatic path:', ffmpegStatic);
 import * as path from 'path';
-
 
 // Helper functions
 type TranscriptSegment = {
@@ -96,16 +99,13 @@ async function splitAudioByTime(
       .audioChannels(1)
       .audioFrequency(16000)
       .toFormat('wav')
-      .outputOptions([
-        '-f', 'segment',
-        '-segment_time', String(chunkSeconds),
-      ])
+      .outputOptions(['-f', 'segment', '-segment_time', String(chunkSeconds)])
       .output(outputPattern)
       .on('end', async () => {
         const files = await readdir(outputDir);
         const chunkPaths = files
-          .filter(f => f.startsWith('chunk_') && f.endsWith('.wav'))
-          .map(f => join(outputDir, f));
+          .filter((f) => f.startsWith('chunk_') && f.endsWith('.wav'))
+          .map((f) => join(outputDir, f));
         resolve(chunkPaths);
       })
       .on('error', reject)
@@ -166,6 +166,7 @@ export class ExamSubmissionService {
     const student = await this.prisma.user.findUnique({
       where: { user_id: dto.student_id },
     });
+
     const exam = await this.prisma.exam.findUnique({
       where: { exam_id: dto.exam_id },
     });
@@ -174,9 +175,32 @@ export class ExamSubmissionService {
       throw new BadRequestException('Invalid student_id or exam_id');
     }
 
+    // ✅ NEW: check prior attempts
+    const priorAttempts = await this.prisma.examSubmission.count({
+      where: {
+        student_id: dto.student_id,
+        exam_id: dto.exam_id,
+      },
+    });
+
+    if (priorAttempts >= exam.allowed_attempts) {
+      throw new ForbiddenException(
+        'You have reached the maximum number of attempts for this exam.',
+      );
+    }
+
+    const attemptNumber = priorAttempts + 1;
+
+    // ✅ Create submission with safe attempt number
     return this.prisma.examSubmission.create({
       data: {
-        ...dto,
+        student_id: dto.student_id,
+        exam_id: dto.exam_id,
+        recording_url: dto.recording_url,
+        duration_minutes: dto.duration_minutes,
+        grade_percentage: dto.grade_percentage,
+        feedback: dto.feedback,
+        attempt_number: attemptNumber,
         submitted_at: new Date(),
       },
     });
@@ -192,28 +216,37 @@ export class ExamSubmissionService {
     if (!existsSync(tmpDir)) {
       await mkdir(tmpDir);
     }
-  
+
     const tempWebmPath = join(tmpDir, file.originalname);
     const tempWavPath = join(tmpDir, `${file.originalname}.wav`);
     const chunkDir = join(tmpDir, `chunks_${Date.now()}`);
     await mkdir(chunkDir);
-  
+
     await writeFile(tempWebmPath, file.buffer);
-  
+
     try {
       // Step 1: WebM → WAV
       await convertToAudio(tempWebmPath, tempWavPath);
-  
+
       // Step 2: Split WAV into chunks
       const chunkPaths = await splitAudioByTime(tempWavPath, chunkDir);
-  
+
       // Step 3: Transcribe each chunk
-      const { fullText, segments } = await transcribeChunksSequentially(chunkPaths);
-  
+      const { fullText, segments } =
+        await transcribeChunksSequentially(chunkPaths);
+
       // Step 4: Summarize
       const summary = await summarizeTranscript(fullText);
-  
+
       // Step 5: Save ExamSubmission
+      const priorAttempts = await this.prisma.examSubmission.count({
+        where: {
+          student_id: studentId,
+          exam_id: examId,
+        },
+      });
+      const attemptNumber = priorAttempts + 1;
+
       const submission = await this.prisma.examSubmission.create({
         data: {
           student: { connect: { user_id: studentId } },
@@ -221,14 +254,14 @@ export class ExamSubmissionService {
           transcript: fullText,
           summary,
           submitted_at: new Date(),
-          attempt_number: 1,
+          attempt_number: attemptNumber,
           recording_url: recordingUrl,
           duration_minutes: 0,
           grade_percentage: 0,
           feedback: '',
         },
       });
-  
+
       await this.prisma.transcriptSegment.createMany({
         data: segments.map((seg) => ({
           submission_id: submission.submission_id,
@@ -237,7 +270,7 @@ export class ExamSubmissionService {
           text: seg.text,
         })),
       });
-  
+
       return submission;
     } finally {
       await unlink(tempWebmPath).catch(() => {});
@@ -245,10 +278,39 @@ export class ExamSubmissionService {
       await rm(chunkDir, { recursive: true, force: true }).catch(() => {});
     }
   }
-  
 
   async findAll(): Promise<ExamSubmissionResponseDto[]> {
     return this.prisma.examSubmission.findMany();
+  }
+
+  async getSubmissionById(submissionId: string) {
+    return this.prisma.examSubmission.findUnique({
+      where: { submission_id: submissionId },
+      include: {
+        student: {
+          select: {
+            first_name: true,
+            last_name: true,
+            email: true,
+          },
+        },
+        transcriptSegments: true,
+      },
+    });
+  }
+
+  async updateGradeForSubmission(
+    submissionId: string,
+    grade_percentage: number,
+    feedback: string,
+  ) {
+    return this.prisma.examSubmission.update({
+      where: { submission_id: submissionId },
+      data: {
+        grade_percentage,
+        feedback,
+      },
+    });
   }
 
   async findByExamId(examId: string) {

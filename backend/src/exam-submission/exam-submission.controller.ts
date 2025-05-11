@@ -39,6 +39,23 @@ export class ExamSubmissionController {
     );
   }
 
+  @Get(':submissionId')
+  getSubmissionById(@Param('submissionId') submissionId: string) {
+    return this.service.getSubmissionById(submissionId);
+  }
+
+  @Patch(':submissionId/grade')
+  updateGradeForSubmission(
+    @Param('submissionId') submissionId: string,
+    @Body() body: { grade_percentage: number; feedback: string },
+  ) {
+    return this.service.updateGradeForSubmission(
+      submissionId,
+      body.grade_percentage,
+      body.feedback,
+    );
+  }
+
   @Get()
   async findAll(): Promise<ExamSubmissionResponseDto[]> {
     return this.service.findAll();

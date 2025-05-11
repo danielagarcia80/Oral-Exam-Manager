@@ -17,6 +17,8 @@ type Exam = {
   course?: {
     title: string;
   };
+  attempts_used?: number;
+  remaining_attempts?: number;
 };
 
 export function UpcomingExams() {
@@ -69,6 +71,7 @@ export function UpcomingExams() {
               <th style={{ textAlign: 'left' }}>Exam Name</th>
               <th style={{ textAlign: 'left' }}>Course</th>
               <th style={{ textAlign: 'left', width: '240px' }}>Due Date</th>
+              <th style={{ textAlign: 'left', width: '120px' }}>Attempts Left</th>
               <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
             </tr>
           </thead>
@@ -78,6 +81,7 @@ export function UpcomingExams() {
                 <td>{exam.title}</td>
                 <td>{exam.course?.title}</td>
                 <td>{new Date(exam.end_date).toLocaleString()}</td>
+                <td>{exam.remaining_attempts ?? '-'}</td>
                 <td>
 
                   <Button

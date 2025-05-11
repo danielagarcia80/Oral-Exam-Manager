@@ -144,6 +144,7 @@ model Exam {
 
   duration_minutes       Int
   timing_mode            TimingMode @default(OVERALL)
+  allowed_attempts       Int        @default(1)
 
   requires_audio         Boolean     @default(true)
   requires_video         Boolean     @default(true)

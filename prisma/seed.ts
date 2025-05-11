@@ -190,6 +190,7 @@ async function main() {
       requires_audio: true,
       requires_video: true,
       requires_screen_share: true,
+      allowed_attempts: 3,
     },
   });
 
@@ -206,6 +207,7 @@ async function main() {
       requires_audio: true,
       requires_video: true,
       requires_screen_share: true,
+      allowed_attempts: 3,
     },
   });
 
@@ -222,6 +224,7 @@ async function main() {
       requires_audio: true,
       requires_video: true,
       requires_screen_share: true,
+      allowed_attempts: 1,
     },
   });
 
@@ -238,6 +241,7 @@ async function main() {
       requires_audio: true,
       requires_video: true,
       requires_screen_share: true,
+      allowed_attempts: 3,
     },
   });
 

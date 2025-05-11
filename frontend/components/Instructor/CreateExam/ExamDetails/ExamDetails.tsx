@@ -55,6 +55,9 @@ interface ExamDetailsProps {
 
   manualAssign: boolean;
   setManualAssign: (val: boolean) => void;
+
+  allowedAttempts: number;
+  setAllowedAttempts: (val: number) => void;
 }
 
 export function ExamDetails({
@@ -83,6 +86,8 @@ export function ExamDetails({
   courseId,
   manualAssign,
   setManualAssign,
+  allowedAttempts,
+  setAllowedAttempts,
 }: ExamDetailsProps) {
 
   const [students, setStudents] = useState<Student[]>([]);
@@ -180,6 +185,14 @@ export function ExamDetails({
           mb="md"
         />
       )}
+
+      <TextInput
+        label="Allowed Attempts"
+        type="number"
+        min={1}
+        value={allowedAttempts}
+        onChange={(e) => setAllowedAttempts(Number(e.currentTarget.value))}
+      />
 
       <Group mt="sm">
         <Checkbox

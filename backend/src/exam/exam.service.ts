@@ -28,12 +28,13 @@ export class ExamService {
         end_date: new Date(data.end_date),
         course_id: data.course_id,
 
-        // ✅ new fields
         duration_minutes: data.duration_minutes,
         timing_mode: data.timing_mode,
         requires_audio: data.requires_audio,
         requires_video: data.requires_video,
         requires_screen_share: data.requires_screen_share,
+
+        allowed_attempts: data.allowed_attempts ?? 1,
       },
     });
   }
@@ -43,7 +44,7 @@ export class ExamService {
       where: { exam_id: examId },
       include: {
         questions: {
-          orderBy: { order_index: 'asc' }, // ✅ move it out of `include`
+          orderBy: { order_index: 'asc' },
           include: {
             question: {
               include: {
@@ -65,33 +66,54 @@ export class ExamService {
   }
 
   async getUpcomingExamsForUser(userId: string) {
+    // 1. Fetch all assigned exams (upcoming only)
     const assignments = await this.prisma.assignedExam.findMany({
       where: {
         student_id: userId,
         exam: {
-          end_date: {
-            gt: new Date(), // Only upcoming exams
-          },
+          end_date: { gt: new Date() }, // Only upcoming exams
         },
       },
       include: {
         exam: {
           include: {
-            course: {
-              select: { title: true },
-            },
+            course: { select: { title: true } },
           },
         },
       },
-      orderBy: {
-        exam: {
-          end_date: 'asc',
-        },
-      },
+      orderBy: { exam: { end_date: 'asc' } },
     });
 
-    // Extract just the exams
-    return assignments.map((a) => a.exam);
+    // 2. Process each exam to calculate remaining attempts
+    const filteredExams = [];
+
+    for (const assignment of assignments) {
+      const exam = assignment.exam;
+
+      // Count how many times student has submitted this exam
+      const attemptsUsed = await this.prisma.examSubmission.count({
+        where: {
+          student_id: userId,
+          exam_id: exam.exam_id,
+        },
+      });
+
+      const remainingAttempts = Math.max(
+        0,
+        exam.allowed_attempts - attemptsUsed,
+      );
+
+      // Only include exam if student has attempts remaining
+      if (remainingAttempts > 0) {
+        // Add attempts info for UI (optional but useful)
+        exam['attempts_used'] = attemptsUsed;
+        exam['remaining_attempts'] = remainingAttempts;
+
+        filteredExams.push(exam);
+      }
+    }
+
+    return filteredExams;
   }
 
   async getPastExamsForUser(userId: string) {
@@ -192,6 +214,71 @@ export class ExamService {
       end_date: exam.end_date,
       course_id: exam.course_id,
     }));
+  }
+
+  async getExamsForCourseForStudent(
+    courseId: string,
+    studentId: string,
+  ): Promise<ExamResponseDto[]> {
+    // 1. Get all assigned exams for this student in this course (upcoming only)
+    const assignments = await this.prisma.assignedExam.findMany({
+      where: {
+        student_id: studentId,
+        exam: {
+          course_id: courseId,
+          end_date: { gt: new Date() }, // Only upcoming exams
+        },
+      },
+      include: {
+        exam: {
+          include: {
+            course: { select: { title: true } }, // Optional: include course title
+          },
+        },
+      },
+      orderBy: {
+        exam: {
+          start_date: 'asc',
+        },
+      },
+    });
+
+    // 2. Filter and map exams based on allowed attempts
+    const exams: ExamResponseDto[] = [];
+
+    for (const assignment of assignments) {
+      const exam = assignment.exam;
+
+      // Count submissions for this student + exam
+      const attemptsUsed = await this.prisma.examSubmission.count({
+        where: {
+          student_id: studentId,
+          exam_id: exam.exam_id,
+        },
+      });
+
+      const remainingAttempts = Math.max(
+        0,
+        exam.allowed_attempts - attemptsUsed,
+      );
+
+      // Only include exams with remaining attempts
+      if (remainingAttempts > 0) {
+        exams.push({
+          exam_id: exam.exam_id,
+          title: exam.title,
+          description: exam.description,
+          type: exam.type,
+          start_date: exam.start_date,
+          end_date: exam.end_date,
+          course_id: exam.course_id,
+          attempts_used: attemptsUsed, // ✅ For frontend display
+          remaining_attempts: remainingAttempts, // ✅ For frontend display
+        });
+      }
+    }
+
+    return exams;
   }
 
   async update(examId: string, data: UpdateExamDto) {

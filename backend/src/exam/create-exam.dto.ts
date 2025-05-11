@@ -3,6 +3,7 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
+  IsOptional,
   IsString,
   Min,
 } from 'class-validator';
@@ -42,4 +43,9 @@ export class CreateExamDto {
 
   @IsBoolean()
   requires_screen_share: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  allowed_attempts?: number = 1;
 }

@@ -23,10 +23,8 @@ function formatTime(seconds: number): string {
 export default function ViewRecordingPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-
-    const examId = searchParams.get('examId');
-    const studentId = searchParams.get('studentId');
     const courseId = searchParams.get('courseId');
+    const submissionId = searchParams.get('submissionId');
 
     const [loading, setLoading] = useState(true);
     const [submission, setSubmission] = useState<any>(null);
@@ -38,12 +36,9 @@ export default function ViewRecordingPage() {
 
     useEffect(() => {
         const fetchSubmission = async () => {
-            if (!examId || !studentId) {return;}
-
             try {
-                const res = await fetch(`http://localhost:4000/exam-submissions/exam/${examId}`);
-                const data = await res.json();
-                const match = data.find((s: any) => s.student_id === studentId);
+                const res = await fetch(`http://localhost:4000/exam-submissions/${submissionId}`);
+                const match = await res.json();
 
                 if (!match) {throw new Error('Submission not found');}
 
@@ -58,23 +53,21 @@ export default function ViewRecordingPage() {
         };
 
         fetchSubmission();
-    }, [examId, studentId]);
+    }, [submissionId]);
 
     const handleSubmit = async () => {
         try {
-            const res = await fetch('http://localhost:4000/exam-submissions/grade', {
+            const res = await fetch(`http://localhost:4000/exam-submissions/${submissionId}/grade`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    student_id: studentId,
-                    exam_id: examId,
                     grade_percentage: parseFloat(grade),
                     feedback,
                 }),
             });
 
             if (res.ok) {
-                router.push(`/instructor/grades-section?examId=${examId}&courseId=${courseId}`);
+                router.push(`/instructor/grades-section?examId=${submission.exam_id}&courseId=${courseId}`);
             } else {
                 const error = await res.json();
                 console.error('Grade submission failed:', error);

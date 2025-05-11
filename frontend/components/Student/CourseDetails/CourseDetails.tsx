@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button, Card, Container, Flex, Stack, Text, Title, Image, Box, Divider } from '@mantine/core';
+import { useSession } from 'next-auth/react';
 
 type Exam = {
   exam_id: string;
@@ -11,6 +12,8 @@ type Exam = {
   type: string;
   start_date: string;
   end_date: string;
+  attempts_used?: number; 
+  remaining_attempts?: number;
 };
 
 type Course = {
@@ -33,6 +36,9 @@ type StudentDto = {
 export function CourseDetails() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get('courseId');
+
+  const { data: session, status } = useSession();
+  const studentId = session?.user?.id;
 
   const [course, setCourse] = useState<Course | null>(null);
   const [exams, setExams] = useState<Exam[]>([]);
@@ -79,7 +85,7 @@ export function CourseDetails() {
   
     const fetchExams = async () => {
       try {
-        const res = await fetch(`http://localhost:4000/exams/course/${courseId}`);
+        const res = await fetch(`http://localhost:4000/exams/course/${courseId}/student/${studentId}`);
         if (!res.ok) {
           console.error('Failed to fetch exams:', res.statusText);
           return;
@@ -149,10 +155,6 @@ export function CourseDetails() {
         {course.description || 'No description provided.'}
       </Text>
 
-      <Text size="sm" mb="xl">
-        Scores: <strong>{course.scores || 'No scores available'}</strong>
-      </Text>
-
       {/* Upcoming Exams */}
       <Card shadow="md" radius="md" p="xl" withBorder mb="xl">
         <Title order={3} mb="md">Upcoming Exams</Title>
@@ -168,6 +170,11 @@ export function CourseDetails() {
                     <Text size="sm"><strong>Type:</strong> {exam.type}</Text>
                     <Text size="sm"><strong>Start:</strong> {new Date(exam.start_date).toLocaleString()}</Text>
                     <Text size="sm"><strong>End:</strong> {new Date(exam.end_date).toLocaleString()}</Text>
+
+                    <Text size="sm">
+                      <strong>Attempts Left:</strong> {exam.remaining_attempts ?? 'N/A'}
+                    </Text>
+
                   </Stack>
                   <Button
                     size="xs"

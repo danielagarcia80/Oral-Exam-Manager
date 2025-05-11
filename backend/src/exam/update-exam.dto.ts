@@ -56,4 +56,9 @@ export class UpdateExamDto {
   @IsOptional()
   @IsIn(['OVERALL', 'PER_QUESTION'])
   timing_mode?: 'OVERALL' | 'PER_QUESTION';
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  allowed_attempts?: number;
 }

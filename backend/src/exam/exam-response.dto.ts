@@ -6,4 +6,6 @@ export class ExamResponseDto {
   start_date: Date;
   end_date: Date;
   course_id: string;
+  attempts_used?: number;
+  remaining_attempts?: number;
 }

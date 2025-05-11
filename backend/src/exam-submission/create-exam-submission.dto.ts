@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsDateString, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateExamSubmissionDto {
   @IsString()
@@ -6,9 +6,6 @@ export class CreateExamSubmissionDto {
 
   @IsString()
   exam_id: string;
-
-  @IsNumber()
-  attempt_number: number;
 
   @IsString()
   recording_url: string;

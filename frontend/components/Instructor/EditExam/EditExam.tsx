@@ -29,6 +29,8 @@ export default function EditExam() {
   const [requiresScreenShare, setRequiresScreenShare] = useState(false);
   const [questionTimeMap, setQuestionTimeMap] = useState<Record<string, number>>({});
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [allowedAttempts, setAllowedAttempts] = useState(1);
+
 
 
   // Question selection state
@@ -55,6 +57,7 @@ export default function EditExam() {
         setRequiresAudio(data.requires_audio);
         setRequiresVideo(data.requires_video);
         setRequiresScreenShare(data.requires_screen_share);
+        setAllowedAttempts(data.allowed_attempts);
 
         // Fetch students who are assigned to this exam
         const assignedRes = await fetch(`http://localhost:4000/exams/${examId}/assigned-students`);
@@ -118,9 +121,10 @@ export default function EditExam() {
           end_date: endDate.toISOString(),
           timing_mode: timingMode,
           duration_minutes: timingMode === 'OVERALL' ? durationMinutes : computedDuration,
-          requires_audio: requiresAudio, // ✅ make sure these are here
+          requires_audio: requiresAudio,
           requires_video: requiresVideo,
           requires_screen_share: requiresScreenShare,
+          allowed_attempts: allowedAttempts,
         }),
       });
       
@@ -205,6 +209,8 @@ export default function EditExam() {
           courseId={courseId}
           selectedStudentIds={selectedStudentIds}
           setSelectedStudentIds={setSelectedStudentIds}
+          allowedAttempts={allowedAttempts}
+          setAllowedAttempts={setAllowedAttempts}
         />
 
 
