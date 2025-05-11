@@ -3,13 +3,13 @@ import { Container, Grid, Paper, Text, Title } from '@mantine/core';
 export default function About() {
   return (
     <Container
+      id="about" 
       size="lg"
       style={{
         minHeight: '10vh', // Ensures a stable height
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center', // Centers content
-        // paddingTop: "10vh",
         paddingBottom: '10vh',
       }}
     >

@@ -216,6 +216,7 @@ export default function TakingExam() {
   
       // FIRST: upload to /recordings
       const formDataRecording = new FormData();
+      console.log('Recording Blob type:', recordingBlob.type);
       formDataRecording.append('file', recordingBlob, 'recording.webm');
   
       const recordingUploadRes = await fetch('http://localhost:4000/recordings', {

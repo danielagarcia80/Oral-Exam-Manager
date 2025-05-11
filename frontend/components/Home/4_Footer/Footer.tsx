@@ -1,11 +1,20 @@
 import { Flex, Text } from '@mantine/core';
-import styles from './Footer.module.css';
 
 const Footer: React.FC = () => {
   return (
-    <footer className={styles.footer}>
-      <Flex align="center" justify="center">
-        <Text ta="center">© 2024 Code Oriented Oral Exam Manager. All rights reserved.</Text>
+    <footer>
+      <Flex
+        align="center"
+        justify="center"
+        style={{
+          backgroundColor: '#f1f3f5',
+          padding: '20px 0',
+          borderTop: '1px solid #dee2e6',
+        }}
+      >
+        <Text ta="center" size="sm" color="black">
+          © 2025 Oral Exam Manager. All rights reserved.
+        </Text>
       </Flex>
     </footer>
   );

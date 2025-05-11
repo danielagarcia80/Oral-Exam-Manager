@@ -10,13 +10,17 @@ type Exam = {
   title: string;
   description: string;
   type: string;
-  start_date: string;
-  end_date: string;
+  start_date: Date;
+  end_date: Date;
   course_id: string;
-  course?: {
-    title: string;
+  course?: { title: string };
+  submission?: {
+    grade_percentage?: number;
+    feedback?: string;
   };
 };
+
+
 
 export function PastExams() {
   const { data: session } = useSession();
@@ -66,6 +70,7 @@ export function PastExams() {
               <th style={{ textAlign: 'left' }}>Exam Name</th>
               <th style={{ textAlign: 'left' }}>Course</th>
               <th style={{ textAlign: 'left', width: '240px' }}>Due Date</th>
+              <th style={{ textAlign: 'left', width: '120px' }}>Grade</th>
               <th style={{ textAlign: 'left', width: '120px' }}>Actions</th>
             </tr>
           </thead>
@@ -74,7 +79,12 @@ export function PastExams() {
               <tr key={exam.exam_id}>
                 <td>{exam.title}</td>
                 <td>{exam.course?.title}</td>
-                <td>{new Date (exam.end_date).toLocaleString()}</td>
+                <td>{new Date(exam.end_date).toLocaleString()}</td>
+                <td>
+                  {exam.submission?.grade_percentage !== undefined
+                    ? `${exam.submission.grade_percentage}%`
+                    : '—'}
+                </td>
                 <td>
                   <Button size="xs" variant="light">
                     View
@@ -83,6 +93,7 @@ export function PastExams() {
               </tr>
             ))}
           </tbody>
+
         </Table>
       </Paper>
     </Stack>

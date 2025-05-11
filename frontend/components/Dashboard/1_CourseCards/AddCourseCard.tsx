@@ -15,7 +15,7 @@ export function AddCourseCard() {
       onClick={() => router.push('/instructor/create-course')}
     >
       <Center style={{ height: '100%', flexDirection: 'column' }}>
-        <IconPlus size={32} stroke={1.5} />
+        <IconPlus size={32} stroke={2.5} />
         <Text size="sm" mt="xs" c="dimmed">
           Add new course
         </Text>

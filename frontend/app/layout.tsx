@@ -5,7 +5,9 @@ import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/c
 import AuthProvider from '@/components/SessionProvider/SessionProvider';
 import { theme } from '../theme';
 import { Notifications } from '@mantine/notifications';
-import { StreamProvider } from '@/components/Student/ExamSetup/StreamContext'
+import { StreamProvider } from '@/components/Student/ExamSetup/StreamContext';
+import { Header } from '@/components/Home/0_Header/Header'; 
+import Footer from '@/components/Home/4_Footer/Footer';
 
 
 export const metadata = {
@@ -13,9 +15,9 @@ export const metadata = {
   description: 'Oral Examinations Management System',
 };
 
-export default function RootLayout({ children }: { children: any }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="en" {...mantineHtmlProps} style={{ height: '100%' }}>
       <head>
         <ColorSchemeScript defaultColorScheme="light" forceColorScheme="light" />
         <link rel="shortcut icon" href="/favicon.svg" />
@@ -24,12 +26,14 @@ export default function RootLayout({ children }: { children: any }) {
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
       </head>
-      <body>
+      <body style={{ minHeight: '100vh', margin: 0, display: 'flex', flexDirection: 'column' }}>
         <MantineProvider theme={theme} defaultColorScheme="light" forceColorScheme="light">
           <Notifications position="top-right" />
           <AuthProvider>
             <StreamProvider>
-              {children}
+              <Header />
+              <main style={{ flex: 1 }}>{children}</main> 
+              <Footer /> 
             </StreamProvider>
           </AuthProvider>
         </MantineProvider>
@@ -37,3 +41,4 @@ export default function RootLayout({ children }: { children: any }) {
     </html>
   );
 }
+

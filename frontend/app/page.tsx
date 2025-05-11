@@ -1,34 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Home from '@/components/Home/Home';
-import Loading from '@/components/Loading/Loading';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
 
-  // useEffect(() => {
-  //   if (status === 'unauthenticated') {
-  //     router.push('/auth/signin');
-  //   }
-  // }, [status, router]);
-
-  // if (status === 'loading' || status === 'unauthenticated') {
-  //   return <Loading />;
-  // }
-
-  return (
-    <>
-      {/* {session?.user?.email ? ( */}
-      <>
-        <Home />
-      </>
-      {/* ) : (
-        <Loading />
-      )} */}
-    </>
-  );
+  return <Home />;
 }
