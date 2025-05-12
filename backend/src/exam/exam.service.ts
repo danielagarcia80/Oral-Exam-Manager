@@ -122,11 +122,6 @@ export class ExamService {
     const assignments = await this.prisma.assignedExam.findMany({
       where: {
         student_id: userId,
-        exam: {
-          end_date: {
-            lte: now,
-          },
-        },
       },
       include: {
         exam: {
@@ -144,7 +139,61 @@ export class ExamService {
       },
     });
 
-    return assignments.map((a) => a.exam);
+    const pastExams = [];
+
+    for (const assignment of assignments) {
+      const exam = assignment.exam;
+
+      // Count how many submissions student has for this exam
+      const attemptsUsed = await this.prisma.examSubmission.count({
+        where: {
+          student_id: userId,
+          exam_id: exam.exam_id,
+        },
+      });
+
+      const hasNoAttemptsLeft = attemptsUsed >= exam.allowed_attempts;
+      const dueDatePassed = exam.end_date <= now;
+
+      // ✅ If either condition met, add to past exams
+      if (dueDatePassed || hasNoAttemptsLeft) {
+        // Get all submissions for this student + exam
+        const allSubmissions = await this.prisma.examSubmission.findMany({
+          where: {
+            student_id: userId,
+            exam_id: exam.exam_id,
+          },
+          select: {
+            grade_percentage: true,
+            feedback: true,
+            submitted_at: true,
+          },
+        });
+
+        // Safely filter + sort by highest grade
+        const gradedSubmissions = allSubmissions.filter(
+          (s) =>
+            s.grade_percentage !== null && s.grade_percentage !== undefined,
+        );
+
+        const highestSubmission =
+          gradedSubmissions.sort(
+            (a, b) => (b.grade_percentage ?? 0) - (a.grade_percentage ?? 0),
+          )[0] ?? null;
+
+        // Attach info for frontend
+        exam['attempts_used'] = attemptsUsed;
+        exam['remaining_attempts'] = Math.max(
+          0,
+          exam.allowed_attempts - attemptsUsed,
+        );
+        exam['submission'] = highestSubmission;
+
+        pastExams.push(exam);
+      }
+    }
+
+    return pastExams;
   }
 
   async getExamsForInstructor(userId: string) {

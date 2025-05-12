@@ -81,7 +81,8 @@ export function PastExams() {
                 <td>{exam.course?.title}</td>
                 <td>{new Date(exam.end_date).toLocaleString()}</td>
                 <td>
-                  {exam.submission?.grade_percentage !== undefined
+                  {exam.submission?.grade_percentage !== null &&
+                  exam.submission?.grade_percentage !== undefined
                     ? `${exam.submission.grade_percentage}%`
                     : '—'}
                 </td>

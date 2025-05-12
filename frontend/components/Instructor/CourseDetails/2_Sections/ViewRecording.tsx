@@ -33,7 +33,6 @@ export default function ViewRecordingPage() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [showTranscript, setShowTranscript] = useState(false);
 
-
     useEffect(() => {
         const fetchSubmission = async () => {
             try {
@@ -96,10 +95,10 @@ export default function ViewRecordingPage() {
                         <Text>Email: {submission.student?.email}</Text>
 
                         <video
-                            ref={videoRef}
-                            controls
-                            src={`http://localhost:4000${submission.recording_url}`}
-                            style={{ width: '100%', borderRadius: '8px', border: '1px solid #ccc' }}
+                          ref={videoRef}
+                          controls
+                          src={`http://localhost:4000${submission.recording_url}`}
+                          style={{ width: '100%', borderRadius: '8px', border: '1px solid #ccc' }}
                         >
                             <track
                                 kind="captions"
