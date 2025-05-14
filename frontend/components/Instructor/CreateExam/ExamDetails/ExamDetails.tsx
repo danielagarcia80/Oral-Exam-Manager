@@ -16,6 +16,9 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useEffect, useState } from 'react';
+import { IconArrowLeft } from '@tabler/icons-react';
+import router from 'next/router';
+
 
 type Student = {
   user_id: string;
@@ -115,6 +118,17 @@ export function ExamDetails({
 
   return (
     <Paper p="lg" withBorder radius="md" mb="lg">
+
+      <Group mb="md">
+        <Button
+          onClick={() => router.push('/dashboard')}
+          leftSection={<IconArrowLeft size={16} />}
+          variant="light"
+        >
+          Back to Dashboard
+        </Button>
+      </Group>
+
       <Title order={3} mb="md">Exam Details</Title>
 
       <TextInput

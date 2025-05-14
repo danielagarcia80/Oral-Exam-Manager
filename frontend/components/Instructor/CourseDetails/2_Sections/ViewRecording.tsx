@@ -13,6 +13,8 @@ import {
 } from '@mantine/core';
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { IconArrowLeft } from '@tabler/icons-react';
+
 
 function formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
@@ -86,6 +88,17 @@ export default function ViewRecordingPage() {
 
     return (
         <Container size="sm" py="xl">
+
+            <Group mb="md">
+                <Button
+                    onClick={() => router.push('/dashboard')}
+                    leftSection={<IconArrowLeft size={16} />}
+                    variant="light"
+                >
+                    Back to Dashboard
+                </Button>
+            </Group>
+
             <Stack>
                 <Title order={3}>Review Recording & Grade</Title>
 

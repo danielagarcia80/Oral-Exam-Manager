@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { IconArrowLeft } from '@tabler/icons-react';
+
 import {
   Table,
   Button,
@@ -11,6 +13,7 @@ import {
   Paper,
   Stack,
   Group,
+  Container
 } from '@mantine/core';
 
 // Types
@@ -86,10 +89,30 @@ export function GradesSection() {
   }
 
   return (
-    <Stack p="md">
-      <Title order={3}>Grades Section</Title>
-      <Paper shadow="xs" p="sm">
-        <Table highlightOnHover withTableBorder>
+
+    <Container size="lg" pt="xl">
+      <Paper shadow="md" radius="md" p="xl" withBorder>
+        
+        <Group mb="md">
+          <Button
+            onClick={() => router.push('/dashboard')}
+            leftSection={<IconArrowLeft size={16} />}
+            variant="light"
+          >
+            Back to Dashboard
+          </Button>
+        </Group>
+
+        <Title order={3} mb="md">Grades Section</Title>
+
+        <Table
+          highlightOnHover
+          withTableBorder
+          withColumnBorders
+          striped
+          verticalSpacing="md"
+          horizontalSpacing="md"
+        >
           <thead>
             <tr>
               <th>Student Name</th>
@@ -97,13 +120,14 @@ export function GradesSection() {
               <th>Submissions</th>
             </tr>
           </thead>
-          <tbody>
-            {assignedStudents.map((assigned) => {
-              const studentSubmissions = getSubmissions(assigned.student_id);
-              const fullName = `${assigned.student.first_name} ${assigned.student.last_name}`;
 
-              return (
-                <tr key={assigned.student_id}>
+          {assignedStudents.map((assigned) => {
+            const studentSubmissions = getSubmissions(assigned.student_id);
+            const fullName = `${assigned.student.first_name} ${assigned.student.last_name}`;
+
+            return (
+              <tbody key={assigned.student_id} style={{ borderTop: '1px solid #dee2e6' }}>
+                <tr>
                   <td>{fullName}</td>
                   <td>{assigned.student.email}</td>
                   <td>
@@ -123,9 +147,7 @@ export function GradesSection() {
                                 </Text>
                                 <Text size="xs" c="dimmed">
                                   Submitted:{' '}
-                                  {new Date(
-                                    submission.submitted_at
-                                  ).toLocaleString()}
+                                  {new Date(submission.submitted_at).toLocaleString()}
                                 </Text>
                                 <Text size="sm">
                                   Grade:{' '}
@@ -153,11 +175,12 @@ export function GradesSection() {
                     )}
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
+              </tbody>
+            );
+          })}
         </Table>
+
       </Paper>
-    </Stack>
+    </Container>
   );
 }

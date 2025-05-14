@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button, Card, Container, Flex, Stack, Text, Title, Image, Box, Divider } from '@mantine/core';
+import { Button, Card, Container, Flex, Stack, Text, Title, Image, Box, Divider, Group } from '@mantine/core';
 import { useSession } from 'next-auth/react';
+import { IconArrowLeft } from '@tabler/icons-react';
+
+
 
 type Exam = {
   exam_id: string;
@@ -50,6 +53,7 @@ export function CourseDetails() {
     const [src, setSrc] = useState(`http://localhost:4000/${bannerUrl}`);
   
     return (
+
       <Image
         src={src}
         alt="Course banner"
@@ -63,6 +67,7 @@ export function CourseDetails() {
         }}
         onError={() => setSrc('/default-banner.png')}
       />
+     
     );
   };
 
@@ -132,7 +137,17 @@ export function CourseDetails() {
 
   return (
     <Container size="lg" pt="xl">
-      {/* Course Banner */}
+      <Group mb="md">
+        <Button
+          onClick={() => router.push('/dashboard')}
+          leftSection={<IconArrowLeft size={16} />}
+          variant="light"
+        >
+          Back to Dashboard
+        </Button>
+      </Group>
+
+      
       <Box
         mb="lg"
         style={{
@@ -225,7 +240,7 @@ export function CourseDetails() {
               <Card key={student.user_id} withBorder p="md" radius="md" shadow="xs">
                 <Stack gap={2}>
                   <Text fw={500}>{student.first_name} {student.last_name}</Text>
-                  <Text size="sm" c="dimmed">{student.email}</Text>
+    
                 </Stack>
               </Card>
             ))
