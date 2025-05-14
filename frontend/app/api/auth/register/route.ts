@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase() },
     });
 
     if (existingUser) {
@@ -21,23 +21,24 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await prisma.user.create({
-      data: {
-        email,
+    const backendRes = await fetch(`http://localhost:4000/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.toLowerCase(),
         password: hashedPassword,
         first_name,
         last_name,
         role,
-        account_creation_date: new Date(),
-      },
-      select: {
-        user_id: true,
-        email: true,
-        first_name: true,
-        last_name: true,
-        role: true,
-      },
+      }),
     });
+
+    if (!backendRes.ok) {
+      const errorBody = await backendRes.json();
+      return NextResponse.json({ error: errorBody.message ?? 'Backend user creation failed' }, { status: backendRes.status });
+    }
+
+    const newUser = await backendRes.json();
 
     return NextResponse.json(
       { user: newUser, message: 'User created successfully' },

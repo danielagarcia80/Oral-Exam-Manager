@@ -119,6 +119,7 @@ model Course {
   outcomes    CourseLearningOutcome[]
   images      QuestionImages[]
   roles       CourseMembership[]
+  pending_memberships PendingCourseMembership[]
 }
 
 model CourseMembership {
@@ -131,6 +132,19 @@ model CourseMembership {
 
   @@unique([userId, courseId])
 }
+
+model PendingCourseMembership {
+  id        String      @id @default(cuid())
+  email     String
+  course    Course      @relation(fields: [courseId], references: [course_id])
+  courseId  String
+  role      CourseRole
+  createdAt DateTime    @default(now())
+
+  @@index([email])
+  @@unique([email, courseId]) 
+}
+
 
 model Exam {
   exam_id     String    @id @default(uuid())

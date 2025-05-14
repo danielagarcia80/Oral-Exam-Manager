@@ -12,6 +12,7 @@ async function hashPassword(password: string) {
 
 async function main() {
   console.log('🌱 Clearing old data...');
+  await prisma.pendingCourseMembership.deleteMany();
   await prisma.examSubmission.deleteMany();
   await prisma.assignedExam.deleteMany();
   await prisma.courseMembership.deleteMany();
@@ -67,6 +68,17 @@ async function main() {
       password: await hashPassword('password'),
       first_name: 'Student',
       last_name: 'One',
+      role: 'STUDENT',
+      account_creation_date: new Date(),
+    },
+  });
+
+  const student2 = await prisma.user.create({
+    data: {
+      email: 'student2@email.com',
+      password: await hashPassword('password'),
+      first_name: 'Student',
+      last_name: 'Two',
       role: 'STUDENT',
       account_creation_date: new Date(),
     },
