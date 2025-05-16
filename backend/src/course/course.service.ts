@@ -181,26 +181,40 @@ export class CourseService {
         where: { email: invite.email },
       });
 
-      if (!user || user.role !== invite.role) {
-        console.warn(
-          `Skipped ${invite.email} — user not found or role mismatch`,
-        );
-        continue;
-      }
-
-      const existing = await this.prisma.courseMembership.findUnique({
-        where: {
-          userId_courseId: {
-            userId: user.user_id,
-            courseId,
+      if (user !== null) {
+        // Existing user → add to CourseMembership
+        const existing = await this.prisma.courseMembership.findUnique({
+          where: {
+            userId_courseId: {
+              userId: user.user_id, // ✅ user exists, safe to access
+              courseId,
+            },
           },
-        },
-      });
+        });
 
-      if (!existing) {
-        await this.prisma.courseMembership.create({
-          data: {
-            userId: user.user_id,
+        if (!existing) {
+          await this.prisma.courseMembership.create({
+            data: {
+              userId: user.user_id,
+              courseId,
+              role: invite.role as CourseRole,
+            },
+          });
+        }
+      } else {
+        // User not found → add pending invite
+        await this.prisma.pendingCourseMembership.upsert({
+          where: {
+            email_courseId: {
+              email: invite.email,
+              courseId,
+            },
+          },
+          update: {
+            role: invite.role as CourseRole,
+          },
+          create: {
+            email: invite.email,
             courseId,
             role: invite.role as CourseRole,
           },

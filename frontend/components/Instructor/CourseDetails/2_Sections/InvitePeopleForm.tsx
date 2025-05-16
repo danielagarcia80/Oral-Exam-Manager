@@ -22,7 +22,11 @@ export function InvitePeopleForm({ courseId, onInviteSuccess }: Props) {
 
   const handleInviteChange = (index: number, field: 'email' | 'role', value: string) => {
     const updated = [...invites];
-    updated[index][field] = value.toUpperCase() as 'STUDENT' | 'INSTRUCTOR';
+    if (field === 'role') {
+      updated[index][field] = value.toUpperCase() as 'STUDENT' | 'INSTRUCTOR';
+    } else {
+      updated[index][field] = value;
+    }
     setInvites(updated);
   };
 

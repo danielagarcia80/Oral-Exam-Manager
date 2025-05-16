@@ -170,7 +170,6 @@ export class ExamService {
           },
         });
 
-        // Safely filter + sort by highest grade
         const gradedSubmissions = allSubmissions.filter(
           (s) =>
             s.grade_percentage !== null && s.grade_percentage !== undefined,
@@ -181,7 +180,7 @@ export class ExamService {
             (a, b) => (b.grade_percentage ?? 0) - (a.grade_percentage ?? 0),
           )[0] ?? null;
 
-        // Attach info for frontend
+
         exam['attempts_used'] = attemptsUsed;
         exam['remaining_attempts'] = Math.max(
           0,

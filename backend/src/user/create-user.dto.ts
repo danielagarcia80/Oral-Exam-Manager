@@ -21,8 +21,9 @@ export class CreateUserDto {
   @IsString()
   last_name: string;
 
+  @IsOptional()
   @IsDateString()
-  account_creation_date: string; // Prisma expects Date, but client sends ISO string
+  account_creation_date?: string;
 
   @IsOptional()
   @IsString()

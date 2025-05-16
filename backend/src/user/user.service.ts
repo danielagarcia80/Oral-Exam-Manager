@@ -8,7 +8,19 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.prisma.user.create({ data });
+    const user = await this.prisma.user.create({
+      data: {
+        email: data.email,
+        password: data.password,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        role: data.role,
+        account_creation_date: new Date().toISOString(),
+      },
+    });
+
+    console.log('User created:', user);
+    await this.assignPendingMembershipsForUser(user);
 
     // Strip password from response
     const { password, ...safeUser } = user;
@@ -61,5 +73,44 @@ export class UserService {
     });
 
     return students;
+  }
+
+  private async assignPendingMembershipsForUser(user: {
+    user_id: string;
+    email: string;
+  }) {
+    console.log('Assigning pending memberships for user:', user.email);
+    // 1. Find any pending invites for this email
+    const pendingInvites = await this.prisma.pendingCourseMembership.findMany({
+      where: { email: user.email },
+    });
+
+    // 2. Create CourseMemberships for each invite
+    for (const invite of pendingInvites) {
+      // Check if user is already a member (just in case)
+      const existing = await this.prisma.courseMembership.findUnique({
+        where: {
+          userId_courseId: {
+            userId: user.user_id,
+            courseId: invite.courseId,
+          },
+        },
+      });
+
+      if (!existing) {
+        await this.prisma.courseMembership.create({
+          data: {
+            userId: user.user_id,
+            courseId: invite.courseId,
+            role: invite.role,
+          },
+        });
+      }
+    }
+
+    // 3. Clean up (remove pending invites for this user)
+    await this.prisma.pendingCourseMembership.deleteMany({
+      where: { email: user.email },
+    });
   }
 }
