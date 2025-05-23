@@ -1,31 +1,31 @@
 .card {
-    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
-    cursor: pointer;
-    
-    @mixin hover {
-        background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
-        box-shadow: inset 0 0 0 3px light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-        border-radius: var(--mantine-radius-md);
-        border: 2px solid transparent;
-        border-color: light-dark(var(--mantine-primary-color-5), var(--mantine-primary-color-3));
-    }
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  cursor: pointer;
+
+  @mixin hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
+    box-shadow: inset 0 0 0 3px light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+    border-radius: var(--mantine-radius-md);
+    border: 2px solid transparent;
+    border-color: light-dark(var(--mantine-primary-color-5), var(--mantine-primary-color-3));
+  }
 }
 
 .section {
-    border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-    padding-left: var(--mantine-spacing-md);
-    padding-right: var(--mantine-spacing-md);
-    padding-bottom: var(--mantine-spacing-md);
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  padding-left: var(--mantine-spacing-md);
+  padding-right: var(--mantine-spacing-md);
+  padding-bottom: var(--mantine-spacing-md);
 }
 
 .like {
-    color: var(--mantine-color-red-6);
-    width: 20px;
-    height: 20px;
+  color: var(--mantine-color-red-6);
+  width: 20px;
+  height: 20px;
 }
 
 .label {
-    text-transform: uppercase;
-    font-size: var(--mantine-font-size-xs);
-    font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 700;
 }

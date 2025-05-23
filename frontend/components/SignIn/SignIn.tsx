@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn, useSession } from 'next-auth/react';
+import { getSession, signIn, useSession } from 'next-auth/react';
 import {
   Anchor,
   Button,
-  Checkbox,
   Container,
   Divider,
   Group,
@@ -25,44 +24,59 @@ import { GoogleButton } from './GoogleButton';
 
 export default function SignIn(props: PaperProps) {
   const [type, toggle] = useToggle(['login', 'register']);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
     if (session) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [session]);
 
   const form = useForm({
     initialValues: {
       email: '',
-      name: '',
       password: '',
-      terms: true,
+      confirmPassword: '',
+      first_name: '',
+      last_name: '',
       roleType: 'STUDENT',
     },
-    validate: {
-      email: (val: string) => (/^\S+@\S+$/.test(val) ? null : 'Invalid email'),
-      password: (val: string) =>
-        val.length <= 6 ? 'Password should include at least 6 characters' : null,
-    },
+    validate: (values) => {
+      const errors: Record<string, string | null> = {};
+    
+      if (!/^\S+@\S+$/.test(values.email)) {
+        errors.email = 'Invalid email';
+      }
+    
+      if (values.password.length <= 6) {
+        errors.password = 'Password must be at least 6 characters';
+      }
+    
+      if (type === 'register' && values.confirmPassword !== values.password) {
+        errors.confirmPassword = 'Passwords do not match';
+      }
+    
+      return errors;
+    }
   });
 
   const handleSubmit = async () => {
     setLoading(true);
+    setError(null);
 
     if (type === 'register') {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.values.name,
           email: form.values.email,
           password: form.values.password,
-          roleType: form.values.roleType,
+          first_name: form.values.first_name,
+          last_name: form.values.last_name,
+          role: form.values.roleType,
         }),
       });
 
@@ -72,9 +86,10 @@ export default function SignIn(props: PaperProps) {
           password: form.values.password,
           redirect: false,
         });
-        router.push('/');
+        router.push('/dashboard');
       } else {
-        setError('Registration failed');
+        const json = await res.json();
+        setError(json.error || 'Registration failed');
       }
     } else {
       const result = await signIn('credentials', {
@@ -83,10 +98,17 @@ export default function SignIn(props: PaperProps) {
         redirect: false,
       });
 
-      if (!result?.error) {
-        router.push('/');
+      if (result?.ok) {
+        const session = await getSession(); // fetch updated session
+        const role = session?.user?.role;
+
+        if (role === 'STUDENT' || role === 'FACULTY') {
+          router.push('/dashboard');
+        } else {
+          router.push('/'); // fallbacks
+        }
       } else {
-        setError('Invalid credentials');
+        setError('Invalid email or password');
       }
     }
 
@@ -115,13 +137,24 @@ export default function SignIn(props: PaperProps) {
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack>
             {type === 'register' && (
-              <TextInput
-                label="Name"
-                placeholder="Your name"
-                value={form.values.name}
-                onChange={(event) => form.setFieldValue('name', event.currentTarget.value)}
-                radius="md"
-              />
+              <>
+                <TextInput
+                  label="First Name"
+                  placeholder="Your first name"
+                  value={form.values.first_name}
+                  onChange={(event) => form.setFieldValue('first_name', event.currentTarget.value)}
+                  radius="md"
+                  required
+                />
+                <TextInput
+                  label="Last Name"
+                  placeholder="Your last name"
+                  value={form.values.last_name}
+                  onChange={(event) => form.setFieldValue('last_name', event.currentTarget.value)}
+                  radius="md"
+                  required
+                />
+              </>
             )}
 
             <TextInput
@@ -145,13 +178,27 @@ export default function SignIn(props: PaperProps) {
             />
 
             {type === 'register' && (
+              <PasswordInput
+                required
+                label="Confirm Password"
+                placeholder="Re-enter your password"
+                value={form.values.confirmPassword}
+                onChange={(event) =>
+                  form.setFieldValue('confirmPassword', event.currentTarget.value)
+                }
+                error={form.errors.confirmPassword}
+                radius="md"
+              />
+            )}
+
+            {type === 'register' && (
               <Select
                 label="Role"
                 placeholder="Select role"
                 data={[
                   { value: 'STUDENT', label: 'Student' },
-                  { value: 'TEACHER', label: 'Teacher' },
-                ]}  
+                  { value: 'FACULTY', label: 'Faculty' },
+                ]}
                 value={form.values.roleType}
                 onChange={(event) => {
                   if (event) {
@@ -159,14 +206,6 @@ export default function SignIn(props: PaperProps) {
                   }
                 }}
                 radius="md"
-              />
-            )}
-
-            {type === 'register' && (
-              <Checkbox
-                label="I accept terms and conditions"
-                checked={form.values.terms}
-                onChange={(event) => form.setFieldValue('terms', event.currentTarget.checked)}
               />
             )}
           </Stack>

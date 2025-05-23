@@ -1,8 +1,0 @@
-.footer {
-    height: 56px;
-    background-color: var(--mantine-color-body);
-    border-top: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-    display: flex;
-    justify-content: center; /* Centers content horizontally */
-    align-items: center; /* Centers content vertically */
-}

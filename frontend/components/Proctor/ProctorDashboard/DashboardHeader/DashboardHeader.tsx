@@ -1,9 +1,9 @@
 /**
  * @author Shaun Rose <thefrznrose@gmail.com>
-*/
+ */
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Container, Group, Image } from '@mantine/core';
 import classes from './Header.module.css';
 
@@ -20,7 +20,7 @@ const links = [
 export function DashboardHeader() {
   const [active, setActive] = useState(links[0].link);
   const router = useRouter();
-  
+
   const items = links.map((link) => (
     <a
       key={link.label}
@@ -39,14 +39,14 @@ export function DashboardHeader() {
   return (
     <header className={classes.header}>
       {/* <Container size="xl" className={classes.inner}> */}
-        {/* <Image
+      {/* <Image
           radius="md"
           height="50"
           width="auto"
           fit="contain"
           src="/csmb-logo.svg" // Correct path referencing the public directory
         /> */}
-        {/* <Group justify="space-between" h="100%" grow>
+      {/* <Group justify="space-between" h="100%" grow>
           {items}
         </Group> */}
       {/* </Container> */}

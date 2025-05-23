@@ -1,58 +1,57 @@
-'use client'; // Ensures this is a Client Component
+'use client';
 
-import { Title, Text, Button, Image } from '@mantine/core';
-import classes from './WelcomeBanner.module.css';
-import { useRouter } from "next/navigation";
-import { IconDeviceTvOld, IconLogin2, IconUser } from '@tabler/icons-react';
+import { Container, Title, Text, Image, Paper, Stack, Box, rgba } from '@mantine/core';
 
 export function WelcomeBanner() {
-  const router = useRouter();
-
-  const handleExamStart = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push('/student/demo-exam-setup');
-  };
-
-  const handleOpenDashboard = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push('/auth/signin ');
-  };
-
-  return (
-    <>
-      <Title className={classes.title} ta="center" mt={100} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Image
-          style={{ width: '300px', height: '300px' }} // Adjust size here
-          src={'/Images/logo.png'}
-        />
-        <Text inherit variant="gradient" component="span" gradient={{ from: 'Blue', to: 'Gold' }}>
-          Code Oriented Oral Exam Manager
-        </Text>
-      </Title>
-      <Text className={classes.instructions} ta="center">
-        The world's #1 programming assessment platform.
-        -Sameer
-      </Text>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '20px' }}>
-        <Button 
-          size="xl" 
-          className={classes.Button} 
-          onClick={handleExamStart} 
-          leftSection={<IconLogin2 size={34} />}
-          style={{ width: '15%' }}  
+    return (
+        <Box
+            style={{
+                // background: 'linear-gradient(to right,rgb(65, 111, 170),rgb(6, 29, 233))',
+                background: 'rgb(65, 111, 170)',
+                padding: '80px 0',
+                borderBottom: '1px solid #ccc',
+            }}
         >
-          Try Demo
-        </Button>
-        <Button 
-          size="xl" 
-          className={classes.Button} 
-          onClick={handleOpenDashboard} 
-          leftSection={<IconUser size={34} />}
-          style={{ width: '15%' }} 
-        >
-          Login
-        </Button>
-      </div>
-    </>
-  );
+            <Container size="md">
+                <Paper
+                    shadow="xl"
+                    radius="lg"
+                    p="xl"
+                    withBorder
+                    style={{
+                        textAlign: 'center',
+                        backgroundColor: 'white',
+                    }}
+                >
+                    <Stack align="center" spacing="md">
+                        <Image
+                            src="/Images/logo.png"
+                            alt="OEM Logo"
+                            w={180}
+                            h={180}
+                            fit="contain"
+                        />
+
+                        <Title
+                            order={1}
+                            size="3.2rem"
+                            variant="gradient"
+                            gradient={{ from: 'indigo', to: 'cyan', deg: 45 }}
+                            style={{ fontWeight: 900 }}
+                        >
+                            Streamline Your Exam Experience
+                        </Title>
+
+                        <Text size="lg" c="gray.7" style={{ maxWidth: 500 }}>
+                            Empowering students and instructors to manage oral assessments with clarity, structure, and ease.
+                        </Text>
+
+                        <Text size="sm" c="dimmed" style={{ fontStyle: 'italic' }}>
+                            Built for clarity. Designed for success.
+                        </Text>
+                    </Stack>
+                </Paper>
+            </Container>
+        </Box>
+    );
 }

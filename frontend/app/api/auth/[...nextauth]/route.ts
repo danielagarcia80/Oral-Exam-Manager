@@ -1,17 +1,11 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import NextAuth, { SessionOptions } from 'next-auth';
+import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GitHubProvider from 'next-auth/providers/github';
 import prisma from '../../../../../common/lib/prisma';
 
-
-const sessionConfig: Partial<SessionOptions> = {
-  strategy: 'jwt',
-  maxAge: 30 * 24 * 60 * 60, // 30 days
-  updateAge: 24 * 60 * 60, // 24 hours
-};
 export const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -39,67 +33,85 @@ export const authOptions = {
           return null;
         }
 
-        return user;
+        return {
+          id: user.user_id,
+          email: user.email,
+          name: `${user.first_name} ${user.last_name}`,
+          role: user.role,
+        };
       },
     }),
+
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
-  session: sessionConfig,
+
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60,
+  },
+
   callbacks: {
-    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-      // Ensures the redirect stays within the app
-      return url.startsWith(baseUrl) ? url : baseUrl;
+    async signIn({ user, account }) {
+      return !!user && !!account;
     },
-    async signIn({ user, account }: { user: any; account: any }) {
-      if (account?.provider === 'github') {
-        return true; // Allow GitHub login
+
+    async jwt({ token, user }) {
+      // When user first logs in
+      if (user) {
+        const userInDb = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: {
+            user_id: true,
+            role: true,
+            first_name: true,
+            last_name: true,
+          },
+        });
+
+        token.id = userInDb?.user_id;
+        token.role = userInDb?.role;
+        token.name = `${userInDb?.first_name} ${userInDb?.last_name}`;
       }
-      if (account?.provider === 'credentials' && user) {
-        return true; // Allow email/password users
-      }
-      return false; // Reject others
+
+      return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
-      const payload = {
-        name: token.name,
+
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id;
+        session.user.role = token.role;
+        session.user.name = token.name;
+      }
+
+      // Optional: create a signed access token
+      const accessTokenPayload = {
+        id: token.id,
         email: token.email,
-        user: token.user,
-        sub: token.sub,
-        roleId: token.roleId,
-        iat: token.iat,
-        exp: token.exp,
-        jti: token.jti,
+        role: token.role,
+        name: token.name,
       };
 
-      const accessToken = jwt.sign(payload, process.env.NEXTAUTH_SECRET as string);
-      session.accessToken = accessToken;
+      session.accessToken = jwt.sign(accessTokenPayload, process.env.NEXTAUTH_SECRET!, {
+        expiresIn: '30d',
+      });
 
       return session;
     },
-    async jwt({ token, user }: { token: any; user?: any }) {
-      if (user) {         
-        // Add custom claims to the token
-        if (user.email) {
-          const userRole = await prisma.user.findUnique({
-            where: { email: user.email },
-            select: { role_id: true, id: true }
-          });
-          token.user = userRole?.id;
-          token.roleId = userRole?.role_id;
-        }
-        // Add any other user data you want in the token
-      }
-      return token
+
+    async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : baseUrl;
     },
   },
 
-  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: '/auth/signin',
   },
+
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

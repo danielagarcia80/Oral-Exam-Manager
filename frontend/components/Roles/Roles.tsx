@@ -7,8 +7,6 @@ import { Avatar, Button, Group, ScrollArea, Table, Text } from '@mantine/core';
 import NewRole from './NewRole';
 import RoleManage from './RoleManage';
 
-
-
 export default function Roles() {
   const [rolesData, setRolesData] = useState<Role[]>([]);
   const [rolesDataLoading, setRolesDataLoading] = useState<boolean>(true);
@@ -91,7 +89,7 @@ export default function Roles() {
               setIsNewRoleOpen(!isNewRoleOpen);
             }}
           >
-            {isNewRoleOpen ? 'Close': 'New Role'}
+            {isNewRoleOpen ? 'Close' : 'New Role'}
           </Button>
           {isNewRoleOpen && (
             <>
@@ -105,29 +103,29 @@ export default function Roles() {
           {error && <Text c="red">{error}</Text>}
           {selectedRole ? (
             <>
-            <Button
-              onClick={() => {
-                setSelectedRole(null);
-              }}
-            >
-              Back
-            </Button>
-            <RoleManage role={selectedRole} />
+              <Button
+                onClick={() => {
+                  setSelectedRole(null);
+                }}
+              >
+                Back
+              </Button>
+              <RoleManage role={selectedRole} />
             </>
-          ): (
-          <ScrollArea>
-            <Table miw={800} verticalSpacing="sm">
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.Th>Tags</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
-          </ScrollArea>
-        )}
+          ) : (
+            <ScrollArea>
+              <Table miw={800} verticalSpacing="sm">
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Status</Table.Th>
+                    <Table.Th>Tags</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{rows}</Table.Tbody>
+              </Table>
+            </ScrollArea>
+          )}
         </>
       )}
     </>

@@ -23,8 +23,10 @@
     "backend:start": "yarn workspace @oem/backend start",
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:migrate": "infisical run --env=dev -- prisma migrate dev --schema=./prisma/schema.prisma",
-    "prisma:seed": "infisical run --env=dev -- prisma db seed --schema=./prisma/schema.prisma",
+    "prisma:seed": "rimraf backend/uploads/* backend/recordings/* && infisical run --env=dev -- prisma db seed --schema=./prisma/schema.prisma",
     "prisma:prod-seed": "infisical run --env=dev -- prisma db seed --schema=./prisma/schema.prisma",
+    "prisma:reset": "infisical run --env=dev -- prisma migrate reset --schema=./prisma/schema.prisma",
+    "prisma:dev-skip": "infisical run --env=dev -- prisma migrate dev --skip-generate --schema=./prisma/schema.prisma",
     "postinstall": "yarn prisma:generate",
     "prisma:studio": "infisical run --env=dev -- prisma studio --schema=./prisma/schema.prisma",
     "prisma:format": "prisma format --schema=./prisma/schema.prisma"
@@ -41,6 +43,7 @@
   "homepage": "https://github.com/RNAStructureAnalysisLab/OEM#readme",
   "description": "",
   "dependencies": {
+    "@nestjs/mapped-types": "*",
     "@prisma/client": "^6.3.1",
     "prisma": "^6.3.1"
   },

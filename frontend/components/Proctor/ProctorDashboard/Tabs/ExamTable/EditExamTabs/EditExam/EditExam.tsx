@@ -1,10 +1,10 @@
-import { Box, Checkbox, TextInput, Button, Textarea, Flex, TagsInput, Modal } from "@mantine/core";
+import React, { useState } from 'react';
+import { IconDeviceFloppy, IconTrash } from '@tabler/icons-react';
+import { Box, Button, Checkbox, Flex, Modal, TagsInput, Textarea, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconDeviceFloppy, IconTrash } from "@tabler/icons-react";
+import { useInstructorDataContext } from '@/static/utils/InstructorDataContext/InstructorDataContext';
+import DateTimeEntry from '../../CreateExamModal/CreateExamTabs/ExamDetails/DateTimeEntry';
 import classes from '../../ExamDetails.module.css';
-import React, { useState } from "react";
-import DateTimeEntry from "../../CreateExamModal/CreateExamTabs/ExamDetails/DateTimeEntry";
-import { useInstructorDataContext } from "@/static/utils/InstructorDataContext/InstructorDataContext";
 
 // ____________________________________________________________________________________________________________
 
@@ -46,15 +46,17 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
       timeMinimumEnabled: false,
       timeMaximumEnabled: false,
       accessCodeEnabled: examData?.access_code ? true : false,
-      availableFrom: examData?.available_from || '',  // Use ISO string for initial value and convert when using
+      availableFrom: examData?.available_from || '', // Use ISO string for initial value and convert when using
       availableTo: examData?.available_to || '',
-      access_code: examData?.access_code || ''
+      access_code: examData?.access_code || '',
     },
     validate: {},
   });
 
   const handleFormSubmit = async (values: FormValues) => {
-    const url = examData ? `http://localhost:3001/exams/${examData.exam_id}` : `http://localhost:3001/exams/${selectedCourseId}`;
+    const url = examData
+      ? `http://localhost:3001/exams/${examData.exam_id}`
+      : `http://localhost:3001/exams/${selectedCourseId}`;
     const method = examData ? 'PUT' : 'POST';
 
     try {
@@ -85,11 +87,11 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
 
   const handleDeleteExam = async () => {
     if (examData && examData.exam_id) {
-      const confirmDelete = window.confirm("Are you sure you want to delete this exam?");
+      const confirmDelete = window.confirm('Are you sure you want to delete this exam?');
       if (confirmDelete) {
         try {
           const response = await fetch(`http://localhost:3001/exams/${examData.exam_id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
           });
 
           const data = await response.json();
@@ -97,7 +99,7 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
           if (response.ok) {
             window.location.reload();
           } else {
-            throw new Error(data.message || "Failed to delete exam");
+            throw new Error(data.message || 'Failed to delete exam');
           }
         } catch (error) {
           console.error('Error deleting exam:', error);
@@ -111,7 +113,7 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
       <form onSubmit={form.onSubmit(handleFormSubmit)}>
         <TextInput
           size="xl"
-          style={{ paddingTop: "10px" }}
+          style={{ paddingTop: '10px' }}
           withAsterisk
           label="Exam Title"
           placeholder="Exam Title"
@@ -119,7 +121,7 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
           className={classes.inner}
         />
         <TagsInput
-          style={{ paddingTop: "10px" }}
+          style={{ paddingTop: '10px' }}
           size="xl"
           label="Assigned to:"
           className={classes.inner}
@@ -128,11 +130,11 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
             'All Students',
             'Shaun Rose (srose@csumb.edu)',
             'Wes Aman (waman@csumb.edu)',
-            'Sameer Dingore (sdingore@csumb.edu)'
+            'Sameer Dingore (sdingore@csumb.edu)',
           ]}
         />
         <Textarea
-          style={{ paddingTop: "10px" }}
+          style={{ paddingTop: '10px' }}
           size="xl"
           resize="vertical"
           radius="md"
@@ -142,12 +144,10 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
           className={classes.inner}
           {...form.getInputProps('examInstructions')}
         />
-        <div className={classes.inner}
-          style={{ paddingTop: "10px" }}>
+        <div className={classes.inner} style={{ paddingTop: '10px' }}>
           <DateTimeEntry form={form} />
         </div>
-        <Flex
-          style={{ paddingTop: "10px" }}>
+        <Flex style={{ paddingTop: '10px' }}>
           <TextInput
             size="xl"
             withAsterisk
@@ -157,15 +157,14 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
             disabled={!form.values.accessCodeEnabled}
             {...form.getInputProps('access_code')}
 
-          // style={{margin}}
+            // style={{margin}}
           />
           <Checkbox
-            style={{ paddingTop: "27px" }}
+            style={{ paddingTop: '27px' }}
             size="xl"
             mt="md"
             {...form.getInputProps('accessCodeEnabled', { type: 'checkbox' })}
             className={classes.inner}
-
           />
         </Flex>
         <Button
@@ -173,16 +172,15 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
           color="red"
           type="button"
           leftSection={<IconTrash />}
-          style={{ marginLeft: "25px", marginTop: "30px" }}
+          style={{ marginLeft: '25px', marginTop: '30px' }}
           onClick={handleDeleteExam}
         >
           Delete Exam
         </Button>
-        <Modal opened={openedMessageModal} onClose={closeMessageModal}>
-        </Modal>
+        <Modal opened={openedMessageModal} onClose={closeMessageModal}></Modal>
         <Button
           size="xl"
-          style={{ marginLeft: "55px", marginTop: "30px" }}
+          style={{ marginLeft: '55px', marginTop: '30px' }}
           color="green"
           type="submit"
           leftSection={<IconDeviceFloppy />}
@@ -192,6 +190,6 @@ const EditExam: React.FC<ModalContentProps> = ({ examData, onExamSaved }: ModalC
       </form>
     </Box>
   );
-}
+};
 
 export default EditExam;

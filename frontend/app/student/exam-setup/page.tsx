@@ -1,10 +1,11 @@
-'use client'
-import SetupExam from "@/components/Student/Exam/ExamSetup/SetupExam";
+'use client';
+
+import ExamSetup from '@/components/Student/ExamSetup/ExamSetup';
 
 export default function ExamStart() {
   return (
     <>
-      <SetupExam/>
+      <ExamSetup />
     </>
   );
 }

@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `users` MODIFY `role_type` VARCHAR(191) NULL DEFAULT 'DEFAULT';

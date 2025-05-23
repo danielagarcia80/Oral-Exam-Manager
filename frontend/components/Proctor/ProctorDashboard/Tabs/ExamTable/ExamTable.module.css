@@ -8,11 +8,12 @@
   font-weight: 600;
 }
 
-.th, .td {
+.th,
+.td {
   border: 1px solid #ddd; /* Adds vertical and horizontal lines */
   padding: 8px;
 }
-      
+
 .control {
   width: 100%;
   padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);

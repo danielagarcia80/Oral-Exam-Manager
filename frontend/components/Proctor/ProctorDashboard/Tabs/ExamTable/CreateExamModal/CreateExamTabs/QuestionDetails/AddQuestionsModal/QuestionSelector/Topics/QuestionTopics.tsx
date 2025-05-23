@@ -1,10 +1,9 @@
-
 // ____________________________________________________________________________________________________________
 
 import { useState } from 'react';
+import { IconBook } from '@tabler/icons-react';
 import { ScrollArea } from '@mantine/core';
-import { IconBook, } from '@tabler/icons-react';
-import classes from "./QuestionTopics.module.css"
+import classes from './QuestionTopics.module.css';
 
 // ____________________________________________________________________________________________________________
 
@@ -19,7 +18,7 @@ const data = [
 // ____________________________________________________________________________________________________________
 
 export function QuestionTopics() {
-  const [active, setActive] = useState(data[0].label);  
+  const [active, setActive] = useState(data[0].label);
   const links = data.map((item) => (
     <a
       className={classes.link}
@@ -36,9 +35,7 @@ export function QuestionTopics() {
   ));
   return (
     <>
-    <ScrollArea>
-      {links}
-    </ScrollArea>
+      <ScrollArea>{links}</ScrollArea>
     </>
   );
 }

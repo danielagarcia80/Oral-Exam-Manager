@@ -1,11 +1,11 @@
-import { Box, Space, Checkbox, TextInput, Button, Textarea, Flex, Modal } from "@mantine/core";
+import React, { useState } from 'react';
+import { IconDeviceFloppy, IconTrash } from '@tabler/icons-react';
+import { Box, Button, Checkbox, Flex, Modal, Space, Textarea, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconDeviceFloppy, IconTrash } from "@tabler/icons-react";
-import AreYouSure from "./AreYouSure";
+import { useInstructorDataContext } from '@/static/utils/InstructorDataContext/InstructorDataContext';
+import AreYouSure from './AreYouSure';
+import DateTimeEntry from './DateTimeEntry';
 import classes from './ExamDetails.module.css';
-import React, { useState } from "react";
-import DateTimeEntry from "./DateTimeEntry";
-import { useInstructorDataContext } from "@/static/utils/InstructorDataContext/InstructorDataContext";
 
 interface FormValues {
   examTitle: string;
@@ -20,15 +20,18 @@ interface FormValues {
 
 interface ModalContentProps {
   closeModal: () => void;
-  onExamSaved: (examId: number) => Promise<void>;  // Callback prop for handling saved exam
+  onExamSaved: (examId: number) => Promise<void>; // Callback prop for handling saved exam
 }
 
-const ExamDetails: React.FC<ModalContentProps> = ({ closeModal, onExamSaved }: ModalContentProps) => {
+const ExamDetails: React.FC<ModalContentProps> = ({
+  closeModal,
+  onExamSaved,
+}: ModalContentProps) => {
   const [openedMessageModal, setMessageOpened] = useState(false);
   const openMessageModal = () => setMessageOpened(true);
   const closeMessageModal = () => setMessageOpened(false);
 
-  const { selectedCourseId } = useInstructorDataContext();  // Get the selectedCourseId from context
+  const { selectedCourseId } = useInstructorDataContext(); // Get the selectedCourseId from context
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -39,7 +42,7 @@ const ExamDetails: React.FC<ModalContentProps> = ({ closeModal, onExamSaved }: M
       accessCodeEnabled: false,
       availableFrom: new Date().toISOString(),
       availableTo: new Date().toISOString(),
-      accessCode: ''
+      accessCode: '',
     },
     validate: {},
   });
@@ -120,7 +123,7 @@ const ExamDetails: React.FC<ModalContentProps> = ({ closeModal, onExamSaved }: M
             mt="md"
             {...form.getInputProps('accessCodeEnabled', { type: 'checkbox' })}
             className={classes.inner}
-            style={{ paddingTop: "24px" }}
+            style={{ paddingTop: '24px' }}
           />
         </Flex>
         <div className={classes.inner}>
@@ -129,7 +132,7 @@ const ExamDetails: React.FC<ModalContentProps> = ({ closeModal, onExamSaved }: M
             type="button"
             onClick={handleCancel}
             leftSection={<IconTrash />}
-            style={{ marginLeft: "0%", marginRight: "10%", width: "200px" }}
+            style={{ marginLeft: '0%', marginRight: '10%', width: '200px' }}
             size="xl"
           >
             Cancel
@@ -142,7 +145,7 @@ const ExamDetails: React.FC<ModalContentProps> = ({ closeModal, onExamSaved }: M
             color="green"
             type="submit"
             leftSection={<IconDeviceFloppy />}
-            style={{ margin: "5%", width: "200px" }}
+            style={{ margin: '5%', width: '200px' }}
           >
             Save Exam
           </Button>
@@ -150,6 +153,6 @@ const ExamDetails: React.FC<ModalContentProps> = ({ closeModal, onExamSaved }: M
       </form>
     </Box>
   );
-}
+};
 
 export default ExamDetails;

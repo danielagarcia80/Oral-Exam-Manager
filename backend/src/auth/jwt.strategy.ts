@@ -1,23 +1,42 @@
+// Lint was being incredibly frustrating with this file
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ConfigService } from '@nestjs/config';
+
+interface JwtPayload {
+  id: string;
+  email: string;
+  role: 'INSTRUCTOR' | 'STUDENT' | 'ADMIN';
+  name: string;
+  iat: number;
+  exp: number;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(configService: ConfigService) {
+    const rawSecret = configService.get<string>('JWT_SECRET');
+
+    if (!rawSecret || typeof rawSecret !== 'string') {
+      throw new Error('JWT_SECRET is not defined or is not a string.');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey:
-        process.env.JWT_SECRET ||
-        'j18lBOrGklTDbCX1UwxAtrRynX9XBTVSNy5jZUZEoyz1RJhw1H7WtlWfe0jjShE6',
+      secretOrKey: rawSecret,
     });
   }
 
-  validate(payload: { email: string; roleId: string }) {
-    return { email: payload.email, roleId: payload.roleId };
+  validate(payload: JwtPayload) {
+    return {
+      user_id: payload.id,
+      email: payload.email,
+      role: payload.role,
+    };
   }
 }
